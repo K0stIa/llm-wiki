@@ -1,0 +1,100 @@
+{
+  "versions": {
+    "zosma": "0.12.5",
+    "node": "v22.23.2"
+  },
+  "source_hashes": {
+    "utils": "b28372c95979f6b5a6cfe53fb4a785eecf83d337beb0f6550312490fe67cf8d3",
+    "source-packet": "0f174873c4c4703240da10481af4f49af2d4752a971dcca36e535f5c85bc49f2",
+    "retro": "f3c63223abe13c3ba8186e672500d4cf189c0d1d28d6d8248a7c23912df4a95b",
+    "metadata": "52d6381de1ed5c9cee640d56670a1f3ffab3513ccfcd3d39a61b803e89946386"
+  },
+  "single_writer_control": {
+    "requested_writes": 96,
+    "unique_ids": 96,
+    "source_packets": 96
+  },
+  "zosma": [
+    {
+      "mode": "distinct-pages",
+      "processes": 8,
+      "requested_writes": 64,
+      "acknowledged_writes": 64,
+      "unique_ids": 64,
+      "surviving_markers": 64,
+      "registry_reads": 1168,
+      "invalid_registry_reads": 0,
+      "registry_pages_before_reconciliation": 64,
+      "registry_pages_after_reconciliation": 64,
+      "events_for_writes": 64,
+      "reconciliation_ok": true,
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "worker_errors": []
+    },
+    {
+      "mode": "same-page",
+      "processes": 8,
+      "requested_writes": 8,
+      "acknowledged_writes": 8,
+      "unique_ids": 1,
+      "surviving_markers": 1,
+      "registry_reads": 996,
+      "invalid_registry_reads": 0,
+      "registry_pages_before_reconciliation": 1,
+      "registry_pages_after_reconciliation": 1,
+      "events_for_writes": 8,
+      "reconciliation_ok": true,
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "worker_errors": []
+    },
+    {
+      "mode": "capture",
+      "processes": 8,
+      "requested_writes": 96,
+      "acknowledged_writes": 96,
+      "unique_ids": 73,
+      "surviving_markers": 73,
+      "registry_reads": 1004,
+      "invalid_registry_reads": 0,
+      "registry_pages_before_reconciliation": 0,
+      "registry_pages_after_reconciliation": 73,
+      "events_for_writes": 96,
+      "reconciliation_ok": true,
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "worker_errors": []
+    }
+  ],
+  "nvk_upstream_session_regression": "=== Session Capture Concurrency (nvk/llm-wiki#58) ===\n  PASS: scripts/llm-wiki-session compiles\n  PASS: atomic_write uses a unique tmp per writer (pid+uuid4)\n  PASS: atomic_write commits with os.replace\n  PASS: read_json heals a torn file (raw_decode)\n  PASS: read_json falls back to default on unhealable data\n  PASS: read_json heals 'valid object + trailing junk' (issue's pattern)\n  PASS: read_json falls back to default on leading-garbage / fragment / empty\n  PASS: read_json raises after a persistent permission failure\n  PASS: current atomic_write: 0 corruption events under 8 concurrent writers\n  PASS: control: OLD shared-tmp reproduces the race (OLD_RACE 43309 (replace=35227 torn=8082 other=0 exits=0 missing=0))\n  PASS: 96 concurrent live Stop hooks: 0 crashes, 0 tracebacks, state JSON intact\n\n===========================================\nResults: 11 passed, 0 failed, 11 total\n===========================================",
+  "limitations": [
+    "One finite stress run per scenario, not a proof of safety.",
+    "nvk test covers its session-hook state, not simultaneous edits to compiled wiki pages.",
+    "Atomic per-file metadata replacement is not a multi-file transaction or a page merge policy."
+  ]
+}

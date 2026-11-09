@@ -1,0 +1,239 @@
+{
+  "checked_at": "2026-11-09T12:14:47.283637+00:00",
+  "sources": [
+    {
+      "repository": "The-Swarm-Corporation/Multi-Agent-RAG-Template",
+      "url": "https://github.com/The-Swarm-Corporation/Multi-Agent-RAG-Template",
+      "revision": "daba170b359e13d968487e2efad6d1dd7510f60e",
+      "default_branch": "main",
+      "api_license": "MIT",
+      "files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/The-Swarm-Corporation/Multi-Agent-RAG-Template/daba170b359e13d968487e2efad6d1dd7510f60e/LICENSE",
+          "sha256": "187603d159fb72abba3b51626d70758b1fdcc7c8ecd3db99235aca8c28d6e6c6",
+          "bytes": 1074
+        },
+        {
+          "path": "README.md",
+          "url": "https://raw.githubusercontent.com/The-Swarm-Corporation/Multi-Agent-RAG-Template/daba170b359e13d968487e2efad6d1dd7510f60e/README.md",
+          "sha256": "d4878f5b2c8f97f2d2b996063b9b380b4e13bb0507cfed014b64061de55edad7",
+          "bytes": 8544
+        },
+        {
+          "path": "main.py",
+          "url": "https://raw.githubusercontent.com/The-Swarm-Corporation/Multi-Agent-RAG-Template/daba170b359e13d968487e2efad6d1dd7510f60e/main.py",
+          "sha256": "5aa4a8c7cf5e99d06c78d5f56392fc6d65b3fdc7650d75bc3e24fb75d3617213",
+          "bytes": 2244
+        },
+        {
+          "path": "multi_agent_rag/__init__.py",
+          "url": "https://raw.githubusercontent.com/The-Swarm-Corporation/Multi-Agent-RAG-Template/daba170b359e13d968487e2efad6d1dd7510f60e/multi_agent_rag/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "multi_agent_rag/agents.py",
+          "url": "https://raw.githubusercontent.com/The-Swarm-Corporation/Multi-Agent-RAG-Template/daba170b359e13d968487e2efad6d1dd7510f60e/multi_agent_rag/agents.py",
+          "sha256": "3dcbf8cd8fc642ce93f9121aa128edce8cc8b203c4842cc561940455abb05ce6",
+          "bytes": 5283
+        },
+        {
+          "path": "multi_agent_rag/fake_data_generator.py",
+          "url": "https://raw.githubusercontent.com/The-Swarm-Corporation/Multi-Agent-RAG-Template/daba170b359e13d968487e2efad6d1dd7510f60e/multi_agent_rag/fake_data_generator.py",
+          "sha256": "22b49690e5d547e621a966a1e43c9759279d52f5dee5817e20cc3ab84579a669",
+          "bytes": 4115
+        },
+        {
+          "path": "requirements.txt",
+          "url": "https://raw.githubusercontent.com/The-Swarm-Corporation/Multi-Agent-RAG-Template/daba170b359e13d968487e2efad6d1dd7510f60e/requirements.txt",
+          "sha256": "c872965f4cd72d9abe9511000a6270d3b568a9ab2e4bb71a2546795909ac18ee",
+          "bytes": 93
+        },
+        {
+          "path": "multi_agent_rag/memory.py",
+          "url": "https://raw.githubusercontent.com/The-Swarm-Corporation/Multi-Agent-RAG-Template/daba170b359e13d968487e2efad6d1dd7510f60e/multi_agent_rag/memory.py",
+          "sha256": "33fc55151dc7e500927fa0b6a8f64fb422708015c15db6b473b916097f03fc6a",
+          "bytes": 4082
+        }
+      ]
+    },
+    {
+      "repository": "coleam00/cole-medin-knowledge-base",
+      "url": "https://github.com/coleam00/cole-medin-knowledge-base",
+      "revision": "eba5e31bc628280c546d4828491051c308d550dc",
+      "default_branch": "main",
+      "api_license": null,
+      "files": [
+        {
+          "path": "README.md",
+          "url": "https://raw.githubusercontent.com/coleam00/cole-medin-knowledge-base/eba5e31bc628280c546d4828491051c308d550dc/README.md",
+          "sha256": "b133a56d63a88e70bc36a13757dbef448f1abc9381f757f0a4b8fc0bf416668b",
+          "bytes": 5371
+        },
+        {
+          "path": "concepts/metadata-filtering.md",
+          "url": "https://raw.githubusercontent.com/coleam00/cole-medin-knowledge-base/eba5e31bc628280c546d4828491051c308d550dc/concepts/metadata-filtering.md",
+          "sha256": "acba7dd910f541047111fd48638a8556f32e6cd81ee305661d669b82c5b2c83b",
+          "bytes": 5960
+        }
+      ]
+    },
+    {
+      "repository": "IkechukwuAbuah/Structured-hierarchical-Retrieval---RAG",
+      "url": "https://github.com/IkechukwuAbuah/Structured-hierarchical-Retrieval---RAG",
+      "revision": "e9d3b1fdd3480b7fbf896f1a8f24693493de4c6b",
+      "default_branch": "main",
+      "api_license": null,
+      "files": [
+        {
+          "path": "Main",
+          "url": "https://raw.githubusercontent.com/IkechukwuAbuah/Structured-hierarchical-Retrieval---RAG/e9d3b1fdd3480b7fbf896f1a8f24693493de4c6b/Main",
+          "sha256": "d368e081db3c0df5c25ee5b2832d49139fe41b5772df1498278059b40b1049d8",
+          "bytes": 24343
+        },
+        {
+          "path": "README.md",
+          "url": "https://raw.githubusercontent.com/IkechukwuAbuah/Structured-hierarchical-Retrieval---RAG/e9d3b1fdd3480b7fbf896f1a8f24693493de4c6b/README.md",
+          "sha256": "30596c61bfdc4f104999ada5fae71c033f80a8a808788ec49c43a6f499f49b43",
+          "bytes": 24488
+        }
+      ]
+    },
+    {
+      "repository": "redmizt/wiki-llm-for-multi-agent-builds",
+      "url": "https://github.com/redmizt/wiki-llm-for-multi-agent-builds",
+      "revision": "d341658726f2e704229c715013ae26ac976acbc0",
+      "default_branch": "main",
+      "api_license": "NOASSERTION",
+      "files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/redmizt/wiki-llm-for-multi-agent-builds/d341658726f2e704229c715013ae26ac976acbc0/LICENSE",
+          "sha256": "a3e1cb93c3a930a96e452a12085114eb8ad483012993bac5f022b776a258cc61",
+          "bytes": 705
+        },
+        {
+          "path": "README.md",
+          "url": "https://raw.githubusercontent.com/redmizt/wiki-llm-for-multi-agent-builds/d341658726f2e704229c715013ae26ac976acbc0/README.md",
+          "sha256": "2b5cd83dab16ff289dfb1917c67104276021fc80b927e7aadcf98a2b4ff19a66",
+          "bytes": 78801
+        }
+      ]
+    },
+    {
+      "repository": "Fergana-Labs/stash",
+      "url": "https://github.com/Fergana-Labs/stash",
+      "revision": "3691d14c4e1e5e5e18250d804e631ff6e5943aae",
+      "default_branch": "main",
+      "api_license": "MIT",
+      "files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/Fergana-Labs/stash/3691d14c4e1e5e5e18250d804e631ff6e5943aae/LICENSE",
+          "sha256": "1838f089f18a8728da72d7467060ff72a625ebcbadb3867817b11a377ae8ba59",
+          "bytes": 1069
+        },
+        {
+          "path": "README.md",
+          "url": "https://raw.githubusercontent.com/Fergana-Labs/stash/3691d14c4e1e5e5e18250d804e631ff6e5943aae/README.md",
+          "sha256": "047d3bd1e9e7f80cbf289ac58725a8aa450132c4a6a8bca16467019cd1210666",
+          "bytes": 7691
+        },
+        {
+          "path": "docs/running-stash.md",
+          "url": "https://raw.githubusercontent.com/Fergana-Labs/stash/3691d14c4e1e5e5e18250d804e631ff6e5943aae/docs/running-stash.md",
+          "sha256": "e3be91ced1b6ba13cfafc73233218662b756b05fd8e04eb1fb286af37a4ba95d",
+          "bytes": 5025
+        }
+      ]
+    },
+    {
+      "repository": "alfadur7/llm-wiki-newsroom",
+      "url": "https://github.com/alfadur7/llm-wiki-newsroom",
+      "revision": "8e209cab483da544852d7213f0e25291d06d8a88",
+      "default_branch": "main",
+      "api_license": "MIT",
+      "files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/alfadur7/llm-wiki-newsroom/8e209cab483da544852d7213f0e25291d06d8a88/LICENSE",
+          "sha256": "aaba54950cd0b9f41662d9e86785b67321e08c2b39ee01da05ac695eeac845c7",
+          "bytes": 1095
+        },
+        {
+          "path": "README.md",
+          "url": "https://raw.githubusercontent.com/alfadur7/llm-wiki-newsroom/8e209cab483da544852d7213f0e25291d06d8a88/README.md",
+          "sha256": "7021ae0c4bea2792ea99da0ceedf7dbf4ae19b8bb70a4a25eb96ce189051552e",
+          "bytes": 68485
+        }
+      ]
+    },
+    {
+      "url": "https://gist.github.com/redmizt/3250f4b8ae15a25428e7fb09aba72223",
+      "revision": "cdaaea713be82228e604d9fd82a71a5057c50f40",
+      "files": [
+        {
+          "path": "README.md",
+          "raw_url": "https://gist.githubusercontent.com/redmizt/3250f4b8ae15a25428e7fb09aba72223/raw/a1b106b1a3eeb806ba652f028f6cfe26ca26df9c/README.md",
+          "size": 80027
+        }
+      ],
+      "note": "Gist metadata checked; implementation review uses the separately licensed redmizt repository."
+    },
+    {
+      "repository": "doobidoo/mcp-memory-service",
+      "url": "https://github.com/doobidoo/mcp-memory-service",
+      "revision": "238e609e7804874a772d6711b8acbd06526c7c55",
+      "license": "Apache-2.0",
+      "files": [
+        {
+          "path": "README.md",
+          "url": "https://raw.githubusercontent.com/doobidoo/mcp-memory-service/238e609e7804874a772d6711b8acbd06526c7c55/README.md",
+          "sha256": "63a725ad115887c073acec9ed255ada3fc01a27968cc1cf1d1bdc7c0ef3bcf89",
+          "bytes": 17614
+        },
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/doobidoo/mcp-memory-service/238e609e7804874a772d6711b8acbd06526c7c55/LICENSE",
+          "sha256": "d92a71f96ad18b7e6c112e71f7586b24063d3ab60dc423680eda014043af8858",
+          "bytes": 11343
+        },
+        {
+          "path": "pyproject.toml",
+          "url": "https://raw.githubusercontent.com/doobidoo/mcp-memory-service/238e609e7804874a772d6711b8acbd06526c7c55/pyproject.toml",
+          "sha256": "87edfed9cf902e92dc655654de03a2c912c5dfc021658e50a1039dfaf8871bfa",
+          "bytes": 8008
+        },
+        {
+          "path": "src/mcp_memory_service/storage/sqlite_vec.py",
+          "url": "https://raw.githubusercontent.com/doobidoo/mcp-memory-service/238e609e7804874a772d6711b8acbd06526c7c55/src/mcp_memory_service/storage/sqlite_vec.py",
+          "sha256": "6a2dfb9b170ad0f92a85538a4cc2ca9de8f82e801448d7390064e11e2a0b8b56",
+          "bytes": 5039
+        },
+        {
+          "path": "src/mcp_memory_service/config.py",
+          "error": "HTTP Error 404: Not Found"
+        },
+        {
+          "path": "src/mcp_memory_service/storage/mixins/base.py",
+          "url": "https://raw.githubusercontent.com/doobidoo/mcp-memory-service/238e609e7804874a772d6711b8acbd06526c7c55/src/mcp_memory_service/storage/mixins/base.py",
+          "bytes": 27197,
+          "sha256": "a049035fb88de06e501ba78624a5f8be489282c1419612da1e7573d7571d748d"
+        },
+        {
+          "path": "src/mcp_memory_service/storage/mixins/store.py",
+          "url": "https://raw.githubusercontent.com/doobidoo/mcp-memory-service/238e609e7804874a772d6711b8acbd06526c7c55/src/mcp_memory_service/storage/mixins/store.py",
+          "bytes": 29563,
+          "sha256": "9895975954474ba10c097c16454b67e232984f6ebc8974f5904d689799a43a00"
+        },
+        {
+          "path": "src/mcp_memory_service/storage/mixins/metadata.py",
+          "url": "https://raw.githubusercontent.com/doobidoo/mcp-memory-service/238e609e7804874a772d6711b8acbd06526c7c55/src/mcp_memory_service/storage/mixins/metadata.py",
+          "bytes": 53534,
+          "sha256": "ec5a5919c12c63f0f2e638149b72f392c730864deebc637f88555d97f1dd8925"
+        }
+      ]
+    }
+  ]
+}

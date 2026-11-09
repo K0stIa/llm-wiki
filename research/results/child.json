@@ -1,0 +1,39 @@
+{
+  "runner": "installed pi-llm-wiki runSubAgent",
+  "model": "qwen3.8-35b-a3b-mtp-32k",
+  "explicit_tools": [
+    "wiki_recall",
+    "wiki_retro",
+    "read"
+  ],
+  "elapsed_seconds": 27.924481113,
+  "tool_calls": [
+    {
+      "name": "wiki_recall",
+      "args": {
+        "query": "continuity marker",
+        "max_results": 10
+      }
+    },
+    {
+      "name": "read",
+      "args": {
+        "path": "<work>/zosma/.llm-wiki/wiki/sources/cross-session-check.md"
+      }
+    },
+    {
+      "name": "wiki_retro",
+      "args": {
+        "slug": "child-probe",
+        "title": "Child probe",
+        "body": "This session probed for an invented continuity marker from an earlier session. The marker found was **amber-orbit-592**, stored in [[sources/cross-session-check]]. That page states: \"The invented continuity marker is amber-orbit-592. This marker is test data, not a real preference.\"\n\nThis insight records the marker itself and its original source location for future session recall.",
+        "category": "test"
+      }
+    }
+  ],
+  "error": null,
+  "read_original": true,
+  "wrote_child_page": true,
+  "marker_preserved": true,
+  "limitation": "Tests this package runner with explicit tool/context injection, not the separate pi-subagents extension or worktree discovery."
+}

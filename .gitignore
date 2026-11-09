@@ -1,12 +1,12 @@
-# Generated files
-wiki/meta/registry.json
-wiki/meta/index.md
+# Local research checkouts, generated indexes, model caches and raw sessions
+.cache/
 
-# Token data
-.pi/session_identity/
-
-# Logs
+# Private LAN login. Keep the local file for the existing access checks.
+access/login.json
+access/*.log
 logs/
 
-# Dependencies
+# Runtime artifacts and dependencies
+__pycache__/
+*.pyc
 node_modules/

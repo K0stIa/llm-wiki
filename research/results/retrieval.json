@@ -1,0 +1,1636 @@
+{
+  "corpus": "synthetic-pi-wiki-v1",
+  "fixture_sha256": "205cfa92b3cdd68f8f025c739ea818fefbeaa741dede4c87c3d559540adb95e2",
+  "documents": 24,
+  "queries": 21,
+  "versions": {
+    "zosma": "0.12.5",
+    "qmd": "2.8.3",
+    "pi": "1.5.0",
+    "node": "v22.23.2",
+    "sqlite": "3.45.1"
+  },
+  "source_hashes": {
+    "recall": "ba26bcdcf6169f654d9d9d09c8fd90a00245818bc589fd5b3de52d585c7f9adf",
+    "metadata": "52d6381de1ed5c9cee640d56670a1f3ffab3513ccfcd3d39a61b803e89946386",
+    "retro": "f3c63223abe13c3ba8186e672500d4cf189c0d1d28d6d8248a7c23912df4a95b"
+  },
+  "nvk_commit": "d60674ff785e5c6d35322657d7839a7c0bdd3ca7",
+  "qmd_indexing": {
+    "collections": 1,
+    "indexed": 24,
+    "updated": 0,
+    "unchanged": 0,
+    "removed": 0,
+    "skipped": 0,
+    "needsEmbedding": 24,
+    "elapsed_ms": 21.30541999999997
+  },
+  "limitations": [
+    "QMD searchLex uses AND semantics. Natural-language failures are not hybrid-search results.",
+    "One pass per retrieval mode; timings exclude package startup and model download and are not a throughput benchmark.",
+    "nvk query-lite is evaluated separately as an agent workflow.",
+    "One isolated 334 MB embedding model was downloaded. No generation/reranking model was downloaded."
+  ],
+  "records": [
+    {
+      "engine": "zosma-lexical",
+      "query": "q01",
+      "ids": [
+        "incidents/cache-gap"
+      ],
+      "scores": [
+        3.8
+      ],
+      "elapsed_ms": 10.433260000000018
+    },
+    {
+      "engine": "qmd-bm25",
+      "query": "q01",
+      "ids": [
+        "incidents/cache-gap"
+      ],
+      "scores": [
+        0.7256003739120331
+      ],
+      "elapsed_ms": 2.550339000000008
+    },
+    {
+      "engine": "zosma-lexical",
+      "query": "q02",
+      "ids": [
+        "concepts/routing"
+      ],
+      "scores": [
+        3.8
+      ],
+      "elapsed_ms": 5.533916999999974
+    },
+    {
+      "engine": "qmd-bm25",
+      "query": "q02",
+      "ids": [
+        "concepts/routing"
+      ],
+      "scores": [
+        0.7360208912299585
+      ],
+      "elapsed_ms": 0.8786420000000135
+    },
+    {
+      "engine": "zosma-lexical",
+      "query": "q03",
+      "ids": [
+        "concepts/recovery-check"
+      ],
+      "scores": [
+        5.6
+      ],
+      "elapsed_ms": 5.176195000000007
+    },
+    {
+      "engine": "qmd-bm25",
+      "query": "q03",
+      "ids": [
+        "concepts/recovery-check"
+      ],
+      "scores": [
+        0.7268867735751516
+      ],
+      "elapsed_ms": 0.341007999999988
+    },
+    {
+      "engine": "zosma-lexical",
+      "query": "q04",
+      "ids": [
+        "concepts/terminal-lifetime",
+        "distractors/terminal-colors"
+      ],
+      "scores": [
+        4.2,
+        3.2
+      ],
+      "elapsed_ms": 5.79636099999999
+    },
+    {
+      "engine": "qmd-bm25",
+      "query": "q04",
+      "ids": [
+        "concepts/terminal-lifetime"
+      ],
+      "scores": [
+        0.7360208912299585
+      ],
+      "elapsed_ms": 0.5705790000000093
+    },
+    {
+      "engine": "zosma-lexical",
+      "query": "q05",
+      "ids": [
+        "concepts/terminal-lifetime"
+      ],
+      "scores": [
+        2.8
+      ],
+      "elapsed_ms": 5.359405000000038
+    },
+    {
+      "engine": "qmd-bm25",
+      "query": "q05",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 1.0819099999999935
+    },
+    {
+      "engine": "zosma-lexical",
+      "query": "q06",
+      "ids": [
+        "concepts/shared-knowledge",
+        "concepts/write-coordination",
+        "concepts/retention-rule"
+      ],
+      "scores": [
+        16.4,
+        3.4000000000000004,
+        1.2
+      ],
+      "elapsed_ms": 7.198939999999993
+    },
+    {
+      "engine": "qmd-bm25",
+      "query": "q06",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 0.38191899999998213
+    },
+    {
+      "engine": "zosma-lexical",
+      "query": "q07",
+      "ids": [
+        "concepts/shared-knowledge",
+        "concepts/write-coordination"
+      ],
+      "scores": [
+        8.6,
+        3.8
+      ],
+      "elapsed_ms": 5.816451000000029
+    },
+    {
+      "engine": "qmd-bm25",
+      "query": "q07",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 0.310387999999989
+    },
+    {
+      "engine": "zosma-lexical",
+      "query": "q08",
+      "ids": [
+        "distractors/agent-avatar",
+        "concepts/search-methods",
+        "concepts/routing"
+      ],
+      "scores": [
+        3,
+        2.4000000000000004,
+        1.8
+      ],
+      "elapsed_ms": 5.518265999999983
+    },
+    {
+      "engine": "qmd-bm25",
+      "query": "q08",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 0.38114699999999857
+    },
+    {
+      "engine": "zosma-lexical",
+      "query": "q09",
+      "ids": [
+        "concepts/shared-knowledge",
+        "concepts/child-context",
+        "concepts/retention-rule",
+        "concepts/session-records",
+        "concepts/write-coordination"
+      ],
+      "scores": [
+        28.8,
+        8.6,
+        6.4,
+        2.8,
+        2.6
+      ],
+      "elapsed_ms": 5.7975830000000315
+    },
+    {
+      "engine": "qmd-bm25",
+      "query": "q09",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 0.32958600000000615
+    },
+    {
+      "engine": "zosma-lexical",
+      "query": "q10",
+      "ids": [
+        "concepts/evidence-trails",
+        "concepts/recovery-check",
+        "concepts/duplicate-ingest",
+        "concepts/retention-rule",
+        "concepts/mova"
+      ],
+      "scores": [
+        24.6,
+        3.8,
+        2.6,
+        1.6,
+        1.4
+      ],
+      "elapsed_ms": 4.496393000000012
+    },
+    {
+      "engine": "qmd-bm25",
+      "query": "q10",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 0.3571900000000028
+    },
+    {
+      "engine": "zosma-lexical",
+      "query": "q11",
+      "ids": [
+        "concepts/shared-knowledge",
+        "concepts/session-records",
+        "concepts/retention-rule",
+        "concepts/child-context",
+        "concepts/routing"
+      ],
+      "scores": [
+        42.2,
+        18.4,
+        7.4,
+        4.2,
+        3.4
+      ],
+      "elapsed_ms": 5.161066000000005
+    },
+    {
+      "engine": "qmd-bm25",
+      "query": "q11",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 0.2987560000000258
+    },
+    {
+      "engine": "zosma-lexical",
+      "query": "q12",
+      "ids": [
+        "decisions/search-current",
+        "concepts/search-methods",
+        "decisions/search-old",
+        "incidents/cache-gap",
+        "distractors/vector-art"
+      ],
+      "scores": [
+        29.6,
+        13,
+        11.4,
+        6,
+        2
+      ],
+      "elapsed_ms": 4.402760000000001
+    },
+    {
+      "engine": "qmd-bm25",
+      "query": "q12",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 0.2894579999999678
+    },
+    {
+      "engine": "zosma-lexical",
+      "query": "q13",
+      "ids": [
+        "decisions/search-current",
+        "decisions/search-old"
+      ],
+      "scores": [
+        5.6,
+        3.6
+      ],
+      "elapsed_ms": 5.1622279999999705
+    },
+    {
+      "engine": "qmd-bm25",
+      "query": "q13",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 0.31263300000000527
+    },
+    {
+      "engine": "zosma-lexical",
+      "query": "q14",
+      "ids": [
+        "concepts/duplicate-ingest",
+        "concepts/evidence-trails",
+        "concepts/recovery-check",
+        "incidents/cache-gap",
+        "concepts/retention-rule"
+      ],
+      "scores": [
+        11.2,
+        11,
+        4.6,
+        2.4,
+        1.6
+      ],
+      "elapsed_ms": 4.275651000000039
+    },
+    {
+      "engine": "qmd-bm25",
+      "query": "q14",
+      "ids": [
+        "concepts/evidence-trails"
+      ],
+      "scores": [
+        0.8777640439309092
+      ],
+      "elapsed_ms": 0.5846870000000308
+    },
+    {
+      "engine": "zosma-lexical",
+      "query": "q15",
+      "ids": [
+        "incidents/cache-gap",
+        "distractors/browser-cache",
+        "concepts/retention-rule"
+      ],
+      "scores": [
+        4.2,
+        3,
+        1.6
+      ],
+      "elapsed_ms": 5.63659899999999
+    },
+    {
+      "engine": "qmd-bm25",
+      "query": "q15",
+      "ids": [
+        "incidents/cache-gap"
+      ],
+      "scores": [
+        0.8848167587933037
+      ],
+      "elapsed_ms": 0.4767550000000256
+    },
+    {
+      "engine": "zosma-lexical",
+      "query": "q16",
+      "ids": [
+        "concepts/duplicate-ingest",
+        "distractors/database-tuning"
+      ],
+      "scores": [
+        26.4,
+        2.2
+      ],
+      "elapsed_ms": 5.896958999999981
+    },
+    {
+      "engine": "qmd-bm25",
+      "query": "q16",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 0.29612100000002783
+    },
+    {
+      "engine": "zosma-lexical",
+      "query": "q17",
+      "ids": [
+        "decisions/search-old",
+        "decisions/search-current",
+        "concepts/retention-rule",
+        "distractors/vector-art",
+        "distractors/browser-cache"
+      ],
+      "scores": [
+        19.6,
+        4.6,
+        1.4,
+        1.2,
+        1
+      ],
+      "elapsed_ms": 4.733767999999998
+    },
+    {
+      "engine": "qmd-bm25",
+      "query": "q17",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 0.33813300000002755
+    },
+    {
+      "engine": "zosma-lexical",
+      "query": "q18",
+      "ids": [
+        "concepts/mova"
+      ],
+      "scores": [
+        4.4
+      ],
+      "elapsed_ms": 3.2849390000000085
+    },
+    {
+      "engine": "qmd-bm25",
+      "query": "q18",
+      "ids": [
+        "concepts/mova"
+      ],
+      "scores": [
+        0.849697412004552
+      ],
+      "elapsed_ms": 1.1979880000000094
+    },
+    {
+      "engine": "zosma-lexical",
+      "query": "q19",
+      "ids": [
+        "concepts/mova"
+      ],
+      "scores": [
+        22.4
+      ],
+      "elapsed_ms": 5.37063599999999
+    },
+    {
+      "engine": "qmd-bm25",
+      "query": "q19",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 0.27505899999999883
+    },
+    {
+      "engine": "zosma-lexical",
+      "query": "q20",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 4.199771999999996
+    },
+    {
+      "engine": "qmd-bm25",
+      "query": "q20",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 0.21771699999999328
+    },
+    {
+      "engine": "zosma-lexical",
+      "query": "q21",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 3.90092599999997
+    },
+    {
+      "engine": "qmd-bm25",
+      "query": "q21",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 0.26319499999999607
+    },
+    {
+      "engine": "sqlite-fts5-or-control",
+      "query": "q01",
+      "ids": [
+        "incidents/cache-gap"
+      ],
+      "scores": [
+        -5.2736943299485874
+      ],
+      "elapsed_ms": 0.22976682521402836
+    },
+    {
+      "engine": "sqlite-fts5-or-control",
+      "query": "q02",
+      "ids": [
+        "concepts/routing"
+      ],
+      "scores": [
+        -5.545236159571687
+      ],
+      "elapsed_ms": 0.01391698606312275
+    },
+    {
+      "engine": "sqlite-fts5-or-control",
+      "query": "q03",
+      "ids": [
+        "concepts/recovery-check"
+      ],
+      "scores": [
+        -7.966269519543845
+      ],
+      "elapsed_ms": 0.00860588625073433
+    },
+    {
+      "engine": "sqlite-fts5-or-control",
+      "query": "q04",
+      "ids": [
+        "concepts/terminal-lifetime",
+        "distractors/terminal-colors"
+      ],
+      "scores": [
+        -5.0236304901125255,
+        -2.4284120286624113
+      ],
+      "elapsed_ms": 0.008835922926664352
+    },
+    {
+      "engine": "sqlite-fts5-or-control",
+      "query": "q05",
+      "ids": [
+        "concepts/terminal-lifetime",
+        "concepts/child-context"
+      ],
+      "scores": [
+        -5.5863274838184,
+        -2.5306290962270004
+      ],
+      "elapsed_ms": 0.013015000149607658
+    },
+    {
+      "engine": "sqlite-fts5-or-control",
+      "query": "q06",
+      "ids": [
+        "concepts/shared-knowledge",
+        "concepts/write-coordination",
+        "concepts/session-records",
+        "concepts/retention-rule"
+      ],
+      "scores": [
+        -6.210632613185208,
+        -3.740597503424736,
+        -2.8773815690459936,
+        -1.6474292321062967
+      ],
+      "elapsed_ms": 0.013655982911586761
+    },
+    {
+      "engine": "sqlite-fts5-or-control",
+      "query": "q07",
+      "ids": [
+        "concepts/write-coordination",
+        "concepts/child-context",
+        "decisions/search-current",
+        "concepts/access-boundary",
+        "decisions/search-old"
+      ],
+      "scores": [
+        -6.3100383671810905,
+        -2.5306290962270004,
+        -1.6734541873979516,
+        -1.2568737787989548,
+        -1.2478282073392348
+      ],
+      "elapsed_ms": 0.018334947526454926
+    },
+    {
+      "engine": "sqlite-fts5-or-control",
+      "query": "q08",
+      "ids": [
+        "concepts/shared-knowledge",
+        "concepts/search-methods",
+        "distractors/agent-avatar",
+        "concepts/routing"
+      ],
+      "scores": [
+        -3.4866252665957767,
+        -2.60046408102818,
+        -2.468238686586642,
+        -2.2140601138559086
+      ],
+      "elapsed_ms": 0.014157034456729889
+    },
+    {
+      "engine": "sqlite-fts5-or-control",
+      "query": "q09",
+      "ids": [
+        "concepts/shared-knowledge",
+        "concepts/session-records",
+        "concepts/child-context",
+        "concepts/terminal-lifetime",
+        "concepts/write-coordination"
+      ],
+      "scores": [
+        -10.83047799493651,
+        -4.434648234124923,
+        -3.887410085984611,
+        -2.5824096582915868,
+        -2.5496466916637592
+      ],
+      "elapsed_ms": 0.021771062165498734
+    },
+    {
+      "engine": "sqlite-fts5-or-control",
+      "query": "q10",
+      "ids": [
+        "concepts/recovery-check",
+        "concepts/session-records",
+        "concepts/evidence-trails",
+        "concepts/mova",
+        "concepts/duplicate-ingest"
+      ],
+      "scores": [
+        -6.7141339411963115,
+        -2.5650713560666416,
+        -1.8759408157017752,
+        -1.4605011229906204,
+        -1.382971449221642
+      ],
+      "elapsed_ms": 0.01487787812948227
+    },
+    {
+      "engine": "sqlite-fts5-or-control",
+      "query": "q11",
+      "ids": [
+        "concepts/session-records",
+        "concepts/shared-knowledge",
+        "concepts/routing",
+        "concepts/retention-rule",
+        "concepts/child-context"
+      ],
+      "scores": [
+        -11.062532755843819,
+        -7.1958973782221465,
+        -5.105589675724949,
+        -2.943293506861969,
+        -2.928575695351828
+      ],
+      "elapsed_ms": 0.018745893612504005
+    },
+    {
+      "engine": "sqlite-fts5-or-control",
+      "query": "q12",
+      "ids": [
+        "decisions/search-current",
+        "decisions/search-old",
+        "distractors/vector-art",
+        "concepts/search-methods",
+        "distractors/database-tuning"
+      ],
+      "scores": [
+        -4.426538420831439,
+        -4.021180847679628,
+        -3.406760336008636,
+        -2.8160658246536823,
+        -1.6492832861753997
+      ],
+      "elapsed_ms": 0.026169000193476677
+    },
+    {
+      "engine": "sqlite-fts5-or-control",
+      "query": "q13",
+      "ids": [
+        "decisions/search-current",
+        "decisions/search-old",
+        "concepts/write-coordination"
+      ],
+      "scores": [
+        -7.79123330865151,
+        -2.991780376107436,
+        -2.048324729636078
+      ],
+      "elapsed_ms": 0.018203863874077797
+    },
+    {
+      "engine": "sqlite-fts5-or-control",
+      "query": "q14",
+      "ids": [
+        "concepts/evidence-trails",
+        "concepts/duplicate-ingest",
+        "concepts/recovery-check",
+        "incidents/cache-gap",
+        "distractors/meeting-notes"
+      ],
+      "scores": [
+        -7.1501559049813945,
+        -5.175181527991471,
+        -4.513194930808106,
+        -2.741996944673431,
+        -1.165425671117059
+      ],
+      "elapsed_ms": 0.013396143913269043
+    },
+    {
+      "engine": "sqlite-fts5-or-control",
+      "query": "q15",
+      "ids": [
+        "incidents/cache-gap",
+        "distractors/browser-cache",
+        "concepts/retention-rule",
+        "concepts/search-methods",
+        "distractors/database-tuning"
+      ],
+      "scores": [
+        -7.660110246737898,
+        -2.3524939480905576,
+        -1.9940461660290985,
+        -1.120290609211884,
+        -0.9215785219208735
+      ],
+      "elapsed_ms": 0.014868797734379768
+    },
+    {
+      "engine": "sqlite-fts5-or-control",
+      "query": "q16",
+      "ids": [
+        "concepts/duplicate-ingest",
+        "concepts/write-coordination",
+        "concepts/retention-rule",
+        "concepts/shared-knowledge",
+        "distractors/database-tuning"
+      ],
+      "scores": [
+        -10.288773545786267,
+        -2.5650713560666416,
+        -2.497099521941766,
+        -2.448438634496475,
+        -2.38985022030431
+      ],
+      "elapsed_ms": 0.014047138392925262
+    },
+    {
+      "engine": "sqlite-fts5-or-control",
+      "query": "q17",
+      "ids": [
+        "concepts/retention-rule",
+        "decisions/search-current",
+        "decisions/search-old",
+        "concepts/evidence-trails",
+        "distractors/browser-cache"
+      ],
+      "scores": [
+        -5.529728715715834,
+        -3.8332556373930977,
+        -3.2044211585807565,
+        -2.048324729636078,
+        -1.9435694942586312
+      ],
+      "elapsed_ms": 0.01569977030158043
+    },
+    {
+      "engine": "sqlite-fts5-or-control",
+      "query": "q18",
+      "ids": [
+        "concepts/mova"
+      ],
+      "scores": [
+        -5.628032344583089
+      ],
+      "elapsed_ms": 0.015049008652567863
+    },
+    {
+      "engine": "sqlite-fts5-or-control",
+      "query": "q19",
+      "ids": [
+        "concepts/mova"
+      ],
+      "scores": [
+        -10.49803381265785
+      ],
+      "elapsed_ms": 0.01987791620194912
+    },
+    {
+      "engine": "sqlite-fts5-or-control",
+      "query": "q20",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 0.005400041118264198
+    },
+    {
+      "engine": "sqlite-fts5-or-control",
+      "query": "q21",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 0.0046889763325452805
+    },
+    {
+      "engine": "qmd-vector",
+      "query": "q01",
+      "ids": [
+        "incidents/cache-gap",
+        "distractors/agent-avatar",
+        "concepts/recovery-check",
+        "concepts/access-boundary",
+        "distractors/vector-art"
+      ],
+      "scores": [
+        0.4193931221961975,
+        0.19142723083496094,
+        0.16021877527236938,
+        0.15471452474594116,
+        0.1414175033569336
+      ],
+      "elapsed_ms": 14.676887999999963
+    },
+    {
+      "engine": "qmd-lex-vector-fusion",
+      "query": "q01",
+      "ids": [
+        "incidents/cache-gap",
+        "distractors/agent-avatar",
+        "concepts/recovery-check",
+        "concepts/access-boundary",
+        "distractors/vector-art"
+      ],
+      "scores": [
+        1,
+        0.5,
+        0.3333333333333333,
+        0.25,
+        0.2
+      ],
+      "elapsed_ms": 18.737970000000132
+    },
+    {
+      "engine": "qmd-vector",
+      "query": "q02",
+      "ids": [
+        "concepts/routing",
+        "decisions/search-current",
+        "decisions/search-old",
+        "concepts/session-records",
+        "distractors/ssh-keys"
+      ],
+      "scores": [
+        0.4103108048439026,
+        0.24298495054244995,
+        0.2154293656349182,
+        0.18394094705581665,
+        0.18157660961151123
+      ],
+      "elapsed_ms": 12.569847000000664
+    },
+    {
+      "engine": "qmd-lex-vector-fusion",
+      "query": "q02",
+      "ids": [
+        "concepts/routing",
+        "decisions/search-current",
+        "decisions/search-old",
+        "concepts/session-records",
+        "distractors/ssh-keys"
+      ],
+      "scores": [
+        1,
+        0.5,
+        0.3333333333333333,
+        0.25,
+        0.2
+      ],
+      "elapsed_ms": 15.21801300000061
+    },
+    {
+      "engine": "qmd-vector",
+      "query": "q03",
+      "ids": [
+        "concepts/recovery-check",
+        "concepts/duplicate-ingest",
+        "distractors/search-ui",
+        "incidents/cache-gap",
+        "concepts/retention-rule"
+      ],
+      "scores": [
+        0.2877430319786072,
+        0.17998427152633667,
+        0.16450250148773193,
+        0.16043365001678467,
+        0.1482698917388916
+      ],
+      "elapsed_ms": 15.247479000000567
+    },
+    {
+      "engine": "qmd-lex-vector-fusion",
+      "query": "q03",
+      "ids": [
+        "concepts/recovery-check",
+        "concepts/duplicate-ingest",
+        "distractors/search-ui",
+        "incidents/cache-gap",
+        "concepts/retention-rule"
+      ],
+      "scores": [
+        1,
+        0.5,
+        0.3333333333333333,
+        0.25,
+        0.2
+      ],
+      "elapsed_ms": 16.496103000000403
+    },
+    {
+      "engine": "qmd-vector",
+      "query": "q04",
+      "ids": [
+        "concepts/terminal-lifetime",
+        "distractors/terminal-colors",
+        "distractors/vector-art",
+        "concepts/child-context",
+        "concepts/session-records"
+      ],
+      "scores": [
+        0.4301263689994812,
+        0.4184141159057617,
+        0.309755802154541,
+        0.2895890474319458,
+        0.28476589918136597
+      ],
+      "elapsed_ms": 11.965922999999748
+    },
+    {
+      "engine": "qmd-lex-vector-fusion",
+      "query": "q04",
+      "ids": [
+        "concepts/terminal-lifetime",
+        "distractors/terminal-colors",
+        "distractors/vector-art",
+        "concepts/child-context",
+        "concepts/session-records"
+      ],
+      "scores": [
+        1,
+        0.5,
+        0.3333333333333333,
+        0.25,
+        0.2
+      ],
+      "elapsed_ms": 14.9607960000003
+    },
+    {
+      "engine": "qmd-vector",
+      "query": "q05",
+      "ids": [
+        "concepts/terminal-lifetime",
+        "distractors/browser-cache",
+        "concepts/access-boundary",
+        "decisions/search-current",
+        "distractors/agent-avatar"
+      ],
+      "scores": [
+        0.3497443199157715,
+        0.2935119867324829,
+        0.26906484365463257,
+        0.2526894211769104,
+        0.2433098554611206
+      ],
+      "elapsed_ms": 17.68688799999927
+    },
+    {
+      "engine": "qmd-lex-vector-fusion",
+      "query": "q05",
+      "ids": [
+        "concepts/terminal-lifetime",
+        "distractors/browser-cache",
+        "concepts/access-boundary",
+        "decisions/search-current",
+        "distractors/agent-avatar"
+      ],
+      "scores": [
+        1,
+        0.5,
+        0.3333333333333333,
+        0.25,
+        0.2
+      ],
+      "elapsed_ms": 19.917312999999922
+    },
+    {
+      "engine": "qmd-vector",
+      "query": "q06",
+      "ids": [
+        "concepts/shared-knowledge",
+        "concepts/session-records",
+        "concepts/duplicate-ingest",
+        "concepts/search-methods",
+        "concepts/evidence-trails"
+      ],
+      "scores": [
+        0.4439880847930908,
+        0.40916937589645386,
+        0.31137216091156006,
+        0.3020896911621094,
+        0.2813895344734192
+      ],
+      "elapsed_ms": 16.339947999999822
+    },
+    {
+      "engine": "qmd-lex-vector-fusion",
+      "query": "q06",
+      "ids": [
+        "concepts/shared-knowledge",
+        "concepts/session-records",
+        "concepts/duplicate-ingest",
+        "concepts/search-methods",
+        "concepts/evidence-trails"
+      ],
+      "scores": [
+        1,
+        0.5,
+        0.3333333333333333,
+        0.25,
+        0.2
+      ],
+      "elapsed_ms": 17.51763800000026
+    },
+    {
+      "engine": "qmd-vector",
+      "query": "q07",
+      "ids": [
+        "concepts/write-coordination",
+        "concepts/duplicate-ingest",
+        "concepts/retention-rule",
+        "concepts/child-context",
+        "concepts/evidence-trails"
+      ],
+      "scores": [
+        0.46156221628189087,
+        0.3514024615287781,
+        0.2687634825706482,
+        0.2583789825439453,
+        0.24692779779434204
+      ],
+      "elapsed_ms": 19.922333000000435
+    },
+    {
+      "engine": "qmd-lex-vector-fusion",
+      "query": "q07",
+      "ids": [
+        "concepts/write-coordination",
+        "concepts/duplicate-ingest",
+        "concepts/retention-rule",
+        "concepts/child-context",
+        "concepts/evidence-trails"
+      ],
+      "scores": [
+        1,
+        0.5,
+        0.3333333333333333,
+        0.25,
+        0.2
+      ],
+      "elapsed_ms": 20.826735999999983
+    },
+    {
+      "engine": "qmd-vector",
+      "query": "q08",
+      "ids": [
+        "concepts/search-methods",
+        "concepts/write-coordination",
+        "concepts/duplicate-ingest",
+        "distractors/search-ui",
+        "incidents/cache-gap"
+      ],
+      "scores": [
+        0.32377755641937256,
+        0.2589229345321655,
+        0.2461177110671997,
+        0.22617977857589722,
+        0.20795667171478271
+      ],
+      "elapsed_ms": 18.760753000000477
+    },
+    {
+      "engine": "qmd-lex-vector-fusion",
+      "query": "q08",
+      "ids": [
+        "concepts/search-methods",
+        "concepts/write-coordination",
+        "concepts/duplicate-ingest",
+        "distractors/search-ui",
+        "incidents/cache-gap"
+      ],
+      "scores": [
+        1,
+        0.5,
+        0.3333333333333333,
+        0.25,
+        0.2
+      ],
+      "elapsed_ms": 20.705756000000292
+    },
+    {
+      "engine": "qmd-vector",
+      "query": "q09",
+      "ids": [
+        "concepts/shared-knowledge",
+        "concepts/child-context",
+        "concepts/session-records",
+        "concepts/write-coordination",
+        "concepts/routing"
+      ],
+      "scores": [
+        0.5245322287082672,
+        0.4627695679664612,
+        0.42339420318603516,
+        0.3226909041404724,
+        0.3104856610298157
+      ],
+      "elapsed_ms": 17.234110999999757
+    },
+    {
+      "engine": "qmd-lex-vector-fusion",
+      "query": "q09",
+      "ids": [
+        "concepts/shared-knowledge",
+        "concepts/child-context",
+        "concepts/session-records",
+        "concepts/write-coordination",
+        "concepts/routing"
+      ],
+      "scores": [
+        1,
+        0.5,
+        0.3333333333333333,
+        0.25,
+        0.2
+      ],
+      "elapsed_ms": 18.259302999999818
+    },
+    {
+      "engine": "qmd-vector",
+      "query": "q10",
+      "ids": [
+        "concepts/recovery-check",
+        "concepts/evidence-trails",
+        "concepts/retention-rule",
+        "concepts/duplicate-ingest",
+        "concepts/mova"
+      ],
+      "scores": [
+        0.5416416823863983,
+        0.39572036266326904,
+        0.29324108362197876,
+        0.25303971767425537,
+        0.24324297904968262
+      ],
+      "elapsed_ms": 16.16298199999983
+    },
+    {
+      "engine": "qmd-lex-vector-fusion",
+      "query": "q10",
+      "ids": [
+        "concepts/recovery-check",
+        "concepts/evidence-trails",
+        "concepts/retention-rule",
+        "concepts/duplicate-ingest",
+        "concepts/mova"
+      ],
+      "scores": [
+        1,
+        0.5,
+        0.3333333333333333,
+        0.25,
+        0.2
+      ],
+      "elapsed_ms": 18.763898000000154
+    },
+    {
+      "engine": "qmd-vector",
+      "query": "q11",
+      "ids": [
+        "concepts/shared-knowledge",
+        "concepts/session-records",
+        "concepts/evidence-trails",
+        "concepts/search-methods",
+        "concepts/retention-rule"
+      ],
+      "scores": [
+        0.4942002296447754,
+        0.4907420873641968,
+        0.2852182984352112,
+        0.2513467073440552,
+        0.24340379238128662
+      ],
+      "elapsed_ms": 15.002093999999488
+    },
+    {
+      "engine": "qmd-lex-vector-fusion",
+      "query": "q11",
+      "ids": [
+        "concepts/shared-knowledge",
+        "concepts/session-records",
+        "concepts/evidence-trails",
+        "concepts/search-methods",
+        "concepts/retention-rule"
+      ],
+      "scores": [
+        1,
+        0.5,
+        0.3333333333333333,
+        0.25,
+        0.2
+      ],
+      "elapsed_ms": 16.384029999999257
+    },
+    {
+      "engine": "qmd-vector",
+      "query": "q12",
+      "ids": [
+        "decisions/search-current",
+        "concepts/search-methods",
+        "decisions/search-old",
+        "concepts/retention-rule",
+        "concepts/recovery-check"
+      ],
+      "scores": [
+        0.6038196682929993,
+        0.5086532533168793,
+        0.4856263995170593,
+        0.351948082447052,
+        0.33702749013900757
+      ],
+      "elapsed_ms": 13.38243599999987
+    },
+    {
+      "engine": "qmd-lex-vector-fusion",
+      "query": "q12",
+      "ids": [
+        "decisions/search-current",
+        "concepts/search-methods",
+        "decisions/search-old",
+        "concepts/retention-rule",
+        "concepts/recovery-check"
+      ],
+      "scores": [
+        1,
+        0.5,
+        0.3333333333333333,
+        0.25,
+        0.2
+      ],
+      "elapsed_ms": 15.458858999999393
+    },
+    {
+      "engine": "qmd-vector",
+      "query": "q13",
+      "ids": [
+        "decisions/search-current",
+        "decisions/search-old",
+        "concepts/routing",
+        "distractors/vector-art",
+        "concepts/access-boundary"
+      ],
+      "scores": [
+        0.5516147911548615,
+        0.48331010341644287,
+        0.3210631012916565,
+        0.30365341901779175,
+        0.2319309115409851
+      ],
+      "elapsed_ms": 14.27100800000062
+    },
+    {
+      "engine": "qmd-lex-vector-fusion",
+      "query": "q13",
+      "ids": [
+        "decisions/search-current",
+        "decisions/search-old",
+        "concepts/routing",
+        "distractors/vector-art",
+        "concepts/access-boundary"
+      ],
+      "scores": [
+        1,
+        0.5,
+        0.3333333333333333,
+        0.25,
+        0.2
+      ],
+      "elapsed_ms": 18.870881000000736
+    },
+    {
+      "engine": "qmd-vector",
+      "query": "q14",
+      "ids": [
+        "concepts/evidence-trails",
+        "concepts/duplicate-ingest",
+        "concepts/retention-rule",
+        "concepts/recovery-check",
+        "decisions/search-current"
+      ],
+      "scores": [
+        0.4190567135810852,
+        0.41767895221710205,
+        0.360889196395874,
+        0.352023184299469,
+        0.32009661197662354
+      ],
+      "elapsed_ms": 13.699596000000383
+    },
+    {
+      "engine": "qmd-lex-vector-fusion",
+      "query": "q14",
+      "ids": [
+        "concepts/evidence-trails",
+        "concepts/duplicate-ingest",
+        "concepts/retention-rule",
+        "concepts/recovery-check",
+        "decisions/search-current"
+      ],
+      "scores": [
+        1,
+        0.5,
+        0.3333333333333333,
+        0.25,
+        0.2
+      ],
+      "elapsed_ms": 18.581973999999718
+    },
+    {
+      "engine": "qmd-vector",
+      "query": "q15",
+      "ids": [
+        "incidents/cache-gap",
+        "distractors/browser-cache",
+        "concepts/duplicate-ingest",
+        "concepts/recovery-check",
+        "concepts/retention-rule"
+      ],
+      "scores": [
+        0.3642783761024475,
+        0.32940948009490967,
+        0.2800535559654236,
+        0.24186861515045166,
+        0.22626304626464844
+      ],
+      "elapsed_ms": 12.256843999999546
+    },
+    {
+      "engine": "qmd-lex-vector-fusion",
+      "query": "q15",
+      "ids": [
+        "incidents/cache-gap",
+        "distractors/browser-cache",
+        "concepts/duplicate-ingest",
+        "concepts/recovery-check",
+        "concepts/retention-rule"
+      ],
+      "scores": [
+        1,
+        0.5,
+        0.3333333333333333,
+        0.25,
+        0.2
+      ],
+      "elapsed_ms": 18.937676999999894
+    },
+    {
+      "engine": "qmd-vector",
+      "query": "q16",
+      "ids": [
+        "concepts/duplicate-ingest",
+        "concepts/write-coordination",
+        "distractors/database-tuning",
+        "concepts/evidence-trails",
+        "concepts/retention-rule"
+      ],
+      "scores": [
+        0.6331512033939362,
+        0.30382591485977173,
+        0.22929036617279053,
+        0.22527748346328735,
+        0.22415673732757568
+      ],
+      "elapsed_ms": 23.759830999999394
+    },
+    {
+      "engine": "qmd-lex-vector-fusion",
+      "query": "q16",
+      "ids": [
+        "concepts/duplicate-ingest",
+        "concepts/write-coordination",
+        "distractors/database-tuning",
+        "concepts/evidence-trails",
+        "concepts/retention-rule"
+      ],
+      "scores": [
+        1,
+        0.5,
+        0.3333333333333333,
+        0.25,
+        0.2
+      ],
+      "elapsed_ms": 19.317175999999563
+    },
+    {
+      "engine": "qmd-vector",
+      "query": "q17",
+      "ids": [
+        "concepts/retention-rule",
+        "concepts/evidence-trails",
+        "concepts/duplicate-ingest",
+        "concepts/recovery-check",
+        "decisions/search-old"
+      ],
+      "scores": [
+        0.5193396806716919,
+        0.4520456790924072,
+        0.4050624966621399,
+        0.3908300995826721,
+        0.3627215623855591
+      ],
+      "elapsed_ms": 15.547465999999986
+    },
+    {
+      "engine": "qmd-lex-vector-fusion",
+      "query": "q17",
+      "ids": [
+        "concepts/retention-rule",
+        "concepts/evidence-trails",
+        "concepts/duplicate-ingest",
+        "concepts/recovery-check",
+        "decisions/search-old"
+      ],
+      "scores": [
+        1,
+        0.5,
+        0.3333333333333333,
+        0.25,
+        0.2
+      ],
+      "elapsed_ms": 17.86351300000024
+    },
+    {
+      "engine": "qmd-vector",
+      "query": "q18",
+      "ids": [
+        "concepts/mova",
+        "distractors/terminal-colors",
+        "decisions/search-current",
+        "distractors/agent-avatar",
+        "distractors/search-ui"
+      ],
+      "scores": [
+        0.4326407313346863,
+        0.14663487672805786,
+        0.1278296709060669,
+        0.1266714334487915,
+        0.1098448634147644
+      ],
+      "elapsed_ms": 13.87554
+    },
+    {
+      "engine": "qmd-lex-vector-fusion",
+      "query": "q18",
+      "ids": [
+        "concepts/mova",
+        "distractors/terminal-colors",
+        "decisions/search-current",
+        "distractors/agent-avatar",
+        "distractors/search-ui"
+      ],
+      "scores": [
+        1,
+        0.5,
+        0.3333333333333333,
+        0.25,
+        0.2
+      ],
+      "elapsed_ms": 17.24100400000043
+    },
+    {
+      "engine": "qmd-vector",
+      "query": "q19",
+      "ids": [
+        "concepts/mova",
+        "concepts/retention-rule",
+        "distractors/meeting-notes",
+        "concepts/shared-knowledge",
+        "concepts/evidence-trails"
+      ],
+      "scores": [
+        0.6465904414653778,
+        0.19681304693222046,
+        0.17282897233963013,
+        0.16975653171539307,
+        0.16940605640411377
+      ],
+      "elapsed_ms": 17.671057999999903
+    },
+    {
+      "engine": "qmd-lex-vector-fusion",
+      "query": "q19",
+      "ids": [
+        "concepts/mova",
+        "concepts/retention-rule",
+        "distractors/meeting-notes",
+        "concepts/shared-knowledge",
+        "concepts/evidence-trails"
+      ],
+      "scores": [
+        1,
+        0.5,
+        0.3333333333333333,
+        0.25,
+        0.2
+      ],
+      "elapsed_ms": 18.31367499999942
+    },
+    {
+      "engine": "qmd-vector",
+      "query": "q20",
+      "ids": [
+        "concepts/access-boundary",
+        "concepts/terminal-lifetime",
+        "distractors/ssh-keys",
+        "distractors/terminal-colors",
+        "concepts/duplicate-ingest"
+      ],
+      "scores": [
+        0.11427241563796997,
+        0.10135924816131592,
+        0.09361386299133301,
+        0.05780684947967529,
+        0.057039082050323486
+      ],
+      "elapsed_ms": 13.054935999999543
+    },
+    {
+      "engine": "qmd-lex-vector-fusion",
+      "query": "q20",
+      "ids": [
+        "concepts/access-boundary",
+        "concepts/terminal-lifetime",
+        "distractors/ssh-keys",
+        "distractors/terminal-colors",
+        "concepts/duplicate-ingest"
+      ],
+      "scores": [
+        1,
+        0.5,
+        0.3333333333333333,
+        0.25,
+        0.2
+      ],
+      "elapsed_ms": 19.035322000000633
+    },
+    {
+      "engine": "qmd-vector",
+      "query": "q21",
+      "ids": [
+        "concepts/recovery-check",
+        "concepts/access-boundary",
+        "concepts/evidence-trails",
+        "decisions/search-current",
+        "concepts/retention-rule"
+      ],
+      "scores": [
+        0.247397780418396,
+        0.21886003017425537,
+        0.21153438091278076,
+        0.16772115230560303,
+        0.1667790412902832
+      ],
+      "elapsed_ms": 14.20447300000069
+    },
+    {
+      "engine": "qmd-lex-vector-fusion",
+      "query": "q21",
+      "ids": [
+        "concepts/recovery-check",
+        "concepts/access-boundary",
+        "concepts/evidence-trails",
+        "decisions/search-current",
+        "concepts/retention-rule"
+      ],
+      "scores": [
+        1,
+        0.5,
+        0.3333333333333333,
+        0.25,
+        0.2
+      ],
+      "elapsed_ms": 16.267289999999775
+    }
+  ],
+  "vector_configuration": {
+    "embedding_model": "hf:ggml-org/embeddinggemma-300M-GGUF/embeddinggemma-300M-Q8_0.gguf",
+    "cpu_only": true,
+    "embedding_ms": 4374.082188,
+    "embed_result": {
+      "docsProcessed": 24,
+      "chunksEmbedded": 24,
+      "errors": 0,
+      "failures": [],
+      "durationMs": 4369
+    },
+    "model_sha256": {
+      "hf_ggml-org_embeddinggemma-300M-Q8_0.gguf": "b5ce9d77a3fc4b3b39ccb5643c36777911cc4eb46a66962eadfa3f5f60490d63"
+    },
+    "expansion": "disabled by explicit lex and vec queries",
+    "reranking": false,
+    "limitation": "Vector and RRF results have no tuned abstention threshold. Inspect negative-query false positives.",
+    "model_license": null,
+    "model_repository_revision_checked": "0f741b5a6585bd53aeb15cd1372c56f2a0f65e12"
+  }
+}

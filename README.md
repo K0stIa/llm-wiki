@@ -1,49 +1,35 @@
-# Agent Wiki — high-recall multi-agent knowledge base
+# Agent UI sandbox and wiki evaluation
 
-Five specialized wiki domains, two-stage recall, cascading updates, capability tokens.
-No database, no embedding service — flat files, works with local models.
+This repository holds local agent-access tooling and a comparison of shared wiki solutions for Pi sessions and child agents.
 
-## Quick start
+The previous custom wiki prototype was removed. It did not establish high recall or safe concurrent writes. No replacement wiki is deployed.
 
-```bash
-cd wiki
-python3 scripts/wiki_recall.py --query "agent architecture"
-python3 scripts/wiki_compile.py --budget 2000 --domains wiki_rules,wiki_domain
-python3 scripts/wiki_lint.py
+## Wiki findings
+
+Read [the measured comparison](research/README.md) for results, source licenses and rerun commands.
+
+QMD vector retrieval handled the tested paraphrases that lexical recall missed. Pi LLM Wiki passed session-to-session and child-agent persistence checks, but concurrent capture lost source contents. For a curated wiki, the tested direction is existing Pi integration, semantic retrieval and one writer. QMD is optional. MCP Memory Service is a reviewed alternative for shared database-backed memory, but it has no runtime scores here. No route is a production configuration yet.
+
+Verify the saved evidence without models or network access:
+
+```sh
+python3 -m unittest discover -s research/tests -v
 ```
 
-## Structure
+## Existing access setup
 
-```
-wiki/
-├── wiki_rules/          → Rules, protocols, enforcement
-├── wiki_domain/         → Entities, concepts, tools
-├── wiki_memory/         → Session memory (T1/T2/T3)
-├── wiki_insights/       → Active learnings, spark field
-├── wiki_sources/        → Immutable source packets
-├── meta/                → Registry, index, log
-├── raw/                 → Raw source packets
-├── hooks/               → Pre-tool integrity hooks
-└── scripts/             → Recall, compile, lint, cascade, tokens
-```
+The access tooling is separate from the wiki experiments. Its launchers remain available:
 
-## Key design decisions
+| Launcher | Documented local interface |
+|---|---|
+| `opencode-web-test` | `http://127.0.0.1:4096` |
+| `pi-tui-test` | Local Pi terminal |
+| `pi-web-test` | `http://127.0.0.1:7682` |
 
-| Decision | Rationale |
-|----------|-----------|
-| 5 domains, not 1 | Context windows are tight; loading irrelevant rules is fatal |
-| Two-stage recall | Links-first for >50 pages saves the context budget |
-| No vector search | No embedding service; BM25-style on flat files |
-| Cascading updates | One ingest refreshes 10-15 pages — the compounding effect |
-| Capability tokens as files | Env vars die between Bash tool calls (documented in redmizt) |
-| YYYYMMDDNN IDs | Globally unique, sortable, greppable, no central authority needed |
+See [the access plan](access/PLAN.md) before changing routes or running network checks. This research did not restart services, change tunnels or verify their current health.
 
-## Research basis
+## Private files and Git history
 
-- Karpathy's LLM Wiki pattern (original three-layer)
-- redmizt/wiki-llm-for-multi-agent-builds (25 extensions for multi-agent)
-- nvk/llm-wiki (multi-runtime packaging, two-stage recall)
-- Fergana-Labs/stash (experience → skills pipeline)
-- alfadur7/llm-wiki-newsroom (cascading updates, contradiction tracking)
+Keep credentials, raw sessions, model weights and generated indexes out of Git. Research uses ignored `.cache/` directories.
 
-See `RESEARCH_FINDINGS.md` for the full survey.
+**Do not publish this repository's current history.** An earlier commit contains a LAN password. The live file remains intact but is no longer tracked. Credential rotation and history cleanup have not been performed.
