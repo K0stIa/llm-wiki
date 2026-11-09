@@ -1,0 +1,12 @@
+# Generated files
+wiki/meta/registry.json
+wiki/meta/index.md
+
+# Token data
+.pi/session_identity/
+
+# Logs
+logs/
+
+# Dependencies
+node_modules/
