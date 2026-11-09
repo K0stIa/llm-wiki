@@ -1,0 +1,111 @@
+{
+  "qmd-bm25": {
+    "positive_queries": 19,
+    "negative_queries": 2,
+    "macro_recall_at_5": 0.34210526315789475,
+    "all_required_at_5": 0.3157894736842105,
+    "mrr_at_5": 0.3684210526315789,
+    "negative_queries_with_any_result": 0,
+    "median_ms": 0.341007999999988,
+    "incomplete_queries": [
+      "q05",
+      "q06",
+      "q07",
+      "q08",
+      "q09",
+      "q10",
+      "q11",
+      "q12",
+      "q13",
+      "q14",
+      "q16",
+      "q17",
+      "q19"
+    ],
+    "by_kind_recall": {
+      "body-only": 1.0,
+      "cross-document": 0.0,
+      "identifier": 1.0,
+      "literal": 0.75,
+      "paraphrase": 0.0,
+      "temporal": 0.0,
+      "ukrainian": 0.5
+    }
+  },
+  "qmd-lex-vector-fusion": {
+    "positive_queries": 19,
+    "negative_queries": 2,
+    "macro_recall_at_5": 1.0,
+    "all_required_at_5": 1,
+    "mrr_at_5": 1.0,
+    "negative_queries_with_any_result": 2,
+    "median_ms": 18.31367499999942,
+    "incomplete_queries": [],
+    "by_kind_recall": {
+      "body-only": 1.0,
+      "cross-document": 1.0,
+      "identifier": 1.0,
+      "literal": 1.0,
+      "paraphrase": 1.0,
+      "temporal": 1.0,
+      "ukrainian": 1.0
+    }
+  },
+  "qmd-vector": {
+    "positive_queries": 19,
+    "negative_queries": 2,
+    "macro_recall_at_5": 1.0,
+    "all_required_at_5": 1,
+    "mrr_at_5": 1.0,
+    "negative_queries_with_any_result": 2,
+    "median_ms": 15.002093999999488,
+    "incomplete_queries": [],
+    "by_kind_recall": {
+      "body-only": 1.0,
+      "cross-document": 1.0,
+      "identifier": 1.0,
+      "literal": 1.0,
+      "paraphrase": 1.0,
+      "temporal": 1.0,
+      "ukrainian": 1.0
+    }
+  },
+  "sqlite-fts5-or-control": {
+    "positive_queries": 19,
+    "negative_queries": 2,
+    "macro_recall_at_5": 1.0,
+    "all_required_at_5": 1,
+    "mrr_at_5": 0.9736842105263158,
+    "negative_queries_with_any_result": 0,
+    "median_ms": 0.014868797734379768,
+    "incomplete_queries": [],
+    "by_kind_recall": {
+      "body-only": 1.0,
+      "cross-document": 1.0,
+      "identifier": 1.0,
+      "literal": 1.0,
+      "paraphrase": 1.0,
+      "temporal": 1.0,
+      "ukrainian": 1.0
+    }
+  },
+  "zosma-lexical": {
+    "positive_queries": 19,
+    "negative_queries": 2,
+    "macro_recall_at_5": 1.0,
+    "all_required_at_5": 1,
+    "mrr_at_5": 0.9122807017543859,
+    "negative_queries_with_any_result": 0,
+    "median_ms": 5.359405000000038,
+    "incomplete_queries": [],
+    "by_kind_recall": {
+      "body-only": 1.0,
+      "cross-document": 1.0,
+      "identifier": 1.0,
+      "literal": 1.0,
+      "paraphrase": 1.0,
+      "temporal": 1.0,
+      "ukrainian": 1.0
+    }
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "id": "opus-5-5-high-fix-verification",
+  "provider": "anthropic",
+  "model": "claude-opus-5-5",
+  "thinking": "high",
+  "elapsed_seconds": 217.71610545599998,
+  "timeout_seconds": 600,
+  "tools": [
+    "evidence_read"
+  ],
+  "reads": [
+    {
+      "path": "<repo>/specs/wiki-system/arena/opus-5-5-review.md",
+      "sha256": "d2d3fd2bef41f019717e06d9c022a2ac948a0e3d92ec6b60694b221e601ee30a",
+      "offset": 1,
+      "limit": null
+    },
+    {
+      "path": "<repo>/specs/wiki-system/OPUS_FIXES.md",
+      "sha256": "4323c977609a395b17a7e5e0999c326b4094d867296ab88998cc4451a6fba34a",
+      "offset": 1,
+      "limit": null
+    },
+    {
+      "path": "<repo>/specs/wiki-system/ARCHITECTURE.md",
+      "sha256": "528bfc50f453938ed257d540057857f87ab2d430d4f86cc0237f15484b54fc50",
+      "offset": 1,
+      "limit": null
+    },
+    {
+      "path": "<repo>/specs/wiki-system/contract.d.ts",
+      "sha256": "08c952cb2561452f1673397e53dc85fea0db94be3e3b29b767462c72cfd1d2b7",
+      "offset": 1,
+      "limit": null
+    },
+    {
+      "path": "<repo>/specs/wiki-system/DELIVERY.md",
+      "sha256": "58ea6887b62907b3c08600a0da6d927da437e096afeb8a3ebb4aa39cc5b70c83",
+      "offset": 1,
+      "limit": null
+    },
+    {
+      "path": "<repo>/specs/wiki-system/tests/contract.test.ts",
+      "sha256": "699ed58be84634963dd0cbb4359773bb64086d55bf0cad19cdbd1bdcb3f97379",
+      "offset": 1,
+      "limit": null
+    },
+    {
+      "path": "<repo>/specs/wiki-system/verify.py",
+      "sha256": "eea06fc80b6e5142f3a807579d7d140220c318bf3c09350f56ebb4ef2ae5cbf9",
+      "offset": 1,
+      "limit": null
+    },
+    {
+      "path": "<repo>/specs/wiki-system/tests/test_verifier.py",
+      "sha256": "902aa31809cc884466086eae6fdf03c2af6305ad785fc458a19eca8457309202",
+      "offset": 1,
+      "limit": null
+    },
+    {
+      "path": "<repo>/specs/wiki-system/validation.json",
+      "sha256": "bc2eba947394c2e29b803b2cb4cc1b979357445215a095ce61e72edbee97db87",
+      "offset": 1,
+      "limit": null
+    }
+  ],
+  "output": "specs/wiki-system/arena/opus-5-5-fix-verification.md",
+  "sha256": "1561385fb56b4cc6eb5af195bc46eabf6979747165508b88d748c5b678f00cb5",
+  "bytes": 11884,
+  "status": "completed",
+  "recorded_at": "2026-11-09T15:41:52.182675+00:00",
+  "scope": "One capped user-requested design correction verification; runtime gates unrun",
+  "verdict": "NEEDS-REVISION"
+}

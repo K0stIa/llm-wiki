@@ -1,0 +1,313 @@
+{
+  "corpus": "synthetic-pi-wiki-v1",
+  "fixture_sha256": "205cfa92b3cdd68f8f025c739ea818fefbeaa741dede4c87c3d559540adb95e2",
+  "documents": 24,
+  "queries": 4,
+  "suite": "semantic-gap-challenge-v1",
+  "challenge_sha256": "9ffddc6c73dc7f213c2eb12da89845f00883236b836c27afa16a2e8c64d35839",
+  "versions": {
+    "zosma": "0.12.5",
+    "qmd": "2.8.3",
+    "pi": "1.5.0",
+    "node": "v22.23.2",
+    "sqlite": "3.45.1"
+  },
+  "source_hashes": {
+    "recall": "ba26bcdcf6169f654d9d9d09c8fd90a00245818bc589fd5b3de52d585c7f9adf",
+    "metadata": "52d6381de1ed5c9cee640d56670a1f3ffab3513ccfcd3d39a61b803e89946386",
+    "retro": "f3c63223abe13c3ba8186e672500d4cf189c0d1d28d6d8248a7c23912df4a95b"
+  },
+  "nvk_commit": "d60674ff785e5c6d35322657d7839a7c0bdd3ca7",
+  "qmd_indexing": {
+    "collections": 1,
+    "indexed": 24,
+    "updated": 0,
+    "unchanged": 0,
+    "removed": 0,
+    "skipped": 0,
+    "needsEmbedding": 24,
+    "elapsed_ms": 21.291034999999965
+  },
+  "limitations": [
+    "QMD searchLex uses AND semantics. Natural-language failures are not hybrid-search results.",
+    "One pass per retrieval mode; timings exclude package startup and model download and are not a throughput benchmark.",
+    "nvk query-lite is evaluated separately as an agent workflow.",
+    "One isolated 334 MB embedding model was downloaded. No generation/reranking model was downloaded."
+  ],
+  "records": [
+    {
+      "engine": "zosma-lexical",
+      "query": "q22",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 8.701179999999965
+    },
+    {
+      "engine": "qmd-bm25",
+      "query": "q22",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 2.1407370000000014
+    },
+    {
+      "engine": "zosma-lexical",
+      "query": "q23",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 4.860976999999991
+    },
+    {
+      "engine": "qmd-bm25",
+      "query": "q23",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 0.45850300000000743
+    },
+    {
+      "engine": "zosma-lexical",
+      "query": "q24",
+      "ids": [
+        "concepts/session-records"
+      ],
+      "scores": [
+        8.6
+      ],
+      "elapsed_ms": 5.97108099999997
+    },
+    {
+      "engine": "qmd-bm25",
+      "query": "q24",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 0.30684400000001233
+    },
+    {
+      "engine": "zosma-lexical",
+      "query": "q25",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 4.965766999999971
+    },
+    {
+      "engine": "qmd-bm25",
+      "query": "q25",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 1.0794260000000122
+    },
+    {
+      "engine": "sqlite-fts5-or-control",
+      "query": "q22",
+      "ids": [
+        "concepts/child-context"
+      ],
+      "scores": [
+        -2.5306290962270004
+      ],
+      "elapsed_ms": 0.08958997204899788
+    },
+    {
+      "engine": "sqlite-fts5-or-control",
+      "query": "q23",
+      "ids": [
+        "concepts/write-coordination"
+      ],
+      "scores": [
+        -2.5650713560666416
+      ],
+      "elapsed_ms": 0.012313015758991241
+    },
+    {
+      "engine": "sqlite-fts5-or-control",
+      "query": "q24",
+      "ids": [
+        "concepts/terminal-lifetime",
+        "concepts/session-records"
+      ],
+      "scores": [
+        -2.230466748203326,
+        -2.048324729636078
+      ],
+      "elapsed_ms": 0.009787967428565025
+    },
+    {
+      "engine": "sqlite-fts5-or-control",
+      "query": "q25",
+      "ids": [],
+      "scores": [],
+      "elapsed_ms": 0.006401911377906799
+    },
+    {
+      "engine": "qmd-vector",
+      "query": "q22",
+      "ids": [
+        "concepts/session-records",
+        "concepts/shared-knowledge",
+        "concepts/evidence-trails",
+        "concepts/recovery-check",
+        "concepts/mova"
+      ],
+      "scores": [
+        0.42577534914016724,
+        0.34499186277389526,
+        0.2975009083747864,
+        0.2855161428451538,
+        0.2593395709991455
+      ],
+      "elapsed_ms": 35.35359899999912
+    },
+    {
+      "engine": "qmd-lex-vector-fusion",
+      "query": "q22",
+      "ids": [
+        "concepts/session-records",
+        "concepts/shared-knowledge",
+        "concepts/evidence-trails",
+        "concepts/recovery-check",
+        "concepts/mova"
+      ],
+      "scores": [
+        1,
+        0.5,
+        0.3333333333333333,
+        0.25,
+        0.2
+      ],
+      "elapsed_ms": 15.437066999999843
+    },
+    {
+      "engine": "qmd-vector",
+      "query": "q23",
+      "ids": [
+        "concepts/write-coordination",
+        "concepts/duplicate-ingest",
+        "distractors/meeting-notes",
+        "decisions/search-current",
+        "concepts/retention-rule"
+      ],
+      "scores": [
+        0.3396884799003601,
+        0.2680659294128418,
+        0.2659533619880676,
+        0.24219805002212524,
+        0.23539960384368896
+      ],
+      "elapsed_ms": 13.138393000000178
+    },
+    {
+      "engine": "qmd-lex-vector-fusion",
+      "query": "q23",
+      "ids": [
+        "concepts/write-coordination",
+        "concepts/duplicate-ingest",
+        "distractors/meeting-notes",
+        "decisions/search-current",
+        "concepts/retention-rule"
+      ],
+      "scores": [
+        1,
+        0.5,
+        0.3333333333333333,
+        0.25,
+        0.2
+      ],
+      "elapsed_ms": 15.476713000000018
+    },
+    {
+      "engine": "qmd-vector",
+      "query": "q24",
+      "ids": [
+        "concepts/terminal-lifetime",
+        "concepts/recovery-check",
+        "concepts/session-records",
+        "incidents/cache-gap",
+        "concepts/shared-knowledge"
+      ],
+      "scores": [
+        0.3586450219154358,
+        0.2719702124595642,
+        0.251568078994751,
+        0.2436220645904541,
+        0.24349647760391235
+      ],
+      "elapsed_ms": 13.288077000000158
+    },
+    {
+      "engine": "qmd-lex-vector-fusion",
+      "query": "q24",
+      "ids": [
+        "concepts/terminal-lifetime",
+        "concepts/recovery-check",
+        "concepts/session-records",
+        "incidents/cache-gap",
+        "concepts/shared-knowledge"
+      ],
+      "scores": [
+        1,
+        0.5,
+        0.3333333333333333,
+        0.25,
+        0.2
+      ],
+      "elapsed_ms": 15.338721000000078
+    },
+    {
+      "engine": "qmd-vector",
+      "query": "q25",
+      "ids": [
+        "concepts/session-records",
+        "distractors/meeting-notes",
+        "concepts/mova",
+        "concepts/evidence-trails",
+        "decisions/search-current"
+      ],
+      "scores": [
+        0.28864938020706177,
+        0.2628921866416931,
+        0.2551332712173462,
+        0.24604839086532593,
+        0.20261520147323608
+      ],
+      "elapsed_ms": 13.674638999999843
+    },
+    {
+      "engine": "qmd-lex-vector-fusion",
+      "query": "q25",
+      "ids": [
+        "concepts/session-records",
+        "distractors/meeting-notes",
+        "concepts/mova",
+        "concepts/evidence-trails",
+        "decisions/search-current"
+      ],
+      "scores": [
+        1,
+        0.5,
+        0.3333333333333333,
+        0.25,
+        0.2
+      ],
+      "elapsed_ms": 15.868332999999438
+    }
+  ],
+  "vector_configuration": {
+    "embedding_model": "hf:ggml-org/embeddinggemma-300M-GGUF/embeddinggemma-300M-Q8_0.gguf",
+    "cpu_only": true,
+    "embedding_ms": 4374.082188,
+    "embed_result": {
+      "docsProcessed": 24,
+      "chunksEmbedded": 24,
+      "errors": 0,
+      "failures": [],
+      "durationMs": 4369
+    },
+    "model_sha256": {
+      "hf_ggml-org_embeddinggemma-300M-Q8_0.gguf": "b5ce9d77a3fc4b3b39ccb5643c36777911cc4eb46a66962eadfa3f5f60490d63"
+    },
+    "expansion": "disabled by explicit lex and vec queries",
+    "reranking": false,
+    "limitation": "Vector and RRF results have no tuned abstention threshold. Inspect negative-query false positives.",
+    "model_license": null,
+    "model_repository_revision_checked": "0f741b5a6585bd53aeb15cd1372c56f2a0f65e12"
+  }
+}

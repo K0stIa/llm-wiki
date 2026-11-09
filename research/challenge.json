@@ -1,0 +1,10 @@
+{
+  "name": "semantic-gap-challenge-v1",
+  "description": "Exploratory follow-up fixed after the initial pilot. No engine settings or document content were changed. These queries deliberately use wording absent from their gold page to expose the limits of lexical recall. q25 also tests retrieval across languages.",
+  "queries": [
+    {"id":"q22","kind":"semantic-gap","query":"Where is yesterday's chat kept?","gold":["concepts/session-records"]},
+    {"id":"q23","kind":"semantic-gap","query":"Who should consolidate proposed modifications?","gold":["concepts/write-coordination"]},
+    {"id":"q24","kind":"semantic-gap","query":"What survives when the dashboard vanishes?","gold":["concepts/terminal-lifetime"]},
+    {"id":"q25","kind":"cross-language","query":"Де лежать попередні розмови?","gold":["concepts/session-records"]}
+  ]
+}

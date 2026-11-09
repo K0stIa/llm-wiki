@@ -1,0 +1,655 @@
+{
+  "kind": "design-and-analysis-provenance",
+  "recorded_at": "2026-11-09T14:36:38.896121+00:00",
+  "baseline_commit": "829f42b9fffa5192e1f163a126f3b41de0c3ac27",
+  "runtime_implementation": "not started",
+  "versions": {
+    "pi": "1.5.0",
+    "pi_llm_wiki": "0.12.5",
+    "qmd": "2.8.3",
+    "mcp_memory_service_source_only": "12.7.0",
+    "codex_observed": "0.163.0",
+    "claude_observed": "2.1.310",
+    "opencode_observed": "1.19.3"
+  },
+  "installed_public_sources": [
+    {
+      "path": "<pi-wiki>/package.json",
+      "sha256": "5db8509f20dc49d4c4519ab2662f9c6371876fb9c78ba5b1d82eeebd8585f2b8"
+    },
+    {
+      "path": "<pi-wiki>/extensions/llm-wiki/index.ts",
+      "sha256": "45a23273b3379d6f5e0542a2bfed0177397a2f9af03a214c157cfa84f5cf3c28"
+    },
+    {
+      "path": "<pi-wiki>/extensions/llm-wiki/lib/recall.ts",
+      "sha256": "ba26bcdcf6169f654d9d9d09c8fd90a00245818bc589fd5b3de52d585c7f9adf"
+    },
+    {
+      "path": "<pi-wiki>/extensions/llm-wiki/lib/retro.ts",
+      "sha256": "f3c63223abe13c3ba8186e672500d4cf189c0d1d28d6d8248a7c23912df4a95b"
+    },
+    {
+      "path": "<pi-wiki>/extensions/llm-wiki/lib/source-packet.ts",
+      "sha256": "0f174873c4c4703240da10481af4f49af2d4752a971dcca36e535f5c85bc49f2"
+    },
+    {
+      "path": "<pi-wiki>/extensions/llm-wiki/lib/metadata.ts",
+      "sha256": "52d6381de1ed5c9cee640d56670a1f3ffab3513ccfcd3d39a61b803e89946386"
+    },
+    {
+      "path": "<pi-wiki>/extensions/llm-wiki/lib/utils.ts",
+      "sha256": "b28372c95979f6b5a6cfe53fb4a785eecf83d337beb0f6550312490fe67cf8d3"
+    },
+    {
+      "path": "<pi-wiki>/extensions/llm-wiki/lib/subagent.ts",
+      "sha256": "85ec7a98172217caefc86b8e94310ef94a64769712bda23fec69453d7c5ca3cd"
+    },
+    {
+      "path": "<pi-wiki>/extensions/llm-wiki/lib/qmd-store.ts",
+      "sha256": "0a6cbcbc88937e37823c18b7e5d0e25b59ef53e62e70f15e6f14788d911b5873"
+    },
+    {
+      "path": "<pi-wiki>/extensions/llm-wiki/lib/qmd-indexing.ts",
+      "sha256": "98a16f69b1bb67b23bac6ce90ddf534f0d41e17c0a9582739df0b092d9d0baca"
+    },
+    {
+      "path": "<pi-wiki>/extensions/llm-wiki/lib/qmd-mirror.ts",
+      "sha256": "9f2ebf9694604f255b169eec5ce1e534f3763dd6f1f5416417d1c82025882375"
+    },
+    {
+      "path": "<pi-wiki>/extensions/llm-wiki/lib/wiki-service.ts",
+      "sha256": "f7c0e605731d2dce6bc18afcd18e413ab0df066d4d896f9842aecf35377ac44d"
+    },
+    {
+      "path": "<pi-wiki>/mcp/index.ts",
+      "sha256": "27e34dd1c093a7d48ae34dc301fffe72c1ed266d994b7caf3b4aa29349e4df75"
+    },
+    {
+      "path": "<qmd>/package.json",
+      "sha256": "14462e2764e9d140afbeb3c924e6dd81c0448177e97785822e763d901d70f20b"
+    },
+    {
+      "path": "<qmd>/dist/index.d.ts",
+      "sha256": "bdfcffdb0a3c6c5d4c25e7d8b3d261e37adadc1120c5b45e69ec9ad28135581d"
+    },
+    {
+      "path": "<qmd>/dist/store.js",
+      "sha256": "affbc9cc67f9bbfeee0bedccd8658195ce89fa8f6bdc9abc6c9c61c50b0a590b"
+    },
+    {
+      "path": "<pi>/docs/sdk.md",
+      "sha256": "d9034ccbf2219a58712d8dd4fcdf47e687d77131e71dd5d119d8a71e9bd2a2e8"
+    },
+    {
+      "path": "<pi>/docs/mcp.md",
+      "sha256": "c353a4cb49cfff85e5bf1839a7e702f58bfed9df2afcbeeb29cae2b5574cbe3b"
+    },
+    {
+      "path": "<architect>/SKILL.md",
+      "sha256": "891b842eccf0db4359dbf41119a953fd17e25e2cc1f099e561a3a4f3a304539c"
+    },
+    {
+      "path": "<architect>/references/runner-prompt.md",
+      "sha256": "3ef8c1452a0382a15b7601c7c94f2a16a00954170d705b7af8cc49ac78080ec9"
+    },
+    {
+      "path": "<architect>/references/rationale-template.md",
+      "sha256": "6645a0e5f68c003298ec95b85a23262bdda0c79f998b926060169b54d9f23fbb"
+    },
+    {
+      "path": "<architect>/references/design-red-flags.md",
+      "sha256": "905066f9bbac81c573c2b325be47751d2c0f9325e0a0772bd4384e82dafe9336"
+    }
+  ],
+  "official_docs": [
+    {
+      "name": "codex-mcp",
+      "url": "https://developers.openai.com/codex/mcp/",
+      "resolved_url": "https://learn.chatgpt.com/docs/extend/mcp?surface=cli",
+      "sha256": "3ac9f74cbfa9c12c9a044f3e9ddf70c53a42ae8c234a7924589e3d8e4b82b48e",
+      "text_bytes": 44100,
+      "status": "fetched"
+    },
+    {
+      "name": "codex-agents",
+      "url": "https://developers.openai.com/codex/agents-md/",
+      "status": "unavailable",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "name": "claude-mcp",
+      "url": "https://code.claude.com/docs/en/mcp.md",
+      "resolved_url": "https://code.claude.com/docs/en/mcp.md",
+      "sha256": "08a59d3eeeb80da9f94a4f79f1f1179b5cd165c464e7805f8fdc8843ab9c6db7",
+      "text_bytes": 157241,
+      "status": "fetched"
+    },
+    {
+      "name": "claude-subagents",
+      "url": "https://code.claude.com/docs/en/sub-agents.md",
+      "resolved_url": "https://code.claude.com/docs/en/sub-agents.md",
+      "sha256": "db8a532d4c04d8cec27622b3afd68f86f8d96efa121f4b498dcb430e2bc543b8",
+      "text_bytes": 116728,
+      "status": "fetched"
+    },
+    {
+      "name": "opencode-mcp",
+      "url": "https://opencode.ai/docs/mcp-servers/",
+      "resolved_url": "https://opencode.ai/docs/mcp-servers/",
+      "sha256": "020d4a488a4fe4b68998ccfa64cfaebb74485c133287705fbafd88600f9ef4a4",
+      "text_bytes": 18100,
+      "status": "fetched"
+    },
+    {
+      "name": "opencode-agents",
+      "url": "https://opencode.ai/docs/agents/",
+      "resolved_url": "https://opencode.ai/docs/agents/",
+      "sha256": "6f7464d12df25f6d28ebb013b6c08d14a363d3f61de552cecfcc39e78e629112",
+      "text_bytes": 9452,
+      "status": "fetched"
+    }
+  ],
+  "memory_service_source_review": {
+    "repository": "doobidoo/mcp-memory-service",
+    "url": "https://github.com/doobidoo/mcp-memory-service",
+    "revision": "238e609e7804874a772d6711b8acbd06526c7c55",
+    "license": "Apache-2.0",
+    "files": [
+      {
+        "path": "README.md",
+        "url": "https://raw.githubusercontent.com/doobidoo/mcp-memory-service/238e609e7804874a772d6711b8acbd06526c7c55/README.md",
+        "sha256": "63a725ad115887c073acec9ed255ada3fc01a27968cc1cf1d1bdc7c0ef3bcf89",
+        "bytes": 17614
+      },
+      {
+        "path": "LICENSE",
+        "url": "https://raw.githubusercontent.com/doobidoo/mcp-memory-service/238e609e7804874a772d6711b8acbd06526c7c55/LICENSE",
+        "sha256": "d92a71f96ad18b7e6c112e71f7586b24063d3ab60dc423680eda014043af8858",
+        "bytes": 11343
+      },
+      {
+        "path": "pyproject.toml",
+        "url": "https://raw.githubusercontent.com/doobidoo/mcp-memory-service/238e609e7804874a772d6711b8acbd06526c7c55/pyproject.toml",
+        "sha256": "87edfed9cf902e92dc655654de03a2c912c5dfc021658e50a1039dfaf8871bfa",
+        "bytes": 8008
+      },
+      {
+        "path": "src/mcp_memory_service/storage/sqlite_vec.py",
+        "url": "https://raw.githubusercontent.com/doobidoo/mcp-memory-service/238e609e7804874a772d6711b8acbd06526c7c55/src/mcp_memory_service/storage/sqlite_vec.py",
+        "sha256": "6a2dfb9b170ad0f92a85538a4cc2ca9de8f82e801448d7390064e11e2a0b8b56",
+        "bytes": 5039
+      },
+      {
+        "path": "src/mcp_memory_service/config.py",
+        "error": "HTTP Error 404: Not Found"
+      },
+      {
+        "path": "src/mcp_memory_service/storage/mixins/base.py",
+        "url": "https://raw.githubusercontent.com/doobidoo/mcp-memory-service/238e609e7804874a772d6711b8acbd06526c7c55/src/mcp_memory_service/storage/mixins/base.py",
+        "bytes": 27197,
+        "sha256": "a049035fb88de06e501ba78624a5f8be489282c1419612da1e7573d7571d748d"
+      },
+      {
+        "path": "src/mcp_memory_service/storage/mixins/store.py",
+        "url": "https://raw.githubusercontent.com/doobidoo/mcp-memory-service/238e609e7804874a772d6711b8acbd06526c7c55/src/mcp_memory_service/storage/mixins/store.py",
+        "bytes": 29563,
+        "sha256": "9895975954474ba10c097c16454b67e232984f6ebc8974f5904d689799a43a00"
+      },
+      {
+        "path": "src/mcp_memory_service/storage/mixins/metadata.py",
+        "url": "https://raw.githubusercontent.com/doobidoo/mcp-memory-service/238e609e7804874a772d6711b8acbd06526c7c55/src/mcp_memory_service/storage/mixins/metadata.py",
+        "bytes": 53534,
+        "sha256": "ec5a5919c12c63f0f2e638149b72f392c730864deebc637f88555d97f1dd8925"
+      }
+    ]
+  },
+  "analyses": [
+    {
+      "id": "explore-core-retry",
+      "model": "gpt-6-luna",
+      "thinking": "high",
+      "status": "completed",
+      "seconds": 126.52,
+      "read_count": 14,
+      "output_sha256": "d8fe2ac2df2e50e4dcd98ab709db2e8ce477132eaac4f4c7e6088dfb00603054"
+    },
+    {
+      "id": "explore-hosts-retry",
+      "model": "gpt-6-luna",
+      "thinking": "high",
+      "status": "completed",
+      "seconds": 72.2,
+      "read_count": 19,
+      "output_sha256": "e4926133a2c8e8028ae066ed80f3ddffad8050a69dba5d0a2c87aa649fd3f8d2"
+    },
+    {
+      "id": "candidate-a-retry",
+      "model": "gpt-6.1-sol",
+      "thinking": "medium",
+      "status": "completed",
+      "seconds": 66.12,
+      "read_count": 1,
+      "output_sha256": "0c06d5844e758b6ca930e066796f54b2926b1677f0ac3937eb813a9935544c47"
+    },
+    {
+      "id": "candidate-b-retry",
+      "model": "gpt-6.1-sol",
+      "thinking": "medium",
+      "status": "completed",
+      "seconds": 81.76,
+      "read_count": 3,
+      "output_sha256": "633d1b814e503cc34e24b5b2aa0f6033169c65d7a18e8fa51e6e58b1c7212eb3"
+    },
+    {
+      "id": "cross-judge",
+      "model": "gpt-6-astra",
+      "thinking": "medium",
+      "status": "completed",
+      "seconds": 58.48,
+      "read_count": 4,
+      "output_sha256": "d66f6823587221d8b8edebf478c1ce2cc86a96b13cc6c9cbb079f8dbe9ed0bfc"
+    },
+    {
+      "id": "final-design-review",
+      "model": "gpt-6.1-terra",
+      "thinking": "medium",
+      "status": "completed",
+      "seconds": 26.92,
+      "read_count": 7,
+      "output_sha256": "fd8da9632e1b6d1f5b0efae3473c637d2db622fd2de709069c39ab1266e467bb"
+    },
+    {
+      "id": "final-design-review-rerun",
+      "model": "gpt-6.1-terra",
+      "thinking": "medium",
+      "status": "completed",
+      "seconds": 21.39,
+      "read_count": 5,
+      "output_sha256": "0608fa83e146ae09cfa9dbd4966916c38fe3f058a2312a346af3a0bc1f65798d"
+    },
+    {
+      "id": "opus-5-5-high-review",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "thinking": "high",
+      "status": "completed",
+      "verdict": "NEEDS-REVISION",
+      "seconds": 278.07,
+      "read_count": 8,
+      "output_sha256": "d2d3fd2bef41f019717e06d9c022a2ac948a0e3d92ec6b60694b221e601ee30a",
+      "receipt": "specs/wiki-system/arena/opus-5-5-review.json"
+    },
+    {
+      "id": "opus-5-5-high-fix-verification",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "thinking": "high",
+      "status": "completed",
+      "verdict": "NEEDS-REVISION",
+      "seconds": 217.72,
+      "read_count": 9,
+      "output_sha256": "1561385fb56b4cc6eb5af195bc46eabf6979747165508b88d748c5b678f00cb5",
+      "receipt": "specs/wiki-system/arena/opus-5-5-fix-verification.json"
+    },
+    {
+      "id": "wiki-design-closure-review",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "thinking": "high",
+      "status": "completed",
+      "verdict": "READY-FOR-IMPLEMENTATION",
+      "seconds": 122.55,
+      "read_count": 9,
+      "output_sha256": "55c9e06cddc3b9a865d224010c293b029494e97f18878b8f4d951d44688648e2",
+      "receipt": "specs/wiki-system/arena/closure-review.json"
+    }
+  ],
+  "failed_attempts": [
+    {
+      "phase": "grounding",
+      "count": 2,
+      "reason": "Empty tool allowlist; no evidence reads; outputs discarded",
+      "retries_per_child": 1
+    },
+    {
+      "phase": "candidates",
+      "count": 2,
+      "model": "gpt-6.1-sol",
+      "thinking": "high",
+      "reason": "240-second deadline; no completed candidate",
+      "retries_per_child": 1,
+      "retry_thinking": "medium"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "specs/wiki-system/ARCHITECTURE.md",
+      "sha256": "ab67ae537061284aead3b1f3e96c8ec519eb7c35c0bce61809f39fa4d704ec31"
+    },
+    {
+      "path": "specs/wiki-system/DELIVERY.md",
+      "sha256": "85de185dab11cd4fcd74a2e98356491cb39216baf256fa359a49a07ef600db31"
+    },
+    {
+      "path": "specs/wiki-system/GROUNDING.md",
+      "sha256": "d95b573c7a6a3686c7efb1131450eb42c0efb992f9c916e1aeaffdf3a5121d66"
+    },
+    {
+      "path": "specs/wiki-system/OPUS_FIXES.md",
+      "sha256": "83347e578a4ede8eb3d3ed783b80c4f0d869619038463cfc0017a9af00f22eb1"
+    },
+    {
+      "path": "specs/wiki-system/RATIONALE.md",
+      "sha256": "0af6bf614ba38805903df9e060ad89144ed978b0d829568d9b1c0aee17e8c6ed"
+    },
+    {
+      "path": "specs/wiki-system/README.md",
+      "sha256": "548927fa1b458b3176f5875b78b771fe7bf121f59222494a0cf7870132b88f33"
+    },
+    {
+      "path": "specs/wiki-system/VERIFICATION.md",
+      "sha256": "ecc1beb77d685ca7c646751840a9831d02c2b3a9b7e723b372d20ed5d9659c8b"
+    },
+    {
+      "path": "specs/wiki-system/WORKFLOW.md",
+      "sha256": "175a21916aed1e7a09f38ce7ac5c1abe926fece4391b0d7393e747a675ac34dc"
+    },
+    {
+      "path": "specs/wiki-system/arena/candidate-a.md",
+      "sha256": "0c06d5844e758b6ca930e066796f54b2926b1677f0ac3937eb813a9935544c47"
+    },
+    {
+      "path": "specs/wiki-system/arena/candidate-b.md",
+      "sha256": "633d1b814e503cc34e24b5b2aa0f6033169c65d7a18e8fa51e6e58b1c7212eb3"
+    },
+    {
+      "path": "specs/wiki-system/arena/closure-review.json",
+      "sha256": "d79f231457c01d02ed51fbf61a1d6148f25e942550045006ab64c45a4385da15"
+    },
+    {
+      "path": "specs/wiki-system/arena/closure-review.md",
+      "sha256": "55c9e06cddc3b9a865d224010c293b029494e97f18878b8f4d951d44688648e2"
+    },
+    {
+      "path": "specs/wiki-system/arena/cross-judge.md",
+      "sha256": "d66f6823587221d8b8edebf478c1ce2cc86a96b13cc6c9cbb079f8dbe9ed0bfc"
+    },
+    {
+      "path": "specs/wiki-system/arena/design-review.md",
+      "sha256": "fd8da9632e1b6d1f5b0efae3473c637d2db622fd2de709069c39ab1266e467bb"
+    },
+    {
+      "path": "specs/wiki-system/arena/final-review.md",
+      "sha256": "0608fa83e146ae09cfa9dbd4966916c38fe3f058a2312a346af3a0bc1f65798d"
+    },
+    {
+      "path": "specs/wiki-system/arena/opus-5-5-fix-verification.json",
+      "sha256": "7860e591dfdca2a04108fcc465b62025d16423d41a5a15ed0e222fdba41204dd"
+    },
+    {
+      "path": "specs/wiki-system/arena/opus-5-5-fix-verification.md",
+      "sha256": "1561385fb56b4cc6eb5af195bc46eabf6979747165508b88d748c5b678f00cb5"
+    },
+    {
+      "path": "specs/wiki-system/arena/opus-5-5-review.json",
+      "sha256": "7879840999c2e5296b452173700d2017f4d89a5b8877a7f318b5092204aad0aa"
+    },
+    {
+      "path": "specs/wiki-system/arena/opus-5-5-review.md",
+      "sha256": "d2d3fd2bef41f019717e06d9c022a2ac948a0e3d92ec6b60694b221e601ee30a"
+    },
+    {
+      "path": "specs/wiki-system/arena/pre-closure-validation.json",
+      "sha256": "bc2eba947394c2e29b803b2cb4cc1b979357445215a095ce61e72edbee97db87"
+    },
+    {
+      "path": "specs/wiki-system/contract.d.ts",
+      "sha256": "6675676f64366f06b2a823c2a1605c4a2b6fb7f83c130423480f5dc0eb78aed7"
+    },
+    {
+      "path": "specs/wiki-system/tests/contract.test.ts",
+      "sha256": "816960036b282c0b4d1e0a959af8bc627a3028a37914bdd0291a788abe69f9b4"
+    },
+    {
+      "path": "specs/wiki-system/tests/test_verifier.py",
+      "sha256": "d1a24494c6fef5ed30c4b6242f2c819974b3459805e01d62176b427a5e3c31c9"
+    },
+    {
+      "path": "specs/wiki-system/validation.json",
+      "sha256": "ebb3c061898494c4306e138903b99650b194f478e826370cdc53472bfc4c0407"
+    },
+    {
+      "path": "specs/wiki-system/verify.py",
+      "sha256": "2430abe4f202e787c7536845f3bddb0ff4042c7b2c510e92c286476c713443fd"
+    }
+  ],
+  "limits": [
+    "Source hashes identify the supporting installed snapshot; most are not upstream Git commit IDs.",
+    "Official-doc hashes refer to fetched response bytes; web docs are mutable.",
+    "Analysis access receipts count reads, not runtime verification. Raw SDK sessions/configuration are not published.",
+    "No production backend, model download or client integration was performed."
+  ],
+  "latest_design_review": {
+    "id": "wiki-design-closure-review",
+    "provider": "anthropic",
+    "model": "claude-opus-5-5",
+    "thinking": "high",
+    "verdict": "READY-FOR-IMPLEMENTATION",
+    "report": "specs/wiki-system/arena/closure-review.md",
+    "receipt": "specs/wiki-system/arena/closure-review.json",
+    "unresolved_must_fix": [],
+    "nonblocking_followups": 4,
+    "supersedes_previous_design_readiness": true
+  },
+  "revisions": [
+    {
+      "id": "opus-gap-repair",
+      "recorded_at": "2026-11-09T15:32:43.958983+00:00",
+      "scope": "Confirmed Opus design/contract corrections, no deployed application",
+      "previous_artifacts": [
+        {
+          "path": "specs/wiki-system/ARCHITECTURE.md",
+          "sha256": "f48395c92fed8f74974aba4259abe494f414f29f6ca8f099ae86cec19dcf62cc"
+        },
+        {
+          "path": "specs/wiki-system/DELIVERY.md",
+          "sha256": "a8f574c03d5344fe773fd5a728fe76181998b733ed3bbe79aa3da49a475b8b23"
+        },
+        {
+          "path": "specs/wiki-system/GROUNDING.md",
+          "sha256": "d95b573c7a6a3686c7efb1131450eb42c0efb992f9c916e1aeaffdf3a5121d66"
+        },
+        {
+          "path": "specs/wiki-system/RATIONALE.md",
+          "sha256": "5d3ef04084aecfc0f66b2bf24b3fac4bafdc99e7a594858636224a0131e04629"
+        },
+        {
+          "path": "specs/wiki-system/WORKFLOW.md",
+          "sha256": "fb9347de35828d07655e987ebb719234140cbde59175aef1ddf3c50f322ef145"
+        },
+        {
+          "path": "specs/wiki-system/contract.d.ts",
+          "sha256": "71ad62cd30a69b8ea6258401fc205a99eb23375c6db3f69a90844e13d7cf65ef"
+        },
+        {
+          "path": "specs/wiki-system/verify.py",
+          "sha256": "dc42df48892bae0fc2dbc9811bb5a7b519094a7084d9a169a42b312a060124c5"
+        },
+        {
+          "path": "specs/wiki-system/arena/candidate-a.md",
+          "sha256": "0c06d5844e758b6ca930e066796f54b2926b1677f0ac3937eb813a9935544c47"
+        },
+        {
+          "path": "specs/wiki-system/arena/candidate-b.md",
+          "sha256": "633d1b814e503cc34e24b5b2aa0f6033169c65d7a18e8fa51e6e58b1c7212eb3"
+        },
+        {
+          "path": "specs/wiki-system/arena/cross-judge.md",
+          "sha256": "d66f6823587221d8b8edebf478c1ce2cc86a96b13cc6c9cbb079f8dbe9ed0bfc"
+        },
+        {
+          "path": "specs/wiki-system/arena/design-review.md",
+          "sha256": "fd8da9632e1b6d1f5b0efae3473c637d2db622fd2de709069c39ab1266e467bb"
+        },
+        {
+          "path": "specs/wiki-system/arena/final-review.md",
+          "sha256": "0608fa83e146ae09cfa9dbd4966916c38fe3f058a2312a346af3a0bc1f65798d"
+        },
+        {
+          "path": "specs/wiki-system/arena/opus-5-5-review.md",
+          "sha256": "d2d3fd2bef41f019717e06d9c022a2ac948a0e3d92ec6b60694b221e601ee30a"
+        },
+        {
+          "path": "specs/wiki-system/arena/opus-5-5-review.json",
+          "sha256": "7879840999c2e5296b452173700d2017f4d89a5b8877a7f318b5092204aad0aa"
+        }
+      ],
+      "cap": "One correction pass and one fresh Anthropic Opus 5.5 high-reasoning verification"
+    },
+    {
+      "id": "design-closure",
+      "recorded_at": "2026-11-09T17:06:34.312323+00:00",
+      "previous_artifacts": [
+        {
+          "path": "specs/wiki-system/ARCHITECTURE.md",
+          "sha256": "528bfc50f453938ed257d540057857f87ab2d430d4f86cc0237f15484b54fc50"
+        },
+        {
+          "path": "specs/wiki-system/DELIVERY.md",
+          "sha256": "58ea6887b62907b3c08600a0da6d927da437e096afeb8a3ebb4aa39cc5b70c83"
+        },
+        {
+          "path": "specs/wiki-system/GROUNDING.md",
+          "sha256": "d95b573c7a6a3686c7efb1131450eb42c0efb992f9c916e1aeaffdf3a5121d66"
+        },
+        {
+          "path": "specs/wiki-system/RATIONALE.md",
+          "sha256": "881606901afbea8a73bc2f3c99d289de9ed461d0e01c4a7820e53ad7def54e02"
+        },
+        {
+          "path": "specs/wiki-system/WORKFLOW.md",
+          "sha256": "6a8516f10e0aa7418cf29dc670a23e52ed4d6ad9a4c66b18622e79998c8c101d"
+        },
+        {
+          "path": "specs/wiki-system/contract.d.ts",
+          "sha256": "08c952cb2561452f1673397e53dc85fea0db94be3e3b29b767462c72cfd1d2b7"
+        },
+        {
+          "path": "specs/wiki-system/verify.py",
+          "sha256": "eea06fc80b6e5142f3a807579d7d140220c318bf3c09350f56ebb4ef2ae5cbf9"
+        },
+        {
+          "path": "specs/wiki-system/arena/candidate-a.md",
+          "sha256": "0c06d5844e758b6ca930e066796f54b2926b1677f0ac3937eb813a9935544c47"
+        },
+        {
+          "path": "specs/wiki-system/arena/candidate-b.md",
+          "sha256": "633d1b814e503cc34e24b5b2aa0f6033169c65d7a18e8fa51e6e58b1c7212eb3"
+        },
+        {
+          "path": "specs/wiki-system/arena/cross-judge.md",
+          "sha256": "d66f6823587221d8b8edebf478c1ce2cc86a96b13cc6c9cbb079f8dbe9ed0bfc"
+        },
+        {
+          "path": "specs/wiki-system/arena/design-review.md",
+          "sha256": "fd8da9632e1b6d1f5b0efae3473c637d2db622fd2de709069c39ab1266e467bb"
+        },
+        {
+          "path": "specs/wiki-system/arena/final-review.md",
+          "sha256": "0608fa83e146ae09cfa9dbd4966916c38fe3f058a2312a346af3a0bc1f65798d"
+        },
+        {
+          "path": "specs/wiki-system/arena/opus-5-5-review.md",
+          "sha256": "d2d3fd2bef41f019717e06d9c022a2ac948a0e3d92ec6b60694b221e601ee30a"
+        },
+        {
+          "path": "specs/wiki-system/arena/opus-5-5-review.json",
+          "sha256": "7879840999c2e5296b452173700d2017f4d89a5b8877a7f318b5092204aad0aa"
+        },
+        {
+          "path": "specs/wiki-system/OPUS_FIXES.md",
+          "sha256": "5251538b25215902502a2979793719e2edc1775cd99a4728aafc685adc8e557b"
+        },
+        {
+          "path": "specs/wiki-system/README.md",
+          "sha256": "58bd3c667028a7668f5ed21a28a50ead26337e1ac51e1b7f98a2de25b38e65da"
+        },
+        {
+          "path": "specs/wiki-system/VERIFICATION.md",
+          "sha256": "64e7c1b47bbdc2ade0655b120faae13f8bebd66f3a3465a11c7c2e7e4365c6ab"
+        },
+        {
+          "path": "specs/wiki-system/tests/contract.test.ts",
+          "sha256": "699ed58be84634963dd0cbb4359773bb64086d55bf0cad19cdbd1bdcb3f97379"
+        },
+        {
+          "path": "specs/wiki-system/tests/test_verifier.py",
+          "sha256": "902aa31809cc884466086eae6fdf03c2af6305ad785fc458a19eca8457309202"
+        },
+        {
+          "path": "specs/wiki-system/validation.json",
+          "sha256": "bc2eba947394c2e29b803b2cb4cc1b979357445215a095ce61e72edbee97db87"
+        },
+        {
+          "path": "specs/wiki-system/arena/opus-5-5-fix-verification.md",
+          "sha256": "1561385fb56b4cc6eb5af195bc46eabf6979747165508b88d748c5b678f00cb5"
+        },
+        {
+          "path": "specs/wiki-system/arena/opus-5-5-fix-verification.json",
+          "sha256": "7860e591dfdca2a04108fcc465b62025d16423d41a5a15ed0e222fdba41204dd"
+        }
+      ],
+      "previous_review": {
+        "id": "opus-5-5-high-fix-verification",
+        "provider": "anthropic",
+        "model": "claude-opus-5-5",
+        "thinking": "high",
+        "verdict": "NEEDS-REVISION",
+        "report": "specs/wiki-system/arena/opus-5-5-fix-verification.md",
+        "receipt": "specs/wiki-system/arena/opus-5-5-fix-verification.json",
+        "original_findings_addressed": true,
+        "verification_pending": false,
+        "cap_exhausted": true,
+        "unresolved_must_fix": [
+          "M1: blocked proposal recovery and backlog admission"
+        ],
+        "supersedes_previous_design_readiness": true
+      },
+      "scope": "Single repair/verification change set; no service implementation",
+      "budget": {
+        "repair_rounds_max": 2,
+        "opus_calls_max": 2
+      }
+    }
+  ],
+  "verification_compiler": {
+    "name": "typescript",
+    "version": "5.9.3",
+    "license": "Apache-2.0",
+    "integrity": "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==",
+    "isolated_cache_only": true,
+    "install_scripts": false
+  },
+  "design_closure": {
+    "phase": "closed",
+    "repair_rounds": 1,
+    "opus_calls": 1,
+    "runtime_gates": "G0-G8 unrun",
+    "branch": "fix/wiki-design-closure",
+    "verified_at": "2026-11-09T17:20:05.784472+00:00",
+    "final_gate": {
+      "command": "python3 specs/wiki-system/verify.py --require-ready",
+      "exit": 0,
+      "stdout": "PASS: 19 artifacts, 38 local links and recorded hashes\nLATEST DESIGN REVIEW: READY-FOR-IMPLEMENTATION\nNOT RUN: application gates G0-G8 or production host integrations\n"
+    },
+    "checks": {
+      "checker_tests": 17,
+      "research_tests": 14,
+      "negative_type_diagnostics": 12,
+      "strict_typecheck": "passed",
+      "architecture_example": "passed"
+    },
+    "nonblocking_followups": "specs/wiki-system/OPUS_FIXES.md#nonblocking-closure-review-follow-ups"
+  }
+}

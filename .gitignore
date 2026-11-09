@@ -1,0 +1,10 @@
+.cache/
+__pycache__/
+*.py[cod]
+node_modules/
+.env
+.env.*
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
