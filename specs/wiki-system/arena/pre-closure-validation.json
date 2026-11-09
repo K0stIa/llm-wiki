@@ -1,0 +1,106 @@
+{
+  "scope": "Design/type/checker verification only; no production application tests",
+  "recorded_at": "2026-11-09T15:34:56.524268+00:00",
+  "checks": [
+    {
+      "check": "strict_typecheck",
+      "command": [
+        "node",
+        ".cache/architecture/typecheck/node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--strict",
+        "--target",
+        "ES2022",
+        "--module",
+        "NodeNext",
+        "--moduleResolution",
+        "NodeNext",
+        "specs/wiki-system/tests/contract.test.ts"
+      ],
+      "exit": 0,
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "check": "verifier_unit_tests",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "specs/wiki-system/tests",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "exit": 0,
+      "output_sha256": "7782db92c760792f84012f62d425723989d34c2bd2938908f24c7160033c004d"
+    },
+    {
+      "check": "research_regressions",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "research/tests",
+        "-v"
+      ],
+      "exit": 0,
+      "output_sha256": "9d38707b000e2c5b3ca28d1b43b9cfd686f1dd45384921ee4ff8b5c5ecbc27d8"
+    },
+    {
+      "check": "python_syntax",
+      "command": [
+        "python3",
+        "-m",
+        "py_compile",
+        "specs/wiki-system/verify.py",
+        "specs/wiki-system/tests/test_verifier.py"
+      ],
+      "exit": 0,
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "negative_compiler_control": {
+    "expected_errors": 7,
+    "observed_errors": 7,
+    "annotations_removed_in_ignored_copy": true
+  },
+  "compiler_red_phase": {
+    "exit": 2,
+    "old_contract_rejected": true
+  },
+  "counts": {
+    "verifier_tests": 10,
+    "research_tests": 14
+  },
+  "inputs": [
+    {
+      "path": "specs/wiki-system/ARCHITECTURE.md",
+      "sha256": "528bfc50f453938ed257d540057857f87ab2d430d4f86cc0237f15484b54fc50"
+    },
+    {
+      "path": "specs/wiki-system/contract.d.ts",
+      "sha256": "08c952cb2561452f1673397e53dc85fea0db94be3e3b29b767462c72cfd1d2b7"
+    },
+    {
+      "path": "specs/wiki-system/DELIVERY.md",
+      "sha256": "58ea6887b62907b3c08600a0da6d927da437e096afeb8a3ebb4aa39cc5b70c83"
+    },
+    {
+      "path": "specs/wiki-system/verify.py",
+      "sha256": "eea06fc80b6e5142f3a807579d7d140220c318bf3c09350f56ebb4ef2ae5cbf9"
+    },
+    {
+      "path": "specs/wiki-system/tests/contract.test.ts",
+      "sha256": "699ed58be84634963dd0cbb4359773bb64086d55bf0cad19cdbd1bdcb3f97379"
+    },
+    {
+      "path": "specs/wiki-system/tests/test_verifier.py",
+      "sha256": "902aa31809cc884466086eae6fdf03c2af6305ad785fc458a19eca8457309202"
+    }
+  ],
+  "runtime_gates": "G0-G8 unrun"
+}

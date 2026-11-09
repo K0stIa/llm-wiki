@@ -32,3 +32,15 @@ Prototype removal is reversible through local Git history. The history itself co
 Proceed with an isolated research workspace. Do not install a production wiki or modify installed candidates. Report model downloads, comparison results and remaining gaps before recommending an architecture.
 
 The subsequent experiment announced and downloaded one 334 MB embedding model into ignored storage. It used CPU execution. No expansion model or reranker was downloaded. The [completed comparison](../research/README.md) records this change and the remaining deployment gaps.
+
+## Current task: repair confirmed Opus design gaps
+
+Target: the unpublished `specs/wiki-system/contract.d.ts`, architecture, delivery gates and verification metadata. Dependents are the usage/rationale/status documents and the offline checker. No application imports this contract, no deployed store exists, and there is no release-story registry. Historical candidate/review artifacts remain immutable.
+
+Risk: Medium. These are breaking changes to an unpublished shared API, not a production migration. The old checker only tested presence and a historical READY string. Add compiler-backed positive/negative contract tests and current-review/snapshot checks before declaring design readiness. Preserve unrelated access files, services and credentials.
+
+Confirmation: the new TypeScript tests fail against the old contract for missing full-page reads, queue inspection, review digests and epoch-scoped barriers. The existing 14 research tests pass. One isolated TypeScript 5.9.3 development compiler is installed under ignored `.cache/architecture/typecheck`; no application/global dependency changed.
+
+### Current closure change set
+
+The user has authorized the consolidated repair and verification. Fix the blocked-proposal lifecycle and contradictory-verdict checker, plus the five recorded clarifications. Contract callers are its compile-only tests and architecture examples; checker callers are its unit tests and documented CLI commands. No application imports or deployed migrations are affected. Keep the SQLite/QMD/curator choice and all historical reports. Add red regressions before the fixes, run compiler/checker/research checks, then freeze the reviewed source hashes for fresh Anthropic Opus 5.5 high-reasoning verification. Working budget: at most two repair/test rounds and two review calls, not an unbounded design loop. This is a local execution budget, not a historical user-imposed one-pass restriction. Runtime G0-G8 remain unrun. No auto-commit or publication is included.

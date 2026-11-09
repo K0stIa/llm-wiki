@@ -10,7 +10,9 @@ The installed Pi LLM Wiki is a useful integration starting point. Its tested chi
 
 QMD vector retrieval found those missing pages. This makes QMD the strongest tested retrieval candidate, not a complete wiki system. It still returns irrelevant pages for missing facts. The answering agent must check sources and abstain.
 
-This combination remains a recommendation. The QMD-to-Pi adapter, write queue and deployment configuration do not exist in this repository.
+This combination remains a recommendation, not a completed application integration in this repository. Later architecture inspection confirmed that the installed Pi LLM Wiki already contains QMD adapters, journaled indexing/recovery and a standalone MCP server. Reuse those components before building equivalents. The required safe publication policy and verified deployment do not exist here.
+
+[The subsequent production design](../specs/wiki-system/README.md) compares Markdown and database authority. It selects a transactional authority with derived exports and retrieval indexes. That design does not change the measured results below.
 
 ## Retrieval evidence
 

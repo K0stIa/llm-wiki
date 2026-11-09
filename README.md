@@ -16,6 +16,10 @@ Verify the saved evidence without models or network access:
 python3 -m unittest discover -s research/tests -v
 ```
 
+## Production design
+
+[The wiki/RAG design](specs/wiki-system/README.md) chooses a transactional knowledge authority with generated Markdown exports and reusable semantic retrieval. It includes a type contract, bounded prototype gates and sequential Pi, Codex CLI, Claude Code and OpenCode verification. This is a design, not a deployed replacement.
+
 ## Existing access setup
 
 The access tooling is separate from the wiki experiments. Its launchers remain available:

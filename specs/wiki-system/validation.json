@@ -1,0 +1,212 @@
+{
+  "recorded_at": "2026-11-09T17:08:08.079592+00:00",
+  "scope": "Current consolidated design/contract/checker repair; no service behavior",
+  "red_phase": [
+    {
+      "check": "checker-red",
+      "output_sha256": "5fb05091661e722b3502b1fd0f93ae988bf21d445dd6774f20daef079ed04ee7",
+      "observed_failure_before_fix": true
+    },
+    {
+      "check": "contract-red",
+      "output_sha256": "5cfbbc6890ba37d212630c30900dc95272f12e67ffb724d68ee0fe5ea7fa7f92",
+      "observed_failure_before_fix": true
+    },
+    {
+      "check": "journal-red",
+      "output_sha256": "2ca2dd42e244a15470638561a8f56f1f40b73df8f2ccb33cdc1f82c93867731f",
+      "observed_failure_before_fix": true
+    }
+  ],
+  "checks": [
+    {
+      "check": "typecheck",
+      "command": [
+        "node",
+        "<repo>/.cache/architecture/typecheck/node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--strict",
+        "--target",
+        "ES2022",
+        "--module",
+        "NodeNext",
+        "--moduleResolution",
+        "NodeNext",
+        "<repo>/specs/wiki-system/tests/contract.test.ts"
+      ],
+      "expected_exit": 0,
+      "exit": 0,
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "check": "checker-tests",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "specs/wiki-system/tests",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "expected_exit": 0,
+      "exit": 0,
+      "output_sha256": "401289874df062a7b50d6b6ee88c0555cb7afcedabc2e963482b3003ef42b6be"
+    },
+    {
+      "check": "research-tests",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "research/tests",
+        "-v"
+      ],
+      "expected_exit": 0,
+      "exit": 0,
+      "output_sha256": "31bd5e014f64d3f219cf9f34e1fb3eeb29050bb12ed98349a89abcb9a5a10ec1"
+    },
+    {
+      "check": "whitespace",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "expected_exit": 0,
+      "exit": 0,
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "check": "negative-types",
+      "command": [
+        "node",
+        "<repo>/.cache/architecture/typecheck/node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--strict",
+        "--target",
+        "ES2022",
+        "--module",
+        "NodeNext",
+        "--moduleResolution",
+        "NodeNext",
+        "<repo>/.cache/architecture/closure/negative/tests/contract.test.ts"
+      ],
+      "expected_exit": 2,
+      "exit": 2,
+      "output_sha256": "32969d5221d6b90462b12fbaad084a411244400abaa1f88c8bbe5ebdf3b2a6d6"
+    },
+    {
+      "check": "architecture-example-typecheck",
+      "command": [
+        "node",
+        "<repo>/.cache/architecture/typecheck/node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--strict",
+        "--target",
+        "ES2022",
+        "--module",
+        "NodeNext",
+        "--moduleResolution",
+        "NodeNext",
+        "<repo>/.cache/architecture/closure/usage.test.mts"
+      ],
+      "expected_exit": 0,
+      "exit": 0,
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "check": "cli-ready-control",
+      "command": [
+        "python3",
+        "<repo>/.cache/architecture/closure/cli-fixture-ipzk2dkw/specs/wiki-system/verify.py",
+        "--require-ready"
+      ],
+      "expected_exit": 0,
+      "exit": 0,
+      "output_sha256": "c975f55d29932639fd1aa4e364a9d26b3bfdb7787cc25f69bbc0820a3eadf02e"
+    },
+    {
+      "check": "cli-conflicting-needs-first",
+      "command": [
+        "python3",
+        "<repo>/.cache/architecture/closure/cli-fixture-ipzk2dkw/specs/wiki-system/verify.py",
+        "--require-ready"
+      ],
+      "expected_exit": 1,
+      "exit": 1,
+      "output_sha256": "2dbb3363111e3ff6bc3ce33e1a19d5245c1ceca8c9b27eb6d7865f6339c369ea"
+    },
+    {
+      "check": "cli-conflicting-ready-first",
+      "command": [
+        "python3",
+        "<repo>/.cache/architecture/closure/cli-fixture-ipzk2dkw/specs/wiki-system/verify.py",
+        "--require-ready"
+      ],
+      "expected_exit": 1,
+      "exit": 1,
+      "output_sha256": "2dbb3363111e3ff6bc3ce33e1a19d5245c1ceca8c9b27eb6d7865f6339c369ea"
+    },
+    {
+      "check": "cli-duplicate-ready",
+      "command": [
+        "python3",
+        "<repo>/.cache/architecture/closure/cli-fixture-ipzk2dkw/specs/wiki-system/verify.py",
+        "--require-ready"
+      ],
+      "expected_exit": 1,
+      "exit": 1,
+      "output_sha256": "2dbb3363111e3ff6bc3ce33e1a19d5245c1ceca8c9b27eb6d7865f6339c369ea"
+    },
+    {
+      "check": "cli-example-not-verdict",
+      "command": [
+        "python3",
+        "<repo>/.cache/architecture/closure/cli-fixture-ipzk2dkw/specs/wiki-system/verify.py",
+        "--require-ready"
+      ],
+      "expected_exit": 1,
+      "exit": 1,
+      "output_sha256": "2dbb3363111e3ff6bc3ce33e1a19d5245c1ceca8c9b27eb6d7865f6339c369ea"
+    }
+  ],
+  "inputs": [
+    {
+      "path": "specs/wiki-system/ARCHITECTURE.md",
+      "sha256": "ab67ae537061284aead3b1f3e96c8ec519eb7c35c0bce61809f39fa4d704ec31"
+    },
+    {
+      "path": "specs/wiki-system/contract.d.ts",
+      "sha256": "6675676f64366f06b2a823c2a1605c4a2b6fb7f83c130423480f5dc0eb78aed7"
+    },
+    {
+      "path": "specs/wiki-system/DELIVERY.md",
+      "sha256": "85de185dab11cd4fcd74a2e98356491cb39216baf256fa359a49a07ef600db31"
+    },
+    {
+      "path": "specs/wiki-system/verify.py",
+      "sha256": "2430abe4f202e787c7536845f3bddb0ff4042c7b2c510e92c286476c713443fd"
+    },
+    {
+      "path": "specs/wiki-system/tests/contract.test.ts",
+      "sha256": "816960036b282c0b4d1e0a959af8bc627a3028a37914bdd0291a788abe69f9b4"
+    },
+    {
+      "path": "specs/wiki-system/tests/test_verifier.py",
+      "sha256": "d1a24494c6fef5ed30c4b6242f2c819974b3459805e01d62176b427a5e3c31c9"
+    }
+  ],
+  "counts": {
+    "checker_tests": 17,
+    "research_tests": 14,
+    "negative_type_diagnostics": 12
+  },
+  "architecture_example": "Extracted from the current ARCHITECTURE.md; compile only",
+  "cli_fixtures": "Synthetic test receipts, not actual model runs",
+  "runtime_gates": "G0-G8 unrun"
+}
