@@ -114,6 +114,18 @@ CREATE TABLE IF NOT EXISTS outbox (
     created_at  TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- Evidence revisions: captured UTF-8 text, its hash and provenance.
+-- Mutable URLs are locators, not evidence identities.
+CREATE TABLE IF NOT EXISTS evidence_revisions (
+    revision  TEXT PRIMARY KEY,
+    project   TEXT NOT NULL REFERENCES projects(id),
+    title     TEXT NOT NULL,
+    text      TEXT NOT NULL,
+    locator   TEXT NOT NULL,
+    hash      TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 -- Index state: tracks generation and indexed-through revision.
 CREATE TABLE IF NOT EXISTS index_state (
     project    TEXT PRIMARY KEY REFERENCES projects(id),

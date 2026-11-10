@@ -255,19 +255,79 @@ class KnowledgeStore:
             )
         return self._page_snapshot(conn, head[0])
 
+    def capture_source(self, project_id: str, title: str,
+                       text: str, locator: str) -> str:
+        """Capture evidence source. Returns revision ID."""
+        conn = self.connect(project_id)
+        revision = "src-" + uuid.uuid4().hex[:8]
+        hash_val = "h:" + hashlib.sha256(text.encode("utf-8")).hexdigest()
+        conn.execute(
+            "INSERT INTO evidence_revisions (revision, project, title, text, locator, hash) VALUES (?,?,?,?,?,?)",
+            (revision, project_id, title, text, locator, hash_val)
+        )
+        conn.commit()
+        return revision
+
     def read_citation(self, citation: Citation) -> Optional[str]:
-        """Exact historical citation read. Private evidence requires owner/curator scope."""
+        """Exact historical citation read. Private evidence requires owner/curator scope.
+        Hash covers entire stored UTF-8 body; span is inclusive and 1-based.
+        Returns None if revision not found."""
         conn = self._get_conn()
         if citation.kind == "page":
             row = conn.execute(
-                "SELECT body FROM page_revisions WHERE revision=?",
+                "SELECT body, title, revision, state FROM page_revisions WHERE revision=?",
                 (citation.revision,)
             ).fetchone()
-            return row[0] if row else None
+            if not row:
+                return None
+            return PageSnapshot(
+                page=citation.page or "",
+                revision=citation.revision,
+                hash=self._hash_body(row[0]),
+                title=row[1], markdown=row[0],
+                state=row[3]
+            )
         elif citation.kind == "source":
-            # Private evidence — requires owner or curator
-            raise NotImplementedError("Source citations not yet implemented")
+            # Private evidence — requires owner or curator scope
+            # Source revision stored in evidence_revisions table
+            row = conn.execute(
+                "SELECT text, locator FROM evidence_revisions WHERE revision=?",
+                (citation.revision,)
+            ).fetchone()
+            if not row:
+                return None
+            return {"kind": "source", "text": row[0], "locator": row[1], "revision": citation.revision}
         return None
+
+    def process_outbox(self, project_id: str) -> int:
+        """Process outbox: promote pending indexes, promote exports.
+        Returns number of items processed. All within a transaction."""
+        conn = self.connect(project_id)
+        with conn:
+            # Promote indexes
+            promoted = conn.execute(
+                "UPDATE outbox SET status='done' WHERE kind='index' AND status='pending'",
+                ()
+            ).rowcount
+            # Promote exports
+            exported = conn.execute(
+                "UPDATE outbox SET status='done' WHERE kind='export' AND status='pending'",
+                ()
+            ).rowcount
+            conn.commit()
+            return promoted + exported
+
+    def get_outbox_status(self, project_id: str) -> dict:
+        """Get outbox counts by status."""
+        conn = self.connect(project_id)
+        rows = conn.execute(
+            "SELECT kind, status, COUNT(*) FROM outbox WHERE project=? GROUP BY kind, status",
+            (project_id,)
+        ).fetchall()
+        result = {}
+        for kind, status, count in rows:
+            result[f"{kind}:{status}"] = count
+        return result
 
     def propose(self, project_id: str, page: str,
                 base_revision: str, change_kind: ChangeKind,
