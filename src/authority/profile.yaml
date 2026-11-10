@@ -1,0 +1,121 @@
+# Deployment profile: P0 baseline (prototype defaults, reversible).
+# Unknowns recorded; do not silently reduce to pass tests.
+
+authority:
+  # SQLite database path (local filesystem).
+  # A second instance fails startup via OS-level flock.
+  path: /var/lib/wiki-knowledge/data.db
+  # One trusted worker OS account + one curator OS identity.
+  # Workers cannot read the authority or curator secrets.
+  os_user: wiki-worker
+  os_curator: wiki-curator
+
+  # Concurrency limits. No simultaneous publishers outside the service.
+  max_concurrent_proposers: 8
+  max_concurrent_readers: 10
+  # Capacity ceiling (not a demonstrated limit).
+  max_documents: 10000
+  max_chunks: 100000
+
+  # WAL mode, synchronous=FULL, bounded busy timeout.
+  wal: true
+  synchronous: FULL
+  busy_timeout_ms: 5000
+
+  # Indexing
+  indexing:
+    # QMD for vector search; FTS5 for lexical.
+    backend: qmd+fts5
+    # Expansion and reranking disabled until evidence justifies cost.
+    expansion: false
+    reranker: false
+
+  # Evidence
+  evidence:
+    format: utf8_text
+    max_body_bytes: 24000
+    # Retention: immutable. Legal deletion is a separate deployment decision.
+    retention: immutable
+
+  # Backup
+  backup:
+    # Proposed interval: 5 minutes.
+    # RPO is zero only for acknowledged writes on the surviving authority.
+    interval_minutes: 5
+    # RTO measured from backup restore.
+    target_rpo: 0
+    target_rto_seconds: 300
+
+  # Service
+  service:
+    # Local only (no public endpoint).
+    host: 127.0.0.1
+    port: 18765
+    # MCP transport for Pi/Codex/Claude/OpenCode clients.
+    transport: mcp-stdio
+    # Authentication: project/role scoped.
+    auth:
+      type: project_role
+      # Credentials: separate OS identity, not embedded.
+      credential_path: /etc/wiki-knowledge/credentials
+
+# Evaluation (P0)
+evaluation:
+  # Corpus: permissioned synthetic documents + real project excerpts.
+  # 200 answerable questions + 50 missing/conflicting controls.
+  corpus:
+    size: 200
+    holdout_ratio: 0.6
+    stratified: true
+    # Hard slices: identifiers, paraphrases, Ukrainian->English,
+    # multi-page answers, current/superseded decisions,
+    # child-written facts, cross-project lookalikes.
+    slices:
+      - identifier_exact
+      - paraphrase
+      - cross_language_ukrainian
+      - multi_page_answer
+      - superseded_decision
+      - child_written_fact
+      - cross_project_lookalike
+    min_holdout_positive: 30
+
+  # Answer model (P0 default)
+  answer_model:
+    provider: local-llamacpp
+    model: qwen3.8-35b-a3b-mtp-32k
+    thinking: off
+    # Fixed request input budget, fixed policy/tool wrappers,
+    # output reserve, pinned tokenizer or validated conservative counting.
+    input_budget: 32000
+    output_reserve: 4096
+    tokenizer: tiktoken_cl100k
+
+  # Gates (from DELIVERY.md)
+  gates:
+    evidence_recall_at_10: 0.95
+    all_required_evidence_at_10: 0.90
+    hard_paraphrase_recall: 0.90
+    cross_language_recall: 0.90
+    agent_answer_correct: 0.90
+    exact_citation_resolution: 1.00
+    unsupported_confident_answers: 0.05
+    cross_project_disclosures: 0.00
+    superseded_as_current: 0.00
+    context_bytes_cap: 24000
+
+  # Performance
+  performance:
+    warm_recall_p95_seconds: 2.0
+    committed_to_hybrid_p95_seconds: 30.0
+    peak_rss_bytes: 2_147_483_648
+
+# Unknowns (P0 to resolve)
+unknowns:
+  - real_corpus_size
+  - hardware_constraints
+  - retention_policy
+  - remote_access_requirements
+  - production_slos
+  - approved_model_weights_license
+  - production_trust_boundary
