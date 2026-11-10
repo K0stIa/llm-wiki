@@ -392,6 +392,12 @@ class KnowledgeStore:
                  proposal_id, project_id, page, base_revision)
             )
 
+            # Log operation for G4 verification
+            conn.execute(
+                "INSERT INTO operations (op_key, project, principal, request_digest, result_digest, status) VALUES (?,?,?,?,?,?)",
+                (effective_key, project_id, actor, digest, digest, 'submitted')
+            )
+
             conn.commit()
             return ProposalReceipt(
                 kind="pending", key=effective_key,
