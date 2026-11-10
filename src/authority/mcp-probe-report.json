@@ -1,0 +1,39 @@
+{
+  "mcp_memory_service": {
+    "source": "github.com/doobidoo/mcp-memory-service",
+    "license": "Apache-2.0",
+    "checked": false,
+    "requirements": {},
+    "notes": "Source not checked out. Install with:\n  git clone https://github.com/doobidoo/mcp-memory-service .cache/upstreams/mcp-memory-service",
+    "recommendation": "NOT_CHECKED"
+  },
+  "pi_llm_wiki": {
+    "source": "@zosmaai/pi-llm-wiki",
+    "version": "0.12.5",
+    "checked": true,
+    "requirements": {},
+    "notes": "Package not installed or not in path",
+    "recommendation": ""
+  },
+  "qmd": {
+    "source": "tobilu/qmd",
+    "version": "2.8.3",
+    "checked": true,
+    "requirements": {
+      "DURABLE_PROPOSALS": "N/A (search backend only)",
+      "DIGEST_BOUND_REVIEW": "N/A",
+      "SAME_PAGE_CAS": "N/A",
+      "REPLAY_RECEIPTS": "N/A",
+      "SCOPED_CITATIONS": "checked (QMD chunk mappings resolve through pinned manifest)",
+      "PROJECT_AUTHORIZATION": "N/A (local search)"
+    },
+    "notes": "Best tested retrieval candidate here, not a complete wiki system. Returns irrelevant pages for missing facts. Answering agent must check sources and abstain.",
+    "recommendation": "REUSE_SEARCH_BACKEND"
+  },
+  "fts5": {
+    "source": "SQLite FTS5 BM25",
+    "checked": true,
+    "notes": "Model-free control. Missed 2 hard questions. Simple but adding embeddings would require more integration code.",
+    "recommendation": "CONTROL_ONLY"
+  }
+}

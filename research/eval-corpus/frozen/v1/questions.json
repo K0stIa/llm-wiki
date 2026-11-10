@@ -1,0 +1,3002 @@
+[
+  {
+    "id": "paraphrase:004",
+    "query": "What is the content of page doc-paraphrase-004?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-004"
+    ],
+    "gold_sources": [
+      "src-paraphrase-004"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_language_ukrainian:018",
+    "query": "\u0429\u043e \u043a\u0430\u0436\u0435 doc-cross_language_ukrainian-018 \u043f\u0440\u043e \u0442\u0435\u0441\u0442\u043e\u0432\u0456 \u0434\u0430\u043d\u0456?",
+    "language": "uk",
+    "gold_pages": [
+      "doc-cross_language_ukrainian-018"
+    ],
+    "gold_sources": [
+      "src-cross_language_ukrainian-018"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_project_lookalike:014",
+    "query": "Compare doc-cross_project_lookalike-014 with doc-cross_project_lookalike-backup-014",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-014"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-014"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:023",
+    "query": "Find doc-multi_page_answer-023 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-023"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-023"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:021",
+    "query": "Find doc-multi_page_answer-021 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-021"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-021"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "child_written_fact:017",
+    "query": "Who wrote doc-child_written_fact-017?",
+    "language": "en",
+    "gold_pages": [
+      "doc-child_written_fact-017"
+    ],
+    "gold_sources": [
+      "src-child_written_fact-017"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:009",
+    "query": "Find document doc-identifier_exact-009",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-009"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-009"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_project_lookalike:006",
+    "query": "Compare doc-cross_project_lookalike-006 with doc-cross_project_lookalike-backup-006",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-006"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-006"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_project_lookalike:027",
+    "query": "Compare doc-cross_project_lookalike-027 with doc-cross_project_lookalike-backup-027",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-027"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-027"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:013",
+    "query": "Find doc-multi_page_answer-013 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-013"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-013"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:003",
+    "query": "Find document doc-identifier_exact-003",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-003"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-003"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:011",
+    "query": "What is the content of page doc-paraphrase-011?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-011"
+    ],
+    "gold_sources": [
+      "src-paraphrase-011"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:015",
+    "query": "Find document doc-identifier_exact-015",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-015"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-015"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_language_ukrainian:009",
+    "query": "\u0429\u043e \u043a\u0430\u0436\u0435 doc-cross_language_ukrainian-009 \u043f\u0440\u043e \u0442\u0435\u0441\u0442\u043e\u0432\u0456 \u0434\u0430\u043d\u0456?",
+    "language": "uk",
+    "gold_pages": [
+      "doc-cross_language_ukrainian-009"
+    ],
+    "gold_sources": [
+      "src-cross_language_ukrainian-009"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:009",
+    "query": "Where is doc-missing_control-009-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-009"
+    ],
+    "gold_sources": [
+      "src-missing_control-009"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "cross_language_ukrainian:005",
+    "query": "\u0429\u043e \u043a\u0430\u0436\u0435 doc-cross_language_ukrainian-005 \u043f\u0440\u043e \u0442\u0435\u0441\u0442\u043e\u0432\u0456 \u0434\u0430\u043d\u0456?",
+    "language": "uk",
+    "gold_pages": [
+      "doc-cross_language_ukrainian-005"
+    ],
+    "gold_sources": [
+      "src-cross_language_ukrainian-005"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:015",
+    "query": "Find doc-multi_page_answer-015 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-015"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-015"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:021",
+    "query": "Find document doc-identifier_exact-021",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-021"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-021"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:003",
+    "query": "Find doc-multi_page_answer-003 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-003"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-003"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:005",
+    "query": "Find doc-multi_page_answer-005 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-005"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-005"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:000",
+    "query": "Where is doc-missing_control-000-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-000"
+    ],
+    "gold_sources": [
+      "src-missing_control-000"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "conflict_control:013",
+    "query": "What does doc-conflict_control-013 say about doc-conflict_control-013-conflict?",
+    "language": "en",
+    "gold_pages": [
+      "doc-conflict_control-013"
+    ],
+    "gold_sources": [
+      "src-conflict_control-013"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "paraphrase:021",
+    "query": "What is the content of page doc-paraphrase-021?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-021"
+    ],
+    "gold_sources": [
+      "src-paraphrase-021"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:029",
+    "query": "Find document doc-identifier_exact-029",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-029"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-029"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:026",
+    "query": "Find doc-multi_page_answer-026 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-026"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-026"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:022",
+    "query": "Where is doc-missing_control-022-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-022"
+    ],
+    "gold_sources": [
+      "src-missing_control-022"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "paraphrase:032",
+    "query": "What is the content of page doc-paraphrase-032?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-032"
+    ],
+    "gold_sources": [
+      "src-paraphrase-032"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:005",
+    "query": "What is the content of page doc-paraphrase-005?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-005"
+    ],
+    "gold_sources": [
+      "src-paraphrase-005"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_project_lookalike:004",
+    "query": "Compare doc-cross_project_lookalike-004 with doc-cross_project_lookalike-backup-004",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-004"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-004"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:013",
+    "query": "Where is doc-missing_control-013-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-013"
+    ],
+    "gold_sources": [
+      "src-missing_control-013"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "multi_page_answer:004",
+    "query": "Find doc-multi_page_answer-004 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-004"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-004"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_language_ukrainian:015",
+    "query": "\u0429\u043e \u043a\u0430\u0436\u0435 doc-cross_language_ukrainian-015 \u043f\u0440\u043e \u0442\u0435\u0441\u0442\u043e\u0432\u0456 \u0434\u0430\u043d\u0456?",
+    "language": "uk",
+    "gold_pages": [
+      "doc-cross_language_ukrainian-015"
+    ],
+    "gold_sources": [
+      "src-cross_language_ukrainian-015"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:026",
+    "query": "What is the content of page doc-paraphrase-026?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-026"
+    ],
+    "gold_sources": [
+      "src-paraphrase-026"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "child_written_fact:014",
+    "query": "Who wrote doc-child_written_fact-014?",
+    "language": "en",
+    "gold_pages": [
+      "doc-child_written_fact-014"
+    ],
+    "gold_sources": [
+      "src-child_written_fact-014"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "conflict_control:018",
+    "query": "What does doc-conflict_control-018 say about doc-conflict_control-018-conflict?",
+    "language": "en",
+    "gold_pages": [
+      "doc-conflict_control-018"
+    ],
+    "gold_sources": [
+      "src-conflict_control-018"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "cross_project_lookalike:029",
+    "query": "Compare doc-cross_project_lookalike-029 with doc-cross_project_lookalike-backup-029",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-029"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-029"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:038",
+    "query": "What is the content of page doc-paraphrase-038?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-038"
+    ],
+    "gold_sources": [
+      "src-paraphrase-038"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:039",
+    "query": "What is the content of page doc-paraphrase-039?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-039"
+    ],
+    "gold_sources": [
+      "src-paraphrase-039"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:012",
+    "query": "Find document doc-identifier_exact-012",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-012"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-012"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_project_lookalike:026",
+    "query": "Compare doc-cross_project_lookalike-026 with doc-cross_project_lookalike-backup-026",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-026"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-026"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "superseded_decision:019",
+    "query": "Is doc-superseded_decision-019 current or superseded?",
+    "language": "en",
+    "gold_pages": [
+      "doc-superseded_decision-019"
+    ],
+    "gold_sources": [
+      "src-superseded_decision-019"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:027",
+    "query": "Find document doc-identifier_exact-027",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-027"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-027"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_language_ukrainian:001",
+    "query": "\u0429\u043e \u043a\u0430\u0436\u0435 doc-cross_language_ukrainian-001 \u043f\u0440\u043e \u0442\u0435\u0441\u0442\u043e\u0432\u0456 \u0434\u0430\u043d\u0456?",
+    "language": "uk",
+    "gold_pages": [
+      "doc-cross_language_ukrainian-001"
+    ],
+    "gold_sources": [
+      "src-cross_language_ukrainian-001"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_language_ukrainian:019",
+    "query": "\u0429\u043e \u043a\u0430\u0436\u0435 doc-cross_language_ukrainian-019 \u043f\u0440\u043e \u0442\u0435\u0441\u0442\u043e\u0432\u0456 \u0434\u0430\u043d\u0456?",
+    "language": "uk",
+    "gold_pages": [
+      "doc-cross_language_ukrainian-019"
+    ],
+    "gold_sources": [
+      "src-cross_language_ukrainian-019"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "conflict_control:004",
+    "query": "What does doc-conflict_control-004 say about doc-conflict_control-004-conflict?",
+    "language": "en",
+    "gold_pages": [
+      "doc-conflict_control-004"
+    ],
+    "gold_sources": [
+      "src-conflict_control-004"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "identifier_exact:010",
+    "query": "Find document doc-identifier_exact-010",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-010"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-010"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "superseded_decision:003",
+    "query": "Is doc-superseded_decision-003 current or superseded?",
+    "language": "en",
+    "gold_pages": [
+      "doc-superseded_decision-003"
+    ],
+    "gold_sources": [
+      "src-superseded_decision-003"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:024",
+    "query": "Find doc-multi_page_answer-024 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-024"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-024"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:002",
+    "query": "What is the content of page doc-paraphrase-002?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-002"
+    ],
+    "gold_sources": [
+      "src-paraphrase-002"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:023",
+    "query": "Where is doc-missing_control-023-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-023"
+    ],
+    "gold_sources": [
+      "src-missing_control-023"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "multi_page_answer:011",
+    "query": "Find doc-multi_page_answer-011 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-011"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-011"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:020",
+    "query": "Find doc-multi_page_answer-020 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-020"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-020"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "child_written_fact:003",
+    "query": "Who wrote doc-child_written_fact-003?",
+    "language": "en",
+    "gold_pages": [
+      "doc-child_written_fact-003"
+    ],
+    "gold_sources": [
+      "src-child_written_fact-003"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "superseded_decision:000",
+    "query": "Is doc-superseded_decision-000 current or superseded?",
+    "language": "en",
+    "gold_pages": [
+      "doc-superseded_decision-000"
+    ],
+    "gold_sources": [
+      "src-superseded_decision-000"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:004",
+    "query": "Find document doc-identifier_exact-004",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-004"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-004"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:012",
+    "query": "What is the content of page doc-paraphrase-012?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-012"
+    ],
+    "gold_sources": [
+      "src-paraphrase-012"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "conflict_control:011",
+    "query": "What does doc-conflict_control-011 say about doc-conflict_control-011-conflict?",
+    "language": "en",
+    "gold_pages": [
+      "doc-conflict_control-011"
+    ],
+    "gold_sources": [
+      "src-conflict_control-011"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "paraphrase:033",
+    "query": "What is the content of page doc-paraphrase-033?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-033"
+    ],
+    "gold_sources": [
+      "src-paraphrase-033"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:018",
+    "query": "Where is doc-missing_control-018-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-018"
+    ],
+    "gold_sources": [
+      "src-missing_control-018"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "identifier_exact:005",
+    "query": "Find document doc-identifier_exact-005",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-005"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-005"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:020",
+    "query": "What is the content of page doc-paraphrase-020?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-020"
+    ],
+    "gold_sources": [
+      "src-paraphrase-020"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "superseded_decision:005",
+    "query": "Is doc-superseded_decision-005 current or superseded?",
+    "language": "en",
+    "gold_pages": [
+      "doc-superseded_decision-005"
+    ],
+    "gold_sources": [
+      "src-superseded_decision-005"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "superseded_decision:008",
+    "query": "Is doc-superseded_decision-008 current or superseded?",
+    "language": "en",
+    "gold_pages": [
+      "doc-superseded_decision-008"
+    ],
+    "gold_sources": [
+      "src-superseded_decision-008"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:025",
+    "query": "Find doc-multi_page_answer-025 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-025"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-025"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "conflict_control:001",
+    "query": "What does doc-conflict_control-001 say about doc-conflict_control-001-conflict?",
+    "language": "en",
+    "gold_pages": [
+      "doc-conflict_control-001"
+    ],
+    "gold_sources": [
+      "src-conflict_control-001"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "identifier_exact:030",
+    "query": "Find document doc-identifier_exact-030",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-030"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-030"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:004",
+    "query": "Where is doc-missing_control-004-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-004"
+    ],
+    "gold_sources": [
+      "src-missing_control-004"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "paraphrase:006",
+    "query": "What is the content of page doc-paraphrase-006?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-006"
+    ],
+    "gold_sources": [
+      "src-paraphrase-006"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:021",
+    "query": "Where is doc-missing_control-021-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-021"
+    ],
+    "gold_sources": [
+      "src-missing_control-021"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "identifier_exact:002",
+    "query": "Find document doc-identifier_exact-002",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-002"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-002"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "child_written_fact:006",
+    "query": "Who wrote doc-child_written_fact-006?",
+    "language": "en",
+    "gold_pages": [
+      "doc-child_written_fact-006"
+    ],
+    "gold_sources": [
+      "src-child_written_fact-006"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "child_written_fact:009",
+    "query": "Who wrote doc-child_written_fact-009?",
+    "language": "en",
+    "gold_pages": [
+      "doc-child_written_fact-009"
+    ],
+    "gold_sources": [
+      "src-child_written_fact-009"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:002",
+    "query": "Where is doc-missing_control-002-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-002"
+    ],
+    "gold_sources": [
+      "src-missing_control-002"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "multi_page_answer:006",
+    "query": "Find doc-multi_page_answer-006 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-006"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-006"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "child_written_fact:002",
+    "query": "Who wrote doc-child_written_fact-002?",
+    "language": "en",
+    "gold_pages": [
+      "doc-child_written_fact-002"
+    ],
+    "gold_sources": [
+      "src-child_written_fact-002"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "conflict_control:019",
+    "query": "What does doc-conflict_control-019 say about doc-conflict_control-019-conflict?",
+    "language": "en",
+    "gold_pages": [
+      "doc-conflict_control-019"
+    ],
+    "gold_sources": [
+      "src-conflict_control-019"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "paraphrase:007",
+    "query": "What is the content of page doc-paraphrase-007?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-007"
+    ],
+    "gold_sources": [
+      "src-paraphrase-007"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:011",
+    "query": "Where is doc-missing_control-011-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-011"
+    ],
+    "gold_sources": [
+      "src-missing_control-011"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "cross_project_lookalike:001",
+    "query": "Compare doc-cross_project_lookalike-001 with doc-cross_project_lookalike-backup-001",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-001"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-001"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:037",
+    "query": "What is the content of page doc-paraphrase-037?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-037"
+    ],
+    "gold_sources": [
+      "src-paraphrase-037"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_language_ukrainian:004",
+    "query": "\u0429\u043e \u043a\u0430\u0436\u0435 doc-cross_language_ukrainian-004 \u043f\u0440\u043e \u0442\u0435\u0441\u0442\u043e\u0432\u0456 \u0434\u0430\u043d\u0456?",
+    "language": "uk",
+    "gold_pages": [
+      "doc-cross_language_ukrainian-004"
+    ],
+    "gold_sources": [
+      "src-cross_language_ukrainian-004"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:038",
+    "query": "Find document doc-identifier_exact-038",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-038"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-038"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "child_written_fact:007",
+    "query": "Who wrote doc-child_written_fact-007?",
+    "language": "en",
+    "gold_pages": [
+      "doc-child_written_fact-007"
+    ],
+    "gold_sources": [
+      "src-child_written_fact-007"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:013",
+    "query": "Find document doc-identifier_exact-013",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-013"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-013"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:001",
+    "query": "Where is doc-missing_control-001-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-001"
+    ],
+    "gold_sources": [
+      "src-missing_control-001"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "conflict_control:005",
+    "query": "What does doc-conflict_control-005 say about doc-conflict_control-005-conflict?",
+    "language": "en",
+    "gold_pages": [
+      "doc-conflict_control-005"
+    ],
+    "gold_sources": [
+      "src-conflict_control-005"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "paraphrase:024",
+    "query": "What is the content of page doc-paraphrase-024?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-024"
+    ],
+    "gold_sources": [
+      "src-paraphrase-024"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:033",
+    "query": "Find document doc-identifier_exact-033",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-033"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-033"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:000",
+    "query": "Find document doc-identifier_exact-000",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-000"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-000"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_project_lookalike:010",
+    "query": "Compare doc-cross_project_lookalike-010 with doc-cross_project_lookalike-backup-010",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-010"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-010"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "child_written_fact:018",
+    "query": "Who wrote doc-child_written_fact-018?",
+    "language": "en",
+    "gold_pages": [
+      "doc-child_written_fact-018"
+    ],
+    "gold_sources": [
+      "src-child_written_fact-018"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:003",
+    "query": "Where is doc-missing_control-003-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-003"
+    ],
+    "gold_sources": [
+      "src-missing_control-003"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "identifier_exact:037",
+    "query": "Find document doc-identifier_exact-037",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-037"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-037"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:000",
+    "query": "Find doc-multi_page_answer-000 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-000"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-000"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_project_lookalike:012",
+    "query": "Compare doc-cross_project_lookalike-012 with doc-cross_project_lookalike-backup-012",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-012"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-012"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_language_ukrainian:002",
+    "query": "\u0429\u043e \u043a\u0430\u0436\u0435 doc-cross_language_ukrainian-002 \u043f\u0440\u043e \u0442\u0435\u0441\u0442\u043e\u0432\u0456 \u0434\u0430\u043d\u0456?",
+    "language": "uk",
+    "gold_pages": [
+      "doc-cross_language_ukrainian-002"
+    ],
+    "gold_sources": [
+      "src-cross_language_ukrainian-002"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:034",
+    "query": "Find document doc-identifier_exact-034",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-034"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-034"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:022",
+    "query": "Find doc-multi_page_answer-022 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-022"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-022"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:024",
+    "query": "Where is doc-missing_control-024-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-024"
+    ],
+    "gold_sources": [
+      "src-missing_control-024"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "missing_control:027",
+    "query": "Where is doc-missing_control-027-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-027"
+    ],
+    "gold_sources": [
+      "src-missing_control-027"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "multi_page_answer:019",
+    "query": "Find doc-multi_page_answer-019 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-019"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-019"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:028",
+    "query": "Find doc-multi_page_answer-028 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-028"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-028"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:016",
+    "query": "Where is doc-missing_control-016-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-016"
+    ],
+    "gold_sources": [
+      "src-missing_control-016"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "missing_control:012",
+    "query": "Where is doc-missing_control-012-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-012"
+    ],
+    "gold_sources": [
+      "src-missing_control-012"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "conflict_control:015",
+    "query": "What does doc-conflict_control-015 say about doc-conflict_control-015-conflict?",
+    "language": "en",
+    "gold_pages": [
+      "doc-conflict_control-015"
+    ],
+    "gold_sources": [
+      "src-conflict_control-015"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "identifier_exact:032",
+    "query": "Find document doc-identifier_exact-032",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-032"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-032"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "superseded_decision:001",
+    "query": "Is doc-superseded_decision-001 current or superseded?",
+    "language": "en",
+    "gold_pages": [
+      "doc-superseded_decision-001"
+    ],
+    "gold_sources": [
+      "src-superseded_decision-001"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_project_lookalike:002",
+    "query": "Compare doc-cross_project_lookalike-002 with doc-cross_project_lookalike-backup-002",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-002"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-002"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:012",
+    "query": "Find doc-multi_page_answer-012 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-012"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-012"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:008",
+    "query": "What is the content of page doc-paraphrase-008?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-008"
+    ],
+    "gold_sources": [
+      "src-paraphrase-008"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:020",
+    "query": "Where is doc-missing_control-020-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-020"
+    ],
+    "gold_sources": [
+      "src-missing_control-020"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "superseded_decision:016",
+    "query": "Is doc-superseded_decision-016 current or superseded?",
+    "language": "en",
+    "gold_pages": [
+      "doc-superseded_decision-016"
+    ],
+    "gold_sources": [
+      "src-superseded_decision-016"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:036",
+    "query": "What is the content of page doc-paraphrase-036?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-036"
+    ],
+    "gold_sources": [
+      "src-paraphrase-036"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:019",
+    "query": "Where is doc-missing_control-019-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-019"
+    ],
+    "gold_sources": [
+      "src-missing_control-019"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "missing_control:010",
+    "query": "Where is doc-missing_control-010-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-010"
+    ],
+    "gold_sources": [
+      "src-missing_control-010"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "conflict_control:008",
+    "query": "What does doc-conflict_control-008 say about doc-conflict_control-008-conflict?",
+    "language": "en",
+    "gold_pages": [
+      "doc-conflict_control-008"
+    ],
+    "gold_sources": [
+      "src-conflict_control-008"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "conflict_control:009",
+    "query": "What does doc-conflict_control-009 say about doc-conflict_control-009-conflict?",
+    "language": "en",
+    "gold_pages": [
+      "doc-conflict_control-009"
+    ],
+    "gold_sources": [
+      "src-conflict_control-009"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "superseded_decision:010",
+    "query": "Is doc-superseded_decision-010 current or superseded?",
+    "language": "en",
+    "gold_pages": [
+      "doc-superseded_decision-010"
+    ],
+    "gold_sources": [
+      "src-superseded_decision-010"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:019",
+    "query": "Find document doc-identifier_exact-019",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-019"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-019"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "superseded_decision:018",
+    "query": "Is doc-superseded_decision-018 current or superseded?",
+    "language": "en",
+    "gold_pages": [
+      "doc-superseded_decision-018"
+    ],
+    "gold_sources": [
+      "src-superseded_decision-018"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:010",
+    "query": "Find doc-multi_page_answer-010 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-010"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-010"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:025",
+    "query": "Where is doc-missing_control-025-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-025"
+    ],
+    "gold_sources": [
+      "src-missing_control-025"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "cross_project_lookalike:017",
+    "query": "Compare doc-cross_project_lookalike-017 with doc-cross_project_lookalike-backup-017",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-017"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-017"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_project_lookalike:007",
+    "query": "Compare doc-cross_project_lookalike-007 with doc-cross_project_lookalike-backup-007",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-007"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-007"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "superseded_decision:002",
+    "query": "Is doc-superseded_decision-002 current or superseded?",
+    "language": "en",
+    "gold_pages": [
+      "doc-superseded_decision-002"
+    ],
+    "gold_sources": [
+      "src-superseded_decision-002"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:025",
+    "query": "What is the content of page doc-paraphrase-025?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-025"
+    ],
+    "gold_sources": [
+      "src-paraphrase-025"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:008",
+    "query": "Where is doc-missing_control-008-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-008"
+    ],
+    "gold_sources": [
+      "src-missing_control-008"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "missing_control:015",
+    "query": "Where is doc-missing_control-015-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-015"
+    ],
+    "gold_sources": [
+      "src-missing_control-015"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "cross_project_lookalike:011",
+    "query": "Compare doc-cross_project_lookalike-011 with doc-cross_project_lookalike-backup-011",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-011"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-011"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "superseded_decision:014",
+    "query": "Is doc-superseded_decision-014 current or superseded?",
+    "language": "en",
+    "gold_pages": [
+      "doc-superseded_decision-014"
+    ],
+    "gold_sources": [
+      "src-superseded_decision-014"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:009",
+    "query": "Find doc-multi_page_answer-009 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-009"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-009"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "superseded_decision:004",
+    "query": "Is doc-superseded_decision-004 current or superseded?",
+    "language": "en",
+    "gold_pages": [
+      "doc-superseded_decision-004"
+    ],
+    "gold_sources": [
+      "src-superseded_decision-004"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:023",
+    "query": "What is the content of page doc-paraphrase-023?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-023"
+    ],
+    "gold_sources": [
+      "src-paraphrase-023"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "conflict_control:012",
+    "query": "What does doc-conflict_control-012 say about doc-conflict_control-012-conflict?",
+    "language": "en",
+    "gold_pages": [
+      "doc-conflict_control-012"
+    ],
+    "gold_sources": [
+      "src-conflict_control-012"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "cross_project_lookalike:023",
+    "query": "Compare doc-cross_project_lookalike-023 with doc-cross_project_lookalike-backup-023",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-023"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-023"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:036",
+    "query": "Find document doc-identifier_exact-036",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-036"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-036"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_project_lookalike:020",
+    "query": "Compare doc-cross_project_lookalike-020 with doc-cross_project_lookalike-backup-020",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-020"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-020"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:001",
+    "query": "Find doc-multi_page_answer-001 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-001"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-001"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:027",
+    "query": "Find doc-multi_page_answer-027 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-027"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-027"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_project_lookalike:015",
+    "query": "Compare doc-cross_project_lookalike-015 with doc-cross_project_lookalike-backup-015",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-015"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-015"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "superseded_decision:015",
+    "query": "Is doc-superseded_decision-015 current or superseded?",
+    "language": "en",
+    "gold_pages": [
+      "doc-superseded_decision-015"
+    ],
+    "gold_sources": [
+      "src-superseded_decision-015"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:014",
+    "query": "What is the content of page doc-paraphrase-014?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-014"
+    ],
+    "gold_sources": [
+      "src-paraphrase-014"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:016",
+    "query": "Find document doc-identifier_exact-016",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-016"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-016"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "child_written_fact:011",
+    "query": "Who wrote doc-child_written_fact-011?",
+    "language": "en",
+    "gold_pages": [
+      "doc-child_written_fact-011"
+    ],
+    "gold_sources": [
+      "src-child_written_fact-011"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:002",
+    "query": "Find doc-multi_page_answer-002 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-002"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-002"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_language_ukrainian:000",
+    "query": "\u0429\u043e \u043a\u0430\u0436\u0435 doc-cross_language_ukrainian-000 \u043f\u0440\u043e \u0442\u0435\u0441\u0442\u043e\u0432\u0456 \u0434\u0430\u043d\u0456?",
+    "language": "uk",
+    "gold_pages": [
+      "doc-cross_language_ukrainian-000"
+    ],
+    "gold_sources": [
+      "src-cross_language_ukrainian-000"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "conflict_control:002",
+    "query": "What does doc-conflict_control-002 say about doc-conflict_control-002-conflict?",
+    "language": "en",
+    "gold_pages": [
+      "doc-conflict_control-002"
+    ],
+    "gold_sources": [
+      "src-conflict_control-002"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "cross_project_lookalike:005",
+    "query": "Compare doc-cross_project_lookalike-005 with doc-cross_project_lookalike-backup-005",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-005"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-005"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:014",
+    "query": "Find document doc-identifier_exact-014",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-014"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-014"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_language_ukrainian:003",
+    "query": "\u0429\u043e \u043a\u0430\u0436\u0435 doc-cross_language_ukrainian-003 \u043f\u0440\u043e \u0442\u0435\u0441\u0442\u043e\u0432\u0456 \u0434\u0430\u043d\u0456?",
+    "language": "uk",
+    "gold_pages": [
+      "doc-cross_language_ukrainian-003"
+    ],
+    "gold_sources": [
+      "src-cross_language_ukrainian-003"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:017",
+    "query": "Where is doc-missing_control-017-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-017"
+    ],
+    "gold_sources": [
+      "src-missing_control-017"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "superseded_decision:012",
+    "query": "Is doc-superseded_decision-012 current or superseded?",
+    "language": "en",
+    "gold_pages": [
+      "doc-superseded_decision-012"
+    ],
+    "gold_sources": [
+      "src-superseded_decision-012"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:029",
+    "query": "What is the content of page doc-paraphrase-029?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-029"
+    ],
+    "gold_sources": [
+      "src-paraphrase-029"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_project_lookalike:000",
+    "query": "Compare doc-cross_project_lookalike-000 with doc-cross_project_lookalike-backup-000",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-000"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-000"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:018",
+    "query": "Find doc-multi_page_answer-018 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-018"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-018"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "child_written_fact:015",
+    "query": "Who wrote doc-child_written_fact-015?",
+    "language": "en",
+    "gold_pages": [
+      "doc-child_written_fact-015"
+    ],
+    "gold_sources": [
+      "src-child_written_fact-015"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "conflict_control:014",
+    "query": "What does doc-conflict_control-014 say about doc-conflict_control-014-conflict?",
+    "language": "en",
+    "gold_pages": [
+      "doc-conflict_control-014"
+    ],
+    "gold_sources": [
+      "src-conflict_control-014"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "superseded_decision:006",
+    "query": "Is doc-superseded_decision-006 current or superseded?",
+    "language": "en",
+    "gold_pages": [
+      "doc-superseded_decision-006"
+    ],
+    "gold_sources": [
+      "src-superseded_decision-006"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:003",
+    "query": "What is the content of page doc-paraphrase-003?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-003"
+    ],
+    "gold_sources": [
+      "src-paraphrase-003"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "child_written_fact:005",
+    "query": "Who wrote doc-child_written_fact-005?",
+    "language": "en",
+    "gold_pages": [
+      "doc-child_written_fact-005"
+    ],
+    "gold_sources": [
+      "src-child_written_fact-005"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:018",
+    "query": "Find document doc-identifier_exact-018",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-018"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-018"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:028",
+    "query": "What is the content of page doc-paraphrase-028?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-028"
+    ],
+    "gold_sources": [
+      "src-paraphrase-028"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:013",
+    "query": "What is the content of page doc-paraphrase-013?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-013"
+    ],
+    "gold_sources": [
+      "src-paraphrase-013"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_language_ukrainian:010",
+    "query": "\u0429\u043e \u043a\u0430\u0436\u0435 doc-cross_language_ukrainian-010 \u043f\u0440\u043e \u0442\u0435\u0441\u0442\u043e\u0432\u0456 \u0434\u0430\u043d\u0456?",
+    "language": "uk",
+    "gold_pages": [
+      "doc-cross_language_ukrainian-010"
+    ],
+    "gold_sources": [
+      "src-cross_language_ukrainian-010"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_language_ukrainian:014",
+    "query": "\u0429\u043e \u043a\u0430\u0436\u0435 doc-cross_language_ukrainian-014 \u043f\u0440\u043e \u0442\u0435\u0441\u0442\u043e\u0432\u0456 \u0434\u0430\u043d\u0456?",
+    "language": "uk",
+    "gold_pages": [
+      "doc-cross_language_ukrainian-014"
+    ],
+    "gold_sources": [
+      "src-cross_language_ukrainian-014"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:001",
+    "query": "What is the content of page doc-paraphrase-001?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-001"
+    ],
+    "gold_sources": [
+      "src-paraphrase-001"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_language_ukrainian:013",
+    "query": "\u0429\u043e \u043a\u0430\u0436\u0435 doc-cross_language_ukrainian-013 \u043f\u0440\u043e \u0442\u0435\u0441\u0442\u043e\u0432\u0456 \u0434\u0430\u043d\u0456?",
+    "language": "uk",
+    "gold_pages": [
+      "doc-cross_language_ukrainian-013"
+    ],
+    "gold_sources": [
+      "src-cross_language_ukrainian-013"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "child_written_fact:012",
+    "query": "Who wrote doc-child_written_fact-012?",
+    "language": "en",
+    "gold_pages": [
+      "doc-child_written_fact-012"
+    ],
+    "gold_sources": [
+      "src-child_written_fact-012"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:016",
+    "query": "Find doc-multi_page_answer-016 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-016"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-016"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:005",
+    "query": "Where is doc-missing_control-005-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-005"
+    ],
+    "gold_sources": [
+      "src-missing_control-005"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "cross_project_lookalike:028",
+    "query": "Compare doc-cross_project_lookalike-028 with doc-cross_project_lookalike-backup-028",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-028"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-028"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:025",
+    "query": "Find document doc-identifier_exact-025",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-025"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-025"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "conflict_control:007",
+    "query": "What does doc-conflict_control-007 say about doc-conflict_control-007-conflict?",
+    "language": "en",
+    "gold_pages": [
+      "doc-conflict_control-007"
+    ],
+    "gold_sources": [
+      "src-conflict_control-007"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "cross_project_lookalike:021",
+    "query": "Compare doc-cross_project_lookalike-021 with doc-cross_project_lookalike-backup-021",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-021"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-021"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:034",
+    "query": "What is the content of page doc-paraphrase-034?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-034"
+    ],
+    "gold_sources": [
+      "src-paraphrase-034"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:018",
+    "query": "What is the content of page doc-paraphrase-018?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-018"
+    ],
+    "gold_sources": [
+      "src-paraphrase-018"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "child_written_fact:019",
+    "query": "Who wrote doc-child_written_fact-019?",
+    "language": "en",
+    "gold_pages": [
+      "doc-child_written_fact-019"
+    ],
+    "gold_sources": [
+      "src-child_written_fact-019"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_project_lookalike:022",
+    "query": "Compare doc-cross_project_lookalike-022 with doc-cross_project_lookalike-backup-022",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-022"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-022"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:017",
+    "query": "Find document doc-identifier_exact-017",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-017"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-017"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:009",
+    "query": "What is the content of page doc-paraphrase-009?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-009"
+    ],
+    "gold_sources": [
+      "src-paraphrase-009"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "superseded_decision:017",
+    "query": "Is doc-superseded_decision-017 current or superseded?",
+    "language": "en",
+    "gold_pages": [
+      "doc-superseded_decision-017"
+    ],
+    "gold_sources": [
+      "src-superseded_decision-017"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_language_ukrainian:012",
+    "query": "\u0429\u043e \u043a\u0430\u0436\u0435 doc-cross_language_ukrainian-012 \u043f\u0440\u043e \u0442\u0435\u0441\u0442\u043e\u0432\u0456 \u0434\u0430\u043d\u0456?",
+    "language": "uk",
+    "gold_pages": [
+      "doc-cross_language_ukrainian-012"
+    ],
+    "gold_sources": [
+      "src-cross_language_ukrainian-012"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "child_written_fact:008",
+    "query": "Who wrote doc-child_written_fact-008?",
+    "language": "en",
+    "gold_pages": [
+      "doc-child_written_fact-008"
+    ],
+    "gold_sources": [
+      "src-child_written_fact-008"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "child_written_fact:010",
+    "query": "Who wrote doc-child_written_fact-010?",
+    "language": "en",
+    "gold_pages": [
+      "doc-child_written_fact-010"
+    ],
+    "gold_sources": [
+      "src-child_written_fact-010"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:035",
+    "query": "What is the content of page doc-paraphrase-035?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-035"
+    ],
+    "gold_sources": [
+      "src-paraphrase-035"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "superseded_decision:011",
+    "query": "Is doc-superseded_decision-011 current or superseded?",
+    "language": "en",
+    "gold_pages": [
+      "doc-superseded_decision-011"
+    ],
+    "gold_sources": [
+      "src-superseded_decision-011"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:020",
+    "query": "Find document doc-identifier_exact-020",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-020"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-020"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_language_ukrainian:016",
+    "query": "\u0429\u043e \u043a\u0430\u0436\u0435 doc-cross_language_ukrainian-016 \u043f\u0440\u043e \u0442\u0435\u0441\u0442\u043e\u0432\u0456 \u0434\u0430\u043d\u0456?",
+    "language": "uk",
+    "gold_pages": [
+      "doc-cross_language_ukrainian-016"
+    ],
+    "gold_sources": [
+      "src-cross_language_ukrainian-016"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:031",
+    "query": "Find document doc-identifier_exact-031",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-031"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-031"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "superseded_decision:007",
+    "query": "Is doc-superseded_decision-007 current or superseded?",
+    "language": "en",
+    "gold_pages": [
+      "doc-superseded_decision-007"
+    ],
+    "gold_sources": [
+      "src-superseded_decision-007"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:017",
+    "query": "Find doc-multi_page_answer-017 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-017"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-017"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_project_lookalike:016",
+    "query": "Compare doc-cross_project_lookalike-016 with doc-cross_project_lookalike-backup-016",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-016"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-016"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:011",
+    "query": "Find document doc-identifier_exact-011",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-011"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-011"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:027",
+    "query": "What is the content of page doc-paraphrase-027?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-027"
+    ],
+    "gold_sources": [
+      "src-paraphrase-027"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:026",
+    "query": "Where is doc-missing_control-026-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-026"
+    ],
+    "gold_sources": [
+      "src-missing_control-026"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "cross_language_ukrainian:008",
+    "query": "\u0429\u043e \u043a\u0430\u0436\u0435 doc-cross_language_ukrainian-008 \u043f\u0440\u043e \u0442\u0435\u0441\u0442\u043e\u0432\u0456 \u0434\u0430\u043d\u0456?",
+    "language": "uk",
+    "gold_pages": [
+      "doc-cross_language_ukrainian-008"
+    ],
+    "gold_sources": [
+      "src-cross_language_ukrainian-008"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_language_ukrainian:011",
+    "query": "\u0429\u043e \u043a\u0430\u0436\u0435 doc-cross_language_ukrainian-011 \u043f\u0440\u043e \u0442\u0435\u0441\u0442\u043e\u0432\u0456 \u0434\u0430\u043d\u0456?",
+    "language": "uk",
+    "gold_pages": [
+      "doc-cross_language_ukrainian-011"
+    ],
+    "gold_sources": [
+      "src-cross_language_ukrainian-011"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:024",
+    "query": "Find document doc-identifier_exact-024",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-024"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-024"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_language_ukrainian:017",
+    "query": "\u0429\u043e \u043a\u0430\u0436\u0435 doc-cross_language_ukrainian-017 \u043f\u0440\u043e \u0442\u0435\u0441\u0442\u043e\u0432\u0456 \u0434\u0430\u043d\u0456?",
+    "language": "uk",
+    "gold_pages": [
+      "doc-cross_language_ukrainian-017"
+    ],
+    "gold_sources": [
+      "src-cross_language_ukrainian-017"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "conflict_control:000",
+    "query": "What does doc-conflict_control-000 say about doc-conflict_control-000-conflict?",
+    "language": "en",
+    "gold_pages": [
+      "doc-conflict_control-000"
+    ],
+    "gold_sources": [
+      "src-conflict_control-000"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "conflict_control:010",
+    "query": "What does doc-conflict_control-010 say about doc-conflict_control-010-conflict?",
+    "language": "en",
+    "gold_pages": [
+      "doc-conflict_control-010"
+    ],
+    "gold_sources": [
+      "src-conflict_control-010"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "cross_language_ukrainian:006",
+    "query": "\u0429\u043e \u043a\u0430\u0436\u0435 doc-cross_language_ukrainian-006 \u043f\u0440\u043e \u0442\u0435\u0441\u0442\u043e\u0432\u0456 \u0434\u0430\u043d\u0456?",
+    "language": "uk",
+    "gold_pages": [
+      "doc-cross_language_ukrainian-006"
+    ],
+    "gold_sources": [
+      "src-cross_language_ukrainian-006"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_project_lookalike:025",
+    "query": "Compare doc-cross_project_lookalike-025 with doc-cross_project_lookalike-backup-025",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-025"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-025"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:029",
+    "query": "Where is doc-missing_control-029-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-029"
+    ],
+    "gold_sources": [
+      "src-missing_control-029"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "identifier_exact:039",
+    "query": "Find document doc-identifier_exact-039",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-039"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-039"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:014",
+    "query": "Where is doc-missing_control-014-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-014"
+    ],
+    "gold_sources": [
+      "src-missing_control-014"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "cross_language_ukrainian:007",
+    "query": "\u0429\u043e \u043a\u0430\u0436\u0435 doc-cross_language_ukrainian-007 \u043f\u0440\u043e \u0442\u0435\u0441\u0442\u043e\u0432\u0456 \u0434\u0430\u043d\u0456?",
+    "language": "uk",
+    "gold_pages": [
+      "doc-cross_language_ukrainian-007"
+    ],
+    "gold_sources": [
+      "src-cross_language_ukrainian-007"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "conflict_control:003",
+    "query": "What does doc-conflict_control-003 say about doc-conflict_control-003-conflict?",
+    "language": "en",
+    "gold_pages": [
+      "doc-conflict_control-003"
+    ],
+    "gold_sources": [
+      "src-conflict_control-003"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "cross_project_lookalike:008",
+    "query": "Compare doc-cross_project_lookalike-008 with doc-cross_project_lookalike-backup-008",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-008"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-008"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:000",
+    "query": "What is the content of page doc-paraphrase-000?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-000"
+    ],
+    "gold_sources": [
+      "src-paraphrase-000"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:006",
+    "query": "Where is doc-missing_control-006-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-006"
+    ],
+    "gold_sources": [
+      "src-missing_control-006"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "cross_project_lookalike:024",
+    "query": "Compare doc-cross_project_lookalike-024 with doc-cross_project_lookalike-backup-024",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-024"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-024"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:001",
+    "query": "Find document doc-identifier_exact-001",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-001"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-001"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:007",
+    "query": "Where is doc-missing_control-007-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-007"
+    ],
+    "gold_sources": [
+      "src-missing_control-007"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "paraphrase:031",
+    "query": "What is the content of page doc-paraphrase-031?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-031"
+    ],
+    "gold_sources": [
+      "src-paraphrase-031"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "child_written_fact:000",
+    "query": "Who wrote doc-child_written_fact-000?",
+    "language": "en",
+    "gold_pages": [
+      "doc-child_written_fact-000"
+    ],
+    "gold_sources": [
+      "src-child_written_fact-000"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:014",
+    "query": "Find doc-multi_page_answer-014 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-014"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-014"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:016",
+    "query": "What is the content of page doc-paraphrase-016?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-016"
+    ],
+    "gold_sources": [
+      "src-paraphrase-016"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:007",
+    "query": "Find doc-multi_page_answer-007 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-007"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-007"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "conflict_control:006",
+    "query": "What does doc-conflict_control-006 say about doc-conflict_control-006-conflict?",
+    "language": "en",
+    "gold_pages": [
+      "doc-conflict_control-006"
+    ],
+    "gold_sources": [
+      "src-conflict_control-006"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "cross_project_lookalike:009",
+    "query": "Compare doc-cross_project_lookalike-009 with doc-cross_project_lookalike-backup-009",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-009"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-009"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "child_written_fact:016",
+    "query": "Who wrote doc-child_written_fact-016?",
+    "language": "en",
+    "gold_pages": [
+      "doc-child_written_fact-016"
+    ],
+    "gold_sources": [
+      "src-child_written_fact-016"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_project_lookalike:013",
+    "query": "Compare doc-cross_project_lookalike-013 with doc-cross_project_lookalike-backup-013",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-013"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-013"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:010",
+    "query": "What is the content of page doc-paraphrase-010?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-010"
+    ],
+    "gold_sources": [
+      "src-paraphrase-010"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "superseded_decision:013",
+    "query": "Is doc-superseded_decision-013 current or superseded?",
+    "language": "en",
+    "gold_pages": [
+      "doc-superseded_decision-013"
+    ],
+    "gold_sources": [
+      "src-superseded_decision-013"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "conflict_control:017",
+    "query": "What does doc-conflict_control-017 say about doc-conflict_control-017-conflict?",
+    "language": "en",
+    "gold_pages": [
+      "doc-conflict_control-017"
+    ],
+    "gold_sources": [
+      "src-conflict_control-017"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "child_written_fact:004",
+    "query": "Who wrote doc-child_written_fact-004?",
+    "language": "en",
+    "gold_pages": [
+      "doc-child_written_fact-004"
+    ],
+    "gold_sources": [
+      "src-child_written_fact-004"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:029",
+    "query": "Find doc-multi_page_answer-029 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-029"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-029"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:019",
+    "query": "What is the content of page doc-paraphrase-019?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-019"
+    ],
+    "gold_sources": [
+      "src-paraphrase-019"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:015",
+    "query": "What is the content of page doc-paraphrase-015?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-015"
+    ],
+    "gold_sources": [
+      "src-paraphrase-015"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:023",
+    "query": "Find document doc-identifier_exact-023",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-023"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-023"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:007",
+    "query": "Find document doc-identifier_exact-007",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-007"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-007"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:008",
+    "query": "Find document doc-identifier_exact-008",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-008"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-008"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "multi_page_answer:008",
+    "query": "Find doc-multi_page_answer-008 and its references",
+    "language": "en",
+    "gold_pages": [
+      "doc-multi_page_answer-008"
+    ],
+    "gold_sources": [
+      "src-multi_page_answer-008"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "child_written_fact:001",
+    "query": "Who wrote doc-child_written_fact-001?",
+    "language": "en",
+    "gold_pages": [
+      "doc-child_written_fact-001"
+    ],
+    "gold_sources": [
+      "src-child_written_fact-001"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:022",
+    "query": "Find document doc-identifier_exact-022",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-022"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-022"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "superseded_decision:009",
+    "query": "Is doc-superseded_decision-009 current or superseded?",
+    "language": "en",
+    "gold_pages": [
+      "doc-superseded_decision-009"
+    ],
+    "gold_sources": [
+      "src-superseded_decision-009"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "missing_control:028",
+    "query": "Where is doc-missing_control-028-missing?",
+    "language": "en",
+    "gold_pages": [
+      "doc-missing_control-028"
+    ],
+    "gold_sources": [
+      "src-missing_control-028"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "conflict_control:016",
+    "query": "What does doc-conflict_control-016 say about doc-conflict_control-016-conflict?",
+    "language": "en",
+    "gold_pages": [
+      "doc-conflict_control-016"
+    ],
+    "gold_sources": [
+      "src-conflict_control-016"
+    ],
+    "is_positive": false
+  },
+  {
+    "id": "cross_project_lookalike:003",
+    "query": "Compare doc-cross_project_lookalike-003 with doc-cross_project_lookalike-backup-003",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-003"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-003"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:026",
+    "query": "Find document doc-identifier_exact-026",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-026"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-026"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_project_lookalike:018",
+    "query": "Compare doc-cross_project_lookalike-018 with doc-cross_project_lookalike-backup-018",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-018"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-018"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:035",
+    "query": "Find document doc-identifier_exact-035",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-035"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-035"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:017",
+    "query": "What is the content of page doc-paraphrase-017?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-017"
+    ],
+    "gold_sources": [
+      "src-paraphrase-017"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:022",
+    "query": "What is the content of page doc-paraphrase-022?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-022"
+    ],
+    "gold_sources": [
+      "src-paraphrase-022"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "paraphrase:030",
+    "query": "What is the content of page doc-paraphrase-030?",
+    "language": "en",
+    "gold_pages": [
+      "doc-paraphrase-030"
+    ],
+    "gold_sources": [
+      "src-paraphrase-030"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "cross_project_lookalike:019",
+    "query": "Compare doc-cross_project_lookalike-019 with doc-cross_project_lookalike-backup-019",
+    "language": "en",
+    "gold_pages": [
+      "doc-cross_project_lookalike-019"
+    ],
+    "gold_sources": [
+      "src-cross_project_lookalike-019"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:006",
+    "query": "Find document doc-identifier_exact-006",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-006"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-006"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "identifier_exact:028",
+    "query": "Find document doc-identifier_exact-028",
+    "language": "en",
+    "gold_pages": [
+      "doc-identifier_exact-028"
+    ],
+    "gold_sources": [
+      "src-identifier_exact-028"
+    ],
+    "is_positive": true
+  },
+  {
+    "id": "child_written_fact:013",
+    "query": "Who wrote doc-child_written_fact-013?",
+    "language": "en",
+    "gold_pages": [
+      "doc-child_written_fact-013"
+    ],
+    "gold_sources": [
+      "src-child_written_fact-013"
+    ],
+    "is_positive": true
+  }
+]

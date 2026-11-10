@@ -1,0 +1,16 @@
+{
+  "split": "stratified_40_60",
+  "total_questions": 250,
+  "stratified_counts": {
+    "paraphrase": 40,
+    "cross_language_ukrainian": 20,
+    "cross_project_lookalike": 30,
+    "multi_page_answer": 30,
+    "child_written_fact": 20,
+    "identifier_exact": 40,
+    "missing_control": 30,
+    "conflict_control": 20,
+    "superseded_decision": 20
+  },
+  "total_documents": 250
+}

@@ -1,0 +1,29 @@
+{
+  "version": "1",
+  "generated_at": "frozen",
+  "total_questions": 250,
+  "total_documents": 250,
+  "split": "stratified_40_60",
+  "stratified_counts": {
+    "paraphrase": 40,
+    "cross_language_ukrainian": 20,
+    "cross_project_lookalike": 30,
+    "multi_page_answer": 30,
+    "child_written_fact": 20,
+    "identifier_exact": 40,
+    "missing_control": 30,
+    "conflict_control": 20,
+    "superseded_decision": 20
+  },
+  "files": {
+    "questions.json": "questions.json",
+    "documents.json": "documents.json",
+    "split.json": "split.json"
+  },
+  "hashes": {
+    "questions.json": "c:5f6abbab52c63ae8",
+    "documents.json": "c:1b6a2633d10a7569",
+    "split.json": "c:d59d32f6f610d87d"
+  },
+  "corpus_hash": "c:ab1c75163da72f8a"
+}
