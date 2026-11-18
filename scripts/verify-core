@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Tier A: install exactly from the locks, run the deterministic core twice,
+# write a receipt, then report gate status. No models, hosts or network
+# (beyond package installation from the locks).
+set -euo pipefail
+cd "$(dirname "$0")/.."
+uv sync --locked --quiet
+npm ci --no-audit --no-fund --loglevel=error >/dev/null
+status=0
+.venv/bin/python src/verification/run_tier.py --tier a --repeat "${REPEAT:-2}" || status=$?
+python3 src/verification/check_gates.py || true
+exit "$status"

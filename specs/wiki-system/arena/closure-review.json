@@ -1,0 +1,74 @@
+{
+  "id": "wiki-design-closure-review",
+  "provider": "anthropic",
+  "model": "claude-opus-5-5",
+  "thinking": "high",
+  "elapsed_seconds": 122.545939713,
+  "timeout_seconds": 600,
+  "tools": [
+    "evidence_read"
+  ],
+  "reads": [
+    {
+      "path": "<repo>/specs/wiki-system/ARCHITECTURE.md",
+      "sha256": "ab67ae537061284aead3b1f3e96c8ec519eb7c35c0bce61809f39fa4d704ec31",
+      "offset": 1,
+      "limit": null
+    },
+    {
+      "path": "<repo>/specs/wiki-system/contract.d.ts",
+      "sha256": "6675676f64366f06b2a823c2a1605c4a2b6fb7f83c130423480f5dc0eb78aed7",
+      "offset": 1,
+      "limit": null
+    },
+    {
+      "path": "<repo>/specs/wiki-system/DELIVERY.md",
+      "sha256": "85de185dab11cd4fcd74a2e98356491cb39216baf256fa359a49a07ef600db31",
+      "offset": 1,
+      "limit": null
+    },
+    {
+      "path": "<repo>/specs/wiki-system/verify.py",
+      "sha256": "2430abe4f202e787c7536845f3bddb0ff4042c7b2c510e92c286476c713443fd",
+      "offset": 1,
+      "limit": null
+    },
+    {
+      "path": "<repo>/specs/wiki-system/tests/contract.test.ts",
+      "sha256": "816960036b282c0b4d1e0a959af8bc627a3028a37914bdd0291a788abe69f9b4",
+      "offset": 1,
+      "limit": null
+    },
+    {
+      "path": "<repo>/specs/wiki-system/tests/test_verifier.py",
+      "sha256": "d1a24494c6fef5ed30c4b6242f2c819974b3459805e01d62176b427a5e3c31c9",
+      "offset": 1,
+      "limit": null
+    },
+    {
+      "path": "<repo>/specs/wiki-system/arena/opus-5-5-fix-verification.md",
+      "sha256": "1561385fb56b4cc6eb5af195bc46eabf6979747165508b88d748c5b678f00cb5",
+      "offset": 1,
+      "limit": null
+    },
+    {
+      "path": "<repo>/specs/wiki-system/OPUS_FIXES.md",
+      "sha256": "3eb5ecffc8d68bfd0a2c9fdf3c63d9d5a8ed63406582445a7f9cc974b4b3ae3b",
+      "offset": 1,
+      "limit": null
+    },
+    {
+      "path": "<repo>/specs/wiki-system/validation.json",
+      "sha256": "ebb3c061898494c4306e138903b99650b194f478e826370cdc53472bfc4c0407",
+      "offset": 1,
+      "limit": null
+    }
+  ],
+  "output": "specs/wiki-system/arena/closure-review.md",
+  "sha256": "55c9e06cddc3b9a865d224010c293b029494e97f18878b8f4d951d44688648e2",
+  "bytes": 8478,
+  "status": "completed",
+  "verdict": "READY-FOR-IMPLEMENTATION",
+  "recorded_at": "2026-11-09T17:17:44.653444+00:00",
+  "scope": "Design closure only; no runtime G0-G8 certification"
+}

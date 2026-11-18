@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eval v2 labeling</title>
+<!-- LOCAL FILE ONLY. Contains confidential Pi wiki text. Never publish or upload. No network requests. -->
+<style>
+  :root { --bg:#fbfbf9; --fg:#1d1d1b; --muted:#6b6b66; --line:#deddd6; --card:#ffffff; --mark:#ffe58a; --accent:#2f5d9e; --bad:#a33; --good:#2c7a3f; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#161615; --fg:#e8e7e2; --muted:#9b9a93; --line:#34332f; --card:#1f1f1d; --mark:#6b5a12; --accent:#7fa6e0; --bad:#e07a7a; --good:#76c28a; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.5 system-ui, sans-serif; }
+  header { position:sticky; top:0; z-index:2; background:var(--bg); border-bottom:1px solid var(--line); padding:10px 16px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  header h1 { font-size:16px; margin:0; }
+  .progress { color:var(--muted); }
+  button { font:inherit; padding:6px 12px; border:1px solid var(--line); background:var(--card); color:var(--fg); border-radius:6px; cursor:pointer; }
+  button.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+  main { max-width:1100px; margin:0 auto; padding:16px; }
+  .help { color:var(--muted); font-size:14px; margin-bottom:16px; }
+  .item { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:14px; margin-bottom:18px; }
+  .item.done { border-left:4px solid var(--good); }
+  .meta { color:var(--muted); font-size:13px; }
+  .q { font-size:17px; font-weight:600; margin:6px 0; }
+  .expected { font-size:14px; }
+  details { margin:8px 0; border:1px solid var(--line); border-radius:6px; padding:6px 10px; }
+  summary { cursor:pointer; font-weight:600; }
+  pre { white-space:pre-wrap; word-break:break-word; font:13px/1.45 ui-monospace, monospace; margin:6px 0 0; max-height:360px; overflow:auto; }
+  mark { background:var(--mark); color:inherit; }
+  .verdict { display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; align-items:center; }
+  .verdict label { display:flex; gap:6px; align-items:center; }
+  textarea { width:100%; min-height:44px; margin-top:8px; font:inherit; background:var(--bg); color:var(--fg); border:1px solid var(--line); border-radius:6px; padding:6px; }
+  .cands label { display:block; font-size:14px; }
+  .filter { display:flex; gap:8px; align-items:center; }
+  .sugg { margin:8px 0; padding:8px 10px; border-radius:6px; border:1px dashed var(--line); font-size:14px; }
+  .sugg b.accept, .sugg b.accept-with-gold { color:var(--good); } .sugg b.reject { color:var(--bad); }
+  .src { color:var(--muted); font-size:12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Eval v2 labeling</h1>
+  <span class="progress" id="progress"></span>
+  <span class="filter"><label><input type="checkbox" id="onlyOpen"> unlabeled only</label></span>
+  <button id="bulk">Confirm all verified suggestions</button>
+  <button class="primary" id="export">Download labels.json</button>
+</header>
+<main>
+  <p class="help">For each item decide whether it is a fair evaluation item. <b>Accept</b>: the gold page(s) answer the question
+  (or, for controls, the wiki really has no answer / really conflicts). <b>Accept + add gold</b>: also tick other pages that fully answer it.
+  <b>Reject</b>: wrong, unanswerable, ambiguous or unnatural. Items come with a suggestion from the local model acting as a skeptical judge,
+  unverified ones first. A suggestion is <i>verified</i> when its evidence was checked by code (for example, a claimed answer was found verbatim in a page).
+  <b>Use suggestion</b> copies it; the bulk button confirms only verified ones (spot-check a few). Each label records
+  whether you set it yourself or confirmed a suggestion. Progress is kept in this browser. When done, download labels.json and place it at
+  <code>.cache/eval/v2/labels.json</code>.</p>
+  <div id="items"></div>
+</main>
+<script>
+const ITEMS = /*ITEMS*/[];
+const KEY = 'eval-v2-labels';
+let labels = {};
+try { labels = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { labels = {}; }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(labels)); } catch (e) {} render(); };
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function highlight(body, spans) {
+  let out = esc(body);
+  for (const s of spans.filter(Boolean)) { const e = esc(s); if (e.length >= 8) out = out.split(e).join('<mark>' + e + '</mark>'); }
+  return out;
+}
+function fromSuggestion(item, l) {
+  const s = item.suggestion;
+  return { ...(l || {}), verdict: s.verdict, extra_gold: s.extra_gold || [], source: 'suggestion-confirmed', judge: s.judge || 'unknown' };
+}
+function sugg(item, l) {
+  const s = item.suggestion;
+  if (!s || !s.verdict) return `<div class="sugg">No verified suggestion — please decide yourself.${s && s.reason ? '<br><i>' + esc(s.reason) + '</i>' : ''}</div>`;
+  const quote = s.quote ? `<br>Quoted answer from <code>${esc(s.answering_page)}</code>: <mark>${esc(s.quote)}</mark>` : '';
+  const extra = (s.extra_gold || []).length ? ` (+ gold: ${s.extra_gold.map(esc).join(', ')})` : '';
+  const ans = s.answering_page ? ` · says answered by <code>${esc(s.answering_page)}</code>` : '';
+  const src = l.verdict ? `<div class="src">label source: ${esc(l.source || 'owner')}</div>` : '';
+  return `<div class="sugg">${esc(s.judge || 'Judge')} suggests <b class="${esc(s.verdict)}">${esc(s.verdict)}</b>${extra} · ${s.verified ? 'verified' : '<b>unverified</b>'}${ans}${quote}<br>
+    <i>${esc(s.reason)}</i> <button class="use">Use suggestion</button>${src}</div>`;
+}
+const EXPECT = { 'answer': 'Answerable from the gold page(s)', 'abstain-missing': 'CONTROL: the wiki should NOT contain an answer',
+                 'abstain-conflict': 'CONTROL: two pages give conflicting values; the correct behaviour is to report the conflict' };
+function render() {
+  const onlyOpen = document.getElementById('onlyOpen').checked;
+  const done = ITEMS.filter(i => labels[i.id]?.verdict).length;
+  document.getElementById('progress').textContent = `${done} / ${ITEMS.length} labeled`;
+  const root = document.getElementById('items');
+  root.innerHTML = '';
+  ITEMS.forEach((item, n) => {
+    const l = labels[item.id] || {};
+    if (onlyOpen && l.verdict) return;
+    const spans = item.gold.map(g => g.span);
+    const div = document.createElement('div');
+    div.className = 'item' + (l.verdict ? ' done' : '');
+    div.innerHTML = `
+      <div class="meta">#${n + 1} · ${esc(item.slice)} · ${esc(item.id)}</div>
+      <div class="q">${esc(item.query)}</div>
+      <div class="expected">${esc(EXPECT[item.expected] || item.expected)}${item.answer ? ' — model answer: <i>' + esc(item.answer) + '</i>' : ''}
+        ${item.why_absent ? '<br>Generator says absent because: <i>' + esc(item.why_absent) + '</i>' : ''}</div>
+      ${item.pages.map(p => `<details ${item.pages.length < 3 ? 'open' : ''}><summary>${esc(p.title)} <span class="meta">(${esc(p.id)})</span></summary><pre>${highlight(p.body, spans)}</pre></details>`).join('')}
+      ${sugg(item, l)}
+      ${item.candidates.length ? `<details ${item.expected === 'abstain-missing' ? 'open' : ''}><summary>${item.expected === 'answer' ? 'Other pages that may also answer it' : 'Most related other wiki pages'} (${item.candidates.length})</summary><div class="cands">
+        ${item.candidates.map(p => `<label>${item.expected === 'answer' ? `<input type="checkbox" data-c="${esc(p.id)}" ${(l.extra_gold || []).includes(p.id) ? 'checked' : ''}>` : ''} ${esc(p.title)} <span class="meta">(${esc(p.id)})</span></label><pre>${highlight(p.body, spans)}</pre>`).join('')}
+      </div></details>` : ''}
+      <div class="verdict">
+        <label><input type="radio" name="v${n}" value="accept" ${l.verdict === 'accept' ? 'checked' : ''}> Accept</label>
+        ${item.candidates.length && item.expected === 'answer' ? `<label><input type="radio" name="v${n}" value="accept-with-gold" ${l.verdict === 'accept-with-gold' ? 'checked' : ''}> Accept + add ticked pages as gold</label>` : ''}
+        <label><input type="radio" name="v${n}" value="reject" ${l.verdict === 'reject' ? 'checked' : ''}> Reject</label>
+      </div>
+      <textarea placeholder="Optional note (why rejected, what is ambiguous)">${esc(l.note || '')}</textarea>`;
+    div.querySelectorAll('input[type=radio]').forEach(r => r.addEventListener('change', () => {
+      labels[item.id] = { ...(labels[item.id] || {}), verdict: r.value, source: 'owner' }; save();
+    }));
+    div.querySelectorAll('input[data-c]').forEach(c => c.addEventListener('change', () => {
+      const cur = new Set(labels[item.id]?.extra_gold || []);
+      c.checked ? cur.add(c.dataset.c) : cur.delete(c.dataset.c);
+      labels[item.id] = { ...(labels[item.id] || {}), extra_gold: [...cur], source: 'owner' }; save();
+    }));
+    const use = div.querySelector('button.use');
+    if (use) use.addEventListener('click', () => { labels[item.id] = fromSuggestion(item, l); save(); });
+    div.querySelector('textarea').addEventListener('change', e => {
+      labels[item.id] = { ...(labels[item.id] || {}), note: e.target.value }; save();
+    });
+    root.appendChild(div);
+  });
+}
+document.getElementById('onlyOpen').addEventListener('change', render);
+document.getElementById('bulk').addEventListener('click', () => {
+  const todo = ITEMS.filter(i => !labels[i.id]?.verdict && i.suggestion?.verdict && i.suggestion.verified);
+  if (!todo.length) { alert('No unlabeled items with a verified suggestion.'); return; }
+  if (!confirm(`Confirm ${todo.length} verified suggestions? Items you already labeled are not changed.`)) return;
+  todo.forEach(i => { labels[i.id] = fromSuggestion(i, labels[i.id]); });
+  save();
+});
+document.getElementById('export').addEventListener('click', () => {
+  const valid = Object.fromEntries(Object.entries(labels).filter(([id, v]) => ITEMS.some(i => i.id === id) && v.verdict));
+  const blob = new Blob([JSON.stringify(valid, null, 1)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'labels.json'; a.click();
+});
+render();
+</script>
+</body>
+</html>

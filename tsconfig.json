@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "noEmit": true,
+    "strict": true,
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "types": [
+      "node"
+    ]
+  },
+  "files": [
+    "src/authority/bridge.ts",
+    "src/mcp/transport.ts",
+    "src/mcp/stdio.ts",
+    "src/retrieval/index.ts",
+    "src/retrieval/build-index.ts",
+    "src/retrieval/measure-hybrid.ts",
+    "src/pi/wiki-journal.ts",
+    "src/pi/wiki-mcp-extension.ts",
+    "src/eval/rank_v2.ts",
+    "src/eval/rank_diag_v2.ts",
+    "src/eval/trace_v2.ts",
+    "src/eval/perf_readers.ts",
+    "src/eval/perf_v2.ts"
+  ]
+}

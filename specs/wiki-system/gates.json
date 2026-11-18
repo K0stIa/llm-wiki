@@ -1,0 +1,411 @@
+{
+ "schema": "llm-wiki/gates/v1",
+ "source": "specs/wiki-system/DELIVERY.md",
+ "gates": [
+  {
+   "gate": "G0",
+   "checks": [
+    {
+     "id": "g0.frozen-v1-integrity",
+     "tier": "a",
+     "requirement": "Frozen corpus v1 files match recorded digests and slice counts (regression fixture only).",
+     "tests": [
+      "tests/hypothesis/test_g2_recall.py::"
+     ]
+    },
+    {
+     "id": "g0.eval-v2-tooling",
+     "tier": "a",
+     "requirement": "Eval v2 scorer (macro recall, multi-page completeness, disclosures, superseded-as-current, citation resolution, byte cap, Wilson intervals, 30-per-hard-slice holdout) and builder validators, on synthetic fixtures.",
+     "tests": [
+      "tests/hypothesis/test_eval_v2_scoring.py::"
+     ]
+    },
+    {
+     "id": "g0.representative-eval-set",
+     "tier": "a",
+     "requirement": "Frozen v2 manifest: >=200 positives + 50 controls, multi-page/cross-project/superseded/child-written/Ukrainian slices, >=30 held-out per hard slice, independent labels, committed before measurement.",
+     "tests": []
+    },
+    {
+     "id": "g0.answer-and-curator-profile",
+     "tier": "a",
+     "requirement": "Pinned answer/curator model profile, prompts, input budget, output reserve and validated token-count bound.",
+     "tests": []
+    }
+   ]
+  },
+  {
+   "gate": "G1",
+   "checks": [
+    {
+     "id": "g1.multi-process-durability",
+     "tier": "a",
+     "requirement": "Independent processes submit operations; acknowledged proposals and sources survive restart with matching hashes.",
+     "tests": [
+      "tests/hypothesis/test_g1_runtime.py::test_crash_restart_proposals_survive"
+     ]
+    },
+    {
+     "id": "g1.same-page-cas",
+     "tier": "a",
+     "requirement": "Competing proposals on one base: exactly one publication, others explicit conflicts, no silent overwrite.",
+     "tests": [
+      "tests/hypothesis/test_g1_runtime.py::test_8_processes_same_page_cas",
+      "tests/hypothesis/test_cas_invariant.py::test_cas_exactly_one_wins_per_base",
+      "tests/hypothesis/test_cas_invariant.py::test_publish_cascades_stale_bases",
+      "tests/hypothesis/test_authority.py::test_cas_exactly_one_wins",
+      "tests/hypothesis/test_authority.py::test_stale_base_after_publish"
+     ]
+    },
+    {
+     "id": "g1.idempotency-and-key-reuse",
+     "tier": "a",
+     "requirement": "Identical retries return the original receipt; changed payload or kind under a key fails; terminal replays are durable.",
+     "tests": [
+      "tests/hypothesis/test_authority.py::test_idempotency_same_key",
+      "tests/hypothesis/test_cas_invariant.py::test_no_key_reuse",
+      "tests/hypothesis/test_capacity_runtime.py::test_public_service_retains_explicit_key_and_rejects_changed_payload",
+      "tests/hypothesis/test_capacity_runtime.py::test_terminal_publication_and_conflict_replay_are_durable"
+     ]
+    },
+    {
+     "id": "g1.full-body-integrity",
+     "tier": "a",
+     "requirement": "Complete bodies survive publication and reopen; no truncation.",
+     "tests": [
+      "tests/hypothesis/test_full_body_runtime.py::",
+      "tests/hypothesis/test_cas_invariant.py::test_body_is_stored_and_recoverable",
+      "tests/hypothesis/test_cas_invariant.py::test_harness_does_not_truncate_body",
+      "tests/hypothesis/test_authority.py::test_body_recoverable_after_publish",
+      "tests/hypothesis/test_authority.py::test_retired_page_rejects_proposals"
+     ]
+    },
+    {
+     "id": "g1.backlog-and-metadata-rejection",
+     "tier": "a",
+     "requirement": "100-slot unresolved cap, metadata-only rejection frees a slot, sweep is durable, rejection never publishes.",
+     "tests": [
+      "tests/hypothesis/test_capacity_runtime.py::test_backlog_cap_and_metadata_rejection",
+      "tests/hypothesis/test_capacity_runtime.py::test_concurrent_public_admission_never_exceeds_cap",
+      "tests/hypothesis/test_capacity_runtime.py::test_metadata_rejection_never_authorizes_publication",
+      "tests/hypothesis/test_capacity_runtime.py::test_metadata_sweep_records_durable_decisions"
+     ]
+    },
+    {
+     "id": "g1.outbox-and-exact-citations",
+     "tier": "a",
+     "requirement": "Outbox promotion and exact citation reads from durable state.",
+     "tests": [
+      "tests/hypothesis/test_g1_runtime.py::test_outbox_promotion",
+      "tests/hypothesis/test_g1_runtime.py::test_exact_citation_read"
+     ]
+    },
+    {
+     "id": "g1.fault-injection",
+     "tier": "a",
+     "requirement": "Busy/disk-full/subprocess faults never produce success receipts or half-published revisions.",
+     "tests": [
+      "tests/hypothesis/test_bridge_recovery_runtime.py::test_subprocess_faults_never_become_success",
+      "tests/hypothesis/test_host_journal_faults.py::test_authority_proposal_fault_preserves_head_and_accepted_source",
+      "tests/hypothesis/test_host_journal_faults.py::test_kill_during_publication_rolls_back_half_revision"
+     ]
+    },
+    {
+     "id": "g1.host-journal-library",
+     "tier": "a",
+     "requirement": "Trusted journal: deterministic key, fail-closed scope, kill/restart replay with exact receipt.",
+     "tests": [
+      "tests/hypothesis/test_host_journal.py::",
+      "tests/hypothesis/test_host_journal_faults.py::test_journal_prepare_fault_has_no_row_or_receipt",
+      "tests/hypothesis/test_host_journal_faults.py::test_receipt_fault_keeps_valid_pending_and_replays"
+     ]
+    },
+    {
+     "id": "g1.named-kill-boundaries",
+     "tier": "a",
+     "requirement": "Authority RPC killed at named points (before proposal/publication commit, after commit before reply, before/after outbox-ack commit); restart, retry, verify receipts, heads, sequence, FTS and outbox from the file.",
+     "tests": [
+      "tests/hypothesis/test_g1_kill_boundaries.py::"
+     ]
+    },
+    {
+     "id": "g1.host-adapter-journal",
+     "tier": "a",
+     "requirement": "Pi adapter code keys proposals by (session id, toolCallId); crash before send / after authority commit / after send / after receipt recovers via the journal with the original key, exactly once; restored epoch fails closed; journaled MCP exposes no unjournaled propose. Live Pi execution is g4.pi-live-scenarios.",
+     "tests": [
+      "tests/runtime/journal-adapter.test.mjs::"
+     ]
+    },
+    {
+     "id": "g1.state-table-complete",
+     "tier": "a",
+     "requirement": "Every proposal state-table row, stale review digests, forced and raced publish-vs-block/reject orderings.",
+     "tests": [
+      "tests/hypothesis/test_g1_state_table.py::"
+     ]
+    },
+    {
+     "id": "g1.generation-swap-kill",
+     "tier": "b",
+     "requirement": "Kill the real index builder (approved cached model) after staging, after the generation rename and after the pointer swap; the previous generation is untouched, readers report hybrid-stale or hybrid-current truthfully, cleanup reclaims crashed-builder debris, and a rebuild acknowledges the outbox.",
+     "tests": [
+      "tests/hypothesis/test_g1_generation_swap_kill.py::"
+     ]
+    },
+    {
+     "id": "g1.oversize-admission",
+     "tier": "a",
+     "requirement": "Known oversize review bundles (base + body + diff + evidence + wrappers + output reserve, counted with the frozen G0 bound) fail admission before any capture or proposal is accepted.",
+     "tests": []
+    }
+   ]
+  },
+  {
+   "gate": "G2",
+   "checks": [
+    {
+     "id": "g2.hybrid-runtime",
+     "tier": "b",
+     "requirement": "Real cached-model QMD + FTS5 hybrid: RRF, exact citations, freshness labels, pinned generations, rebuild.",
+     "tests": [
+      "tests/hypothesis/test_p2_hybrid_runtime.py::",
+      "tests/hypothesis/test_bridge_recovery_runtime.py::test_restore_bootstrap_and_old_barrier_never_becomes_current"
+     ]
+    },
+    {
+     "id": "g2.retrieval-lifecycle",
+     "tier": "a",
+     "requirement": "Bounded RPC pool, generation lifecycle, model integrity, protocol output limits.",
+     "tests": [
+      "tests/runtime/authority-async.test.mjs::",
+      "tests/runtime/authority-recall-lifetime.test.mjs::",
+      "tests/runtime/generation-lifecycle.test.mjs::",
+      "tests/runtime/model-integrity.test.mjs::",
+      "tests/runtime/native-search-queue.test.mjs::",
+      "tests/runtime/protocol-output.test.mjs::"
+     ]
+    },
+    {
+     "id": "g2.context-byte-cap",
+     "tier": "a",
+     "requirement": "Recall JSON stays within the requested byte cap.",
+     "tests": [
+      "tests/hypothesis/test_mcp_stdio_runtime.py::test_current_scoped_lexical_recall_and_byte_cap",
+      "tests/hypothesis/test_p4_wiki_integration.py::test_bounded_context_respects_max_bytes"
+     ]
+    },
+    {
+     "id": "g2.measurement-harness",
+     "tier": "a",
+     "requirement": "Measurement uses the actual scoped retrieval path.",
+     "tests": [
+      "tests/hypothesis/test_g2_measurement.py::",
+      "tests/hypothesis/test_eval_v2_replay.py::",
+      "tests/runtime/trace-v2.test.mjs::"
+     ]
+    },
+    {
+     "id": "g2.recall-thresholds",
+     "tier": "b",
+     "requirement": "Frozen v2 holdout: recall@10 >=95%, all-evidence >=90%, hard slices >=90%, 100% citation resolution, zero cross-project/superseded-as-current.",
+     "measurement": true,
+     "tests": []
+    },
+    {
+     "id": "g2.answer-quality",
+     "tier": "b",
+     "requirement": "Frozen v2 holdout: >=90% correct and supported answers, <=5% unsupported confident answers on controls.",
+     "measurement": true,
+     "tests": []
+    },
+    {
+     "id": "g2.performance",
+     "tier": "b",
+     "requirement": ">=100 timed queries, ten readers, overlapping writes: warm p95 <=8 s (D11), visibility p95 <=30 s, RSS <=2 GiB.",
+     "measurement": true,
+     "tests": []
+    }
+   ]
+  },
+  {
+   "gate": "G3",
+   "checks": [
+    {
+     "id": "g3.scope-and-role-denials",
+     "tier": "a",
+     "requirement": "Project/role denials, forged keys, input limits, quoted injection text, path traversal, curator unreachable from workers.",
+     "tests": [
+      "tests/hypothesis/test_g3_adversarial.py::test_cross_project_authorization",
+      "tests/hypothesis/test_g3_adversarial.py::test_forged_key_rejected",
+      "tests/hypothesis/test_g3_adversarial.py::test_input_limits",
+      "tests/hypothesis/test_g3_adversarial.py::test_malicious_markdown_quoted",
+      "tests/hypothesis/test_g3_adversarial.py::test_path_traversal_blocked",
+      "tests/hypothesis/test_mcp_stdio_runtime.py::test_real_worker_boundary",
+      "tests/hypothesis/test_p4_boundary_fixes.py::"
+     ]
+    },
+    {
+     "id": "g3.backup-restore-epochs",
+     "tier": "a",
+     "requirement": "Online backup, restore into fresh epoch, retained history, stale-epoch barriers, failed restore keeps data.",
+     "tests": [
+      "tests/hypothesis/test_g3_adversarial.py::test_backup_restore_preserves_revisions",
+      "tests/hypothesis/test_bridge_recovery_runtime.py::test_backup_restore_epochs_exact_history_and_review",
+      "tests/hypothesis/test_bridge_recovery_runtime.py::test_online_backup_includes_committed_wal_without_checkpoint",
+      "tests/hypothesis/test_bridge_recovery_runtime.py::test_restore_failures_do_not_replace_existing_data",
+      "tests/hypothesis/test_bridge_recovery_runtime.py::test_backup_failure_is_not_a_receipt",
+      "tests/hypothesis/test_bridge_recovery_runtime.py::test_actual_bridge_roundtrip_and_scoped_failure",
+      "tests/hypothesis/test_bridge_recovery_runtime.py::test_bound_services_preserve_errors_and_curator_identity",
+      "tests/hypothesis/test_bridge_recovery_runtime.py::test_pending_cursor_is_bounded_scoped_and_has_a_scan_cutoff",
+      "tests/hypothesis/test_bridge_recovery_runtime.py::test_missing_database_and_temp_cleanup"
+     ]
+    },
+    {
+     "id": "g3.experimental-worker-sandbox",
+     "tier": "a",
+     "requirement": "Bubblewrap worker boundary experiment (not production isolation).",
+     "tests": [
+      "tests/hypothesis/test_worker_boundary.py::"
+     ]
+    },
+    {
+     "id": "g3.production-os-identities",
+     "tier": "c",
+     "requirement": "Denials re-run under real separate worker and service/curator OS identities.",
+     "tests": []
+    },
+    {
+     "id": "g3.curator-injection",
+     "tier": "c",
+     "requirement": "Curator-targeted injection and curator child-creation denial under the real supervisor.",
+     "tests": []
+    },
+    {
+     "id": "g3.rollback-preserves-knowledge",
+     "tier": "a",
+     "requirement": "Application rollback/schema downgrade preserves accepted knowledge; measured RPO/RTO.",
+     "tests": []
+    }
+   ]
+  },
+  {
+   "gate": "G4",
+   "checks": [
+    {
+     "id": "g4.simulated-contract",
+     "tier": "a",
+     "requirement": "Parent/child/fresh-session contract with simulated children. Does NOT satisfy the host gate.",
+     "tests": [
+      "tests/hypothesis/test_g4_parent_child.py::",
+      "tests/hypothesis/test_p4_wiki_integration.py::test_child_proposes_derived_parent_accepts",
+      "tests/hypothesis/test_p4_wiki_integration.py::test_cross_project_read_concrete",
+      "tests/hypothesis/test_p4_wiki_integration.py::test_exact_citation_after_restart",
+      "tests/hypothesis/test_p4_wiki_integration.py::test_project_service_scope",
+      "tests/hypothesis/test_p4_wiki_integration.py::test_two_project_isolation",
+      "tests/hypothesis/test_p4_wiki_integration.py::test_unauthorized_child_publication_fails",
+      "tests/hypothesis/test_mcp_stdio_runtime.py::test_durable_proposal_curator_publish_and_fresh_connection"
+     ]
+    },
+    {
+     "id": "g4.pi-live-scenarios",
+     "tier": "c",
+     "requirement": "DELIVERY G4-G7 steps 1-6 through real Pi + pi-subagents, checked from normalized transcripts and database rows.",
+     "tests": []
+    },
+    {
+     "id": "g4.pi-question-subset",
+     "tier": "c",
+     "requirement": ">=30 answerable + 10 negative questions through Pi with its pinned model.",
+     "tests": []
+    }
+   ]
+  },
+  {
+   "gate": "G5",
+   "checks": [
+    {
+     "id": "g5.codex-config",
+     "tier": "c",
+     "requirement": "Installed Codex CLI version, config and flags.",
+     "tests": [
+      "tests/hypothesis/test_p5_codex.py::"
+     ]
+    },
+    {
+     "id": "g5.codex-live-scenarios",
+     "tier": "c",
+     "requirement": "Steps 1-6 plus question subset through the real Codex CLI and native child.",
+     "tests": []
+    }
+   ]
+  },
+  {
+   "gate": "G6",
+   "checks": [
+    {
+     "id": "g6.claude-config",
+     "tier": "c",
+     "requirement": "Installed Claude Code settings, agent definition and flags.",
+     "tests": [
+      "tests/hypothesis/test_p6_claude_code.py::"
+     ]
+    },
+    {
+     "id": "g6.claude-live-scenarios",
+     "tier": "c",
+     "requirement": "Steps 1-6 plus question subset through real Claude Code foreground/background children.",
+     "tests": []
+    }
+   ]
+  },
+  {
+   "gate": "G7",
+   "checks": [
+    {
+     "id": "g7.opencode-config",
+     "tier": "c",
+     "requirement": "Installed OpenCode version, config and agent schema.",
+     "tests": [
+      "tests/hypothesis/test_p7_opencode.py::"
+     ]
+    },
+    {
+     "id": "g7.opencode-live-scenarios",
+     "tier": "c",
+     "requirement": "Steps 1-6 plus question subset through a real OpenCode native child.",
+     "tests": []
+    }
+   ]
+  },
+  {
+   "gate": "G8",
+   "checks": [
+    {
+     "id": "g8.verifier-logic",
+     "tier": "a",
+     "requirement": "Release sanitizer, rollback checks and receipt/gate checker behave as specified.",
+     "tests": [
+      "tests/hypothesis/test_p8_rollback_dirty.py::",
+      "tests/hypothesis/test_p8_sanitize.py::",
+      "tests/hypothesis/test_verification_receipts.py::"
+     ]
+    },
+    {
+     "id": "g8.strict-typecheck",
+     "tier": "a",
+     "requirement": "Strict TypeScript check of authority bridge, MCP, retrieval and Pi adapter against the pinned Pi 1.5.0 types (tsconfig.json).",
+     "tests": [
+      "typecheck::tsconfig.json"
+     ]
+    },
+    {
+     "id": "g8.independent-review",
+     "tier": "c",
+     "requirement": "Fresh verifier session reruns gates on the frozen release identity and records its own receipt.",
+     "tests": []
+    }
+   ]
+  }
+ ]
+}

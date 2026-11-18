@@ -1,0 +1,89 @@
+{
+ "builder_sha256": "1eaaacdbe51a8c9baf6d552dcff37e4bade2f97a47f1bc5d29512363ef9d7e2c",
+ "counts": {
+  "child_written_fact": 50,
+  "conflict_control": 20,
+  "cross_language_ukrainian": 50,
+  "cross_project_lookalike": 50,
+  "identifier_exact": 40,
+  "missing_control": 30,
+  "multi_page": 50,
+  "paraphrase": 50,
+  "superseded_decision": 50
+ },
+ "data_location": ".cache/eval/v2/frozen (not in git; confidential)",
+ "files_sha256": {
+  "edits.json": "5f90898302125569f128e38c6b2b7255a8db073d2e4e7920f2f42831f2e72506",
+  "pages.json": "8719c31b48f6e8c03bbfbbf2667f9586a0d46983b64ee9c3ac5e26b85dc08acf",
+  "questions.json": "4d3fe354fbcde15ee2a662436ba6ea2b2c330707bda86275a8a0976a1b95486d",
+  "split.json": "e17f76de57f0b19b4ca1f0c6941cd032839f16ae0fbaaeab1825aae668edeb4f"
+ },
+ "generator": {
+  "endpoint": "local-llamacpp",
+  "model": "qwen3.8-35b-a3b-mtp-32k",
+  "prompts_sha256": {
+   "child_written_fact": "3dfaf50e70cc48e6ad269657ea994d27f5d58b7814ff4fdf0c2204fefbb17d8d",
+   "conflict_control": "93905526dac709e3de32dde10c67d796303e039bd83f320966149f40ae0f52df",
+   "cross_language_ukrainian": "cb7b6baf761b39ad3175a888762fd1cc63f4ad9f6adff926e9b1c26f19d5f06f",
+   "cross_project_lookalike": "49dadab984eecd7b6d8610d49b47225a48d42519b11bcedf7e0805b1df0f9307",
+   "identifier_exact": "99021e2a0d339258097f944acc4efa7b68eb6a2bf6a27f242dd7d27f71e9b455",
+   "missing_control": "68ed372753e1923f3013ee232ee950a903131297b5945604e48a4b1f9de28434",
+   "multi_page": "d3222abcfbb3dda6af5dccde33933ceb6adccb4d8e34dc4cc9de3d613589ca06",
+   "paraphrase": "3a6778794f8991d2ef0aa4e83e1d32e54b00d45f5a8612fec8106c94644c787a",
+   "superseded_decision": "a93edf8c23c8124d6adce8f0165265020de0067fe160e86bac2c2df32cb7a756"
+  },
+  "seed": 7,
+  "temperature": 0,
+  "thinking": false
+ },
+ "holdout_counts": {
+  "child_written_fact": 30,
+  "conflict_control": 12,
+  "cross_language_ukrainian": 30,
+  "cross_project_lookalike": 30,
+  "identifier_exact": 24,
+  "missing_control": 18,
+  "multi_page": 30,
+  "paraphrase": 30,
+  "superseded_decision": 30
+ },
+ "owner_labels": {
+  "assist": "judge suggestions; see by_judge (DECISIONS.md D6, D7, D8)",
+  "by_judge": {
+   "claude:claude-fable-5-2": 45,
+   "claude:claude-fable-5-2+requested-info": 14,
+   "claude:claude-opus-5-5": 38
+  },
+  "by_source": {
+   "delegated": 97
+  },
+  "judge_prompts_sha256": {
+   "conflict_control": "55464de6159d1576bed25966d2ce54e3e1df31bbc9f723a1b4e3e798e43ad76d",
+   "missing_control": "62d57c0437ef11ac5e58d4b58870c2f021705a951c9e6c74632ee45f129c7fa4",
+   "positive": "c0665f314ac438c746eccbef353f57b1f7151853b216383488bd409bbd213e98"
+  },
+  "labeled": 97,
+  "rejected": 42
+ },
+ "seed": "eval-v2-2026-11-15",
+ "source": "pi-llm-wiki",
+ "source_pages": 2009,
+ "thresholds": {
+  "all_evidence_at_10_multi_page": 0.9,
+  "answers_correct_supported": 0.9,
+  "citation_resolution": 1.0,
+  "context_bytes_max": 24000,
+  "cross_project_disclosures": 0,
+  "evidence_recall_at_10": 0.95,
+  "hard_slice_recall_at_10": {
+   "cross_language_ukrainian": 0.9,
+   "paraphrase": 0.9
+  },
+  "rss_max_bytes": 2147483648,
+  "superseded_as_current": 0,
+  "unsupported_confident_on_controls_max": 0.05,
+  "visibility_p95_seconds": 30.0,
+  "warm_recall_p95_seconds": 8.0
+ },
+ "version": "2"
+}

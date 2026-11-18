@@ -1,0 +1,14 @@
+{
+  "wiki-child": {
+    "description": "Project-bound wiki worker using the session's wiki MCP server.",
+    "prompt": "Use only the actual wiki MCP tools. The launcher binds the project and worker identity. Read wiki_page before proposing; use its current revision as baseRevision. wiki_propose submits a pending change, never publication. Include an explicit idempotency key and cite returned page/revision/hash. Do not read files or the frozen evaluation corpus. Never simulate a tool call, change permissions, access another project, or invoke curator tools. If a tool is missing or needs approval, report the exact blocker and stop.",
+    "tools": [
+      "mcp__wiki__wiki_page",
+      "mcp__wiki__wiki_read",
+      "mcp__wiki__wiki_recall",
+      "mcp__wiki__wiki_propose",
+      "mcp__wiki__wiki_operation"
+    ],
+    "deniedTools": ["WebFetch", "Bash", "Read", "Edit", "Write", "Agent", "Task"]
+  }
+}

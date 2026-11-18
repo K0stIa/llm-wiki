@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "description": "LLM Wiki implementation snapshot",
+  "project": {
+    "owner": "K0stIa",
+    "number": 1,
+    "title": "LLM Wiki Backlog"
+  },
+  "target": {
+    "type": "repo",
+    "url": null
+  },
+  "repo": {
+    "path": ".",
+    "remote": "https://github.com/K0stIa/llm-wiki"
+  },
+  "base_branch": "super-board/implementation",
+  "timezone": "Europe/Helsinki",
+  "columns": [
+    "Backlog",
+    "Ready",
+    "Building",
+    "QA",
+    "Review",
+    "Blocked",
+    "Done"
+  ],
+  "labels": [
+    "qa",
+    "bug",
+    "feature"
+  ],
+  "paths": {
+    "project_md": "docs/super-board/PROJECT.md",
+    "pre_flight_md": "docs/super-board/pre-flight.md",
+    "runs_dir": "docs/super-board/runs"
+  },
+  "model_tier": "low",
+  "worker_backend": "workflow",
+  "human_approves_merge": true,
+  "merge_policy": {
+    "default": "human",
+    "allow_auto_on_production": false
+  },
+  "migrations": {
+    "allowed_envs": [],
+    "target_env": "staging",
+    "commands": {},
+    "checks": {}
+  },
+  "usage_fallback": "none",
+  "collect": {
+    "sources": [
+      "github",
+      "prs",
+      "architecture"
+    ],
+    "window_days": 14
+  },
+  "notifications": {
+    "channel": "session",
+    "bot_identity": "K0stIa"
+  },
+  "codex": {
+    "model": "gpt-6.2-sol"
+  },
+  "verify_commands": [
+    "uv sync --locked",
+    "npm ci --no-audit --no-fund",
+    "node_modules/.bin/tsc -p tsconfig.json",
+    "PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest -q -m 'not tier_b and not tier_c' tests/hypothesis/test_g2_measurement.py tests/hypothesis/test_eval_v2_scoring.py tests/hypothesis/test_eval_v2_replay.py -k 'not test_deterministic_slice_sample_includes_both_controls_and_keeps_its_own_checkpoint'",
+    "node --import tsx --test tests/runtime/native-search-queue.test.mjs tests/runtime/trace-v2.test.mjs"
+  ]
+}

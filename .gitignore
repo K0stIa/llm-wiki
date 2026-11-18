@@ -1,0 +1,31 @@
+# Local research checkouts, generated indexes, model caches and raw sessions
+.cache/
+
+# Private LAN login. Keep the local file for the existing access checks.
+access/login.json
+access/*.log
+logs/
+
+# Runtime artifacts and dependencies
+__pycache__/
+*.pyc
+node_modules/
+.venv/
+
+# Local Super Board state
+.claude/super-board/active
+.claude/super-board/onboard-answers.json
+.claude/super-board/onboard-staged/
+.claude/super-board/backup/
+.claude/super-board/inflight/
+.claude/super-board/migrations/
+.claude/super-board/upgrade.json
+
+# Additional local verification and worker state
+.verification/
+.hypothesis/
+.pytest_cache/
+.claude/settings.local.json
+.claude/worktrees/
+.claude/super-board/*.pid
+.claude/super-board/*.lock

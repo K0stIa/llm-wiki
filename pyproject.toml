@@ -1,0 +1,27 @@
+[project]
+name = "llm-wiki"
+version = "0.0.0"
+description = "Prototype shared coding-agent knowledge service (not released)."
+requires-python = "==3.12.*"
+dependencies = []
+
+[dependency-groups]
+test = [
+    "hypothesis==6.170.15",
+    "pytest==9.2.0",
+    "pytest-timeout==2.4.0",
+]
+
+[tool.uv]
+package = false
+default-groups = ["test"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/hypothesis"]
+addopts = ["-p", "no:cacheprovider", "--strict-markers"]
+# Hang guard only. A timeout means "hung", never a correctness verdict.
+timeout = 600
+markers = [
+    "tier_b: needs the pinned cached embedding model (WIKI_TEST_CACHED_MODEL) or native QMD",
+    "tier_c: needs an installed agent host binary or its live configuration",
+]
