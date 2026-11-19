@@ -189,12 +189,32 @@ print(json.dumps(fixtures[key]))
                 self.fixtures[ISSUE_COMMENTS] = [[*comments, blocker]]
                 self.assert_held()
 
+    def test_unlinked_bare_request_on_second_read_holds(self):
+        self.assert_resumed()
+        self.fixtures["fresh_issue_comments"] = [[
+            *self.fixtures[ISSUE_COMMENTS][0], comment(4, self.marker, 4)]]
+        self.assert_held()
+
+    def test_unlinked_malformed_bare_request_holds(self):
+        self.fixtures[ISSUE_COMMENTS][0].append(comment(4, "approval-request: invalid", 4))
+        self.assert_held()
+
+    def test_unlinked_fenced_bare_request_example_does_not_hold(self):
+        example = f"Example:\n~~~text\n{self.marker}\n~~~"
+        comments = [[*self.fixtures[ISSUE_COMMENTS][0], comment(4, example, 4)]]
+        self.fixtures["fresh_issue_comments"] = comments
+        self.assert_resumed()
+        del self.fixtures["fresh_issue_comments"]
+        self.fixtures[ISSUE_COMMENTS] = comments
+        self.assert_resumed()
+
     def test_unlinked_issue_marker_survives_nested_or_unmatched_fence(self):
         for body in (
             "- ```text\n  example\n  ```\nReason tag: 🙋 needs you",
             "Example:\n~~~text\nReason tag: 🙋 needs you",
             "- ```text\n  example\n  ```\nReason tag: 🙋 needs you\n```",
             "- Example:\n  ~~~text\n  approval-handoff: ambiguous\n  ~~~",
+            "Example:\n~~~text\napproval-request: ambiguous\n ~~~",
         ):
             with self.subTest(body=body):
                 self.fixtures[ISSUE_COMMENTS] = [[comment(3, HANDOFF, 2), comment(4, body, 4)]]

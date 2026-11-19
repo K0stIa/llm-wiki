@@ -24,7 +24,7 @@ PREFIX = "approval-request: "
 SHA = re.compile(r"[0-9a-f]{40}\Z")
 SCOPE = re.compile(r"[0-9a-f]{64}\Z")
 BLOCK = re.compile(r"Reason tag:[^\n]*🙋|^approval-request:", re.M)
-ISSUE_BLOCK = re.compile(r"[ ]{0,3}(?:Reason tag:|\[\w+\] \[blocker\]|approval-handoff:)")
+ISSUE_BLOCK = re.compile(r"[ ]{0,3}(?:Reason tag:|\[\w+\] \[blocker\]|approval-handoff:|approval-request:)")
 ISSUE_LIST = re.compile(r"[ \t]*(?:[-+*]|[0-9]{1,9}[.)])[ \t]+")
 ISSUE_FENCE = re.compile(r"( {0,3})(`{3,}|~{3,})(.*)")
 DONE = re.compile(r"\s*done[.!]?\s*\Z", re.I)
@@ -343,6 +343,10 @@ def main():
             try:
                 comments = github.comments(entry["number"])
                 blocks = trusted_blocks(comments, github.permission)
+                # A canonical-looking example must not select a linked PR before
+                # the unlinked check can apply the issue marker classifier.
+                blocks = [block for block in blocks
+                          if parse_request(block) is None or has_issue_block(block["body"])]
                 blocks.sort(key=lambda c: timestamp(c.get("created_at")), reverse=True)
                 if len(blocks) > 1 and timestamp(blocks[0]["created_at"]) == timestamp(blocks[1]["created_at"]):
                     entry["approvalWhy"] = "ambiguous newest human request"
