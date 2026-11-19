@@ -142,38 +142,41 @@ def test_saved_trace_reports_historical_settings_and_checks_integrity(tmp_path, 
     historical = {**trace_v2.approved_settings(), "depth": 30}
     assert historical != trace_v2.approved_settings()
     diagnostic = {"subset": "development"}
-    outputs = set(trace_v2.OUTPUTS)
-    if version == 1:
-        outputs.remove("trace-questions.json")
+    artifacts = {
+        "trace.json": {"version": version, "subset": "development", "traces": {}, "reranker": historical},
+        "raw.json": {"buildSeconds": 0, "rankings": {}, "reranker": historical},
+        "oracle-raw.json": {"buildSeconds": 0, "rankings": {}, "reranker": historical},
+        "report.json": {"subset": "development", "reranker_config": historical},
+    }
+    outputs = set(trace_v2.OUTPUTS) - ({"trace-questions.json"} if version == 1 else set())
     for name in outputs:
-        (run / name).write_text("{}")
-    (run / "report.json").write_text(json.dumps({"reranker_config": historical}))
-    (run / "trace-report.json").write_text(json.dumps(diagnostic))
+        (run / name).write_text(json.dumps(artifacts.get(name, diagnostic if name == "trace-report.json" else {})))
     provenance = {
-        "version": version,
-        "subset": "development",
-        "reranker_config": historical,
+        "version": version, "subset": "development", "reranker_config": historical,
         "outputs_sha256": {name: trace_v2.receipts.sha256_file(run / name) for name in outputs},
     }
     provenance_path = run / "trace-provenance.json"
     provenance_path.write_text(json.dumps(provenance))
-
     assert trace_v2.main() == 0
     header, body = capsys.readouterr().out.split("\n", 1)
-    assert header == "run=historical"
-    assert json.loads(body) == diagnostic
+    assert (header, json.loads(body)) == ("run=historical", diagnostic)
 
     mismatched = {**historical, "depth": 31}
-    assert trace_v2.valid_settings(mismatched)
-    provenance_path.write_text(json.dumps({**provenance, "reranker_config": mismatched}))
-    with pytest.raises(SystemExit, match="recorded development provenance"):
-        trace_v2.main()
+    malformed = {**historical, "depth": 0}
+    for settings in (mismatched, malformed, None):
+        for name, artifact in {**artifacts, provenance_path.name: provenance}.items():
+            key = "reranker" if "reranker" in artifact else "reranker_config"
+            edited = {**artifact, key: settings} if settings is not None else {k: v for k, v in artifact.items() if k != key}
+            path = run / name
+            path.write_text(json.dumps(edited))
+            if path != provenance_path:
+                hashes = {**provenance["outputs_sha256"], name: trace_v2.receipts.sha256_file(path)}
+                provenance_path.write_text(json.dumps({**provenance, "outputs_sha256": hashes}))
+            with pytest.raises(SystemExit, match="recorded development provenance"):
+                trace_v2.main()
+            path.write_text(json.dumps(artifact))
+            provenance_path.write_text(json.dumps(provenance))
 
-    provenance_path.write_text(json.dumps({**provenance, "reranker_config": {**historical, "depth": 0}}))
-    with pytest.raises(SystemExit, match="recorded development provenance"):
-        trace_v2.main()
-
-    provenance_path.write_text(json.dumps(provenance))
     (run / "trace-report.json").write_text("{}")
     with pytest.raises(SystemExit, match="recorded development provenance"):
         trace_v2.main()

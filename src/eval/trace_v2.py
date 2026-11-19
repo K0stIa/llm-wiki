@@ -239,14 +239,19 @@ def main() -> int:
         run = run_trace(runs)
     provenance = json.loads((run / "trace-provenance.json").read_text())
     expected_outputs = set(OUTPUTS) if provenance["version"] == 2 else set(OUTPUTS) - {"trace-questions.json"}
-    if (provenance["subset"] != "development" or not valid_settings(provenance["reranker_config"])
+    if (provenance["subset"] != "development"
             or provenance["version"] not in (1, 2) or provenance["outputs_sha256"].keys() != expected_outputs
             or any(receipts.sha256_file(run / name) != digest for name, digest in provenance["outputs_sha256"].items())):
         raise SystemExit("saved trace does not match its recorded development provenance")
-    report = json.loads((run / "report.json").read_text())
-    observed = report.get("reranker_config") if isinstance(report, dict) else None
-    if not valid_settings(observed) or observed != provenance["reranker_config"]:
-        raise SystemExit("saved trace report does not match its recorded development provenance")
+    recorded = provenance.get("reranker_config")
+    if not valid_settings(recorded):
+        raise SystemExit("saved trace does not match its recorded development provenance")
+    for name, key in (("trace.json", "reranker"), ("raw.json", "reranker"),
+                      ("oracle-raw.json", "reranker"), ("report.json", "reranker_config")):
+        artifact = json.loads((run / name).read_text())
+        observed = artifact.get(key) if isinstance(artifact, dict) else None
+        if not valid_settings(observed) or observed != recorded:
+            raise SystemExit(f"saved {name} does not match its recorded development provenance")
     print(f"run={run.name}")
     print(json.dumps(json.loads((run / "trace-report.json").read_text()), indent=2))
     return 0
