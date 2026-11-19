@@ -273,14 +273,18 @@ def test_development_performance_checks_retrieval_profile_before_scoring(tmp_pat
     monkeypatch.setattr(perf, "publish_holdout", lambda *args: pytest.fail("development published a receipt"))
     if invalid_report:
         report = run / "report.json"
-        report.write_text("[]")
-        if invalid_report == "shape":
+        if invalid_report == "digest":
+            report.write_text(json.dumps(retrieval, indent=2))
+            diagnostic = "retrieval report does not match the recorded run"
+        else:
+            report.write_text("[]")
+            diagnostic = "could not validate retrieval artifacts"
             provenance_path = run / "retrieval-run.json"
             provenance = json.loads(provenance_path.read_text())
             provenance["report_sha256"] = digest(report)
             provenance_path.write_text(json.dumps(provenance))
         monkeypatch.setattr(perf.subprocess, "run", lambda *a, **kw: pytest.fail("workload started"))
-        with pytest.raises(SystemExit, match="retrieval (report|artifacts)"):
+        with pytest.raises(SystemExit, match=f"^{diagnostic}$"):
             perf.main()
         return
     if observed_depth == settings["depth"]:
