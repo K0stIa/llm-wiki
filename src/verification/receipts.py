@@ -165,7 +165,9 @@ def validate_receipt(receipt: dict) -> None:
 
 
 def write_measurement(check: str, identity: dict, started: str, report: Path,
-                      passed: bool, argv: list[str]) -> Path:
+                      passed: bool, argv: list[str], *, report_sha256: str | None = None) -> Path:
+    if report_sha256 is None:
+        report_sha256 = sha256_file(report)
     finished = datetime.now(timezone.utc).isoformat()
     run_id = str(uuid.uuid4())
     outcomes = [{"id": check, "outcome": "passed" if passed else "failed"}]
@@ -173,7 +175,7 @@ def write_measurement(check: str, identity: dict, started: str, report: Path,
                "finished": finished, "identity": identity, "repeat": 1, "deterministic": True,
                "commands": [{"argv": argv, "exit": 0 if passed else 1}],
                "outcomes": outcomes, "outcomes_sha256": sha256_json(outcomes),
-               "measurement": {"check": check, "report_sha256": sha256_file(report)}}
+               "measurement": {"check": check, "report_sha256": report_sha256}}
     validate_receipt(receipt)
     RECEIPT_DIR.mkdir(parents=True, exist_ok=True)
     path = RECEIPT_DIR / f"{finished.replace(':', '')}-tier-b-{run_id[:8]}.json"

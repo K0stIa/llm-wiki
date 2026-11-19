@@ -29,6 +29,7 @@ from authority import ChangeKind, DecisionKind, connect_knowledge  # noqa: E402
 import build_v2  # noqa: E402
 from g2_reranker_profile import approved_settings, valid_settings  # noqa: E402
 import receipts  # noqa: E402
+from retrieval_run import read_retrieval_run  # noqa: E402
 import score_v2  # noqa: E402
 
 FROZEN = build_v2.WORK / "frozen"
@@ -93,18 +94,21 @@ def resolve(db: Path, raw: dict) -> dict:
 
 
 def publish_holdout(check: str, run: Path, report: Path, passed: bool) -> None:
-    retrieval = run / "report.json"
-    provenance = json.loads((run / "retrieval-run.json").read_text())
-    if provenance["report_sha256"] != receipts.sha256_file(retrieval):
-        raise SystemExit("retrieval report does not match the recorded run")
-    settings = json.loads(retrieval.read_text())
-    if settings["subset"] != "holdout":
+    artifacts = read_retrieval_run(run)
+    provenance, settings = artifacts.provenance, artifacts.report
+    subset = settings.get("subset")
+    if subset not in ("development", "holdout"):
+        raise SystemExit("retrieval report subset must be development or holdout")
+    if subset == "development":
         return
     approved = approved_settings()
     model_sha = receipts.approved_reranker_sha256()
     reports = [settings]
+    report_sha256 = provenance["report_sha256"] if report == run / "report.json" else None
     if check == "g2.performance":
-        reports.append(json.loads(report.read_text()))
+        performance_bytes = report.read_bytes()
+        reports.append(json.loads(performance_bytes))
+        report_sha256 = hashlib.sha256(performance_bytes).hexdigest()
     for measured in reports:
         if (not isinstance(measured, dict) or measured.get("subset") != "holdout"
                 or not valid_settings(measured.get("reranker_config")) or measured["reranker_config"] != approved
@@ -112,7 +116,8 @@ def publish_holdout(check: str, run: Path, report: Path, passed: bool) -> None:
             print("Measurement receipt withheld because the run differs from the approved D14 profile.")
             return
     path = receipts.write_measurement(check, provenance["identity"], provenance["started"], report,
-                                      passed, [Path(sys.executable).name, *sys.argv])
+                                      passed, [Path(sys.executable).name, *sys.argv],
+                                      report_sha256=report_sha256)
     print(f"Measurement receipt: {path.relative_to(ROOT)}")
 
 

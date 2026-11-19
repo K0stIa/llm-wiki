@@ -360,7 +360,7 @@ def test_answer_resume_rejects_an_altered_complete_row(answer_run, monkeypatch):
     assert not (run_dir / "answer-run.json").exists()
 
 
-@pytest.mark.parametrize("invalid", ["stale", "raw checksum", "legacy", "lock", "deadline"])
+@pytest.mark.parametrize("invalid", ["stale", "raw checksum", "raw shape", "legacy", "lock", "deadline"])
 def test_answer_resume_rejects_unverified_inputs_before_network(answer_run, monkeypatch, invalid):
     run_dir, *_ = answer_run
     flags = []
@@ -368,6 +368,17 @@ def test_answer_resume_rejects_unverified_inputs_before_network(answer_run, monk
         monkeypatch.setattr(measure_v2.receipts, "current_identity", lambda **_: {"commit": "c" * 40})
     elif invalid == "raw checksum":
         (run_dir / "raw.json").write_text("{}")
+    elif invalid == "raw shape":
+        raw = run_dir / "raw.json"
+        raw.write_text("[]")
+        report_path = run_dir / "report.json"
+        report = json.loads(report_path.read_text())
+        report["raw_rankings_sha256"] = measure_v2.receipts.sha256_file(raw)
+        report_path.write_text(json.dumps(report))
+        provenance_path = run_dir / "retrieval-run.json"
+        provenance = json.loads(provenance_path.read_text())
+        provenance["report_sha256"] = measure_v2.receipts.sha256_file(report_path)
+        provenance_path.write_text(json.dumps(provenance))
     elif invalid == "legacy":
         (run_dir / "answers.jsonl").write_text("{}\n")
     elif invalid == "deadline":
@@ -390,6 +401,74 @@ def test_answer_resume_rejects_unverified_inputs_before_network(answer_run, monk
             assert isinstance(exc.value.code, str)
     finally:
         os.close(fd)
+
+
+@pytest.mark.parametrize(
+    ("ineligible", "diagnostic"),
+    [
+        ("stale", "current checkout identity"),
+        ("dirty", "and a clean checkout"),
+        ("manifest_sha256", "recorded run and frozen manifest"),
+        ("model_sha256", "recorded run and frozen manifest"),
+        ("subset", "recorded run and frozen manifest"),
+    ],
+)
+def test_answer_retrieval_checks_eligibility_before_raw(answer_run, monkeypatch, ineligible, diagnostic):
+    run_dir, _, _, report, identity = answer_run
+    (run_dir / "raw.json").unlink()
+    provenance_path = run_dir / "retrieval-run.json"
+    provenance = json.loads(provenance_path.read_text())
+
+    if ineligible == "stale":
+        monkeypatch.setattr(measure_v2.receipts, "current_identity", lambda **_: {"commit": "c" * 40})
+    elif ineligible == "dirty":
+        identity["dirty"] = True
+        provenance["identity"] = identity
+    else:
+        report[ineligible] = "ineligible"
+        report_path = run_dir / "report.json"
+        report_path.write_text(json.dumps(report))
+        provenance["report_sha256"] = measure_v2.receipts.sha256_file(report_path)
+    provenance_path.write_text(json.dumps(provenance))
+
+    with pytest.raises(SystemExit, match=diagnostic):
+        answer_v2._read_retrieval(run_dir, resume=True)
+
+
+@pytest.mark.parametrize("report_content", [None, b"{", b"{}"], ids=["missing", "malformed", "wrong-digest"])
+@pytest.mark.parametrize("dirty", [False, True], ids=["stale", "dirty-resume"])
+def test_answer_retrieval_checks_checkout_before_report(answer_run, monkeypatch, report_content, dirty):
+    run_dir, _, _, _, identity = answer_run
+    report_path = run_dir / "report.json"
+    if report_content is None:
+        report_path.unlink()
+    else:
+        report_path.write_bytes(report_content)
+
+    if dirty:
+        identity["dirty"] = True
+        provenance_path = run_dir / "retrieval-run.json"
+        provenance = json.loads(provenance_path.read_bytes())
+        provenance["identity"] = identity
+        provenance_path.write_text(json.dumps(provenance))
+    else:
+        monkeypatch.setattr(measure_v2.receipts, "current_identity", lambda **_: {"commit": "c" * 40})
+
+    diagnostic = "current checkout identity" + (" and a clean checkout" if dirty else "")
+    with pytest.raises(SystemExit, match=diagnostic):
+        answer_v2._read_retrieval(run_dir, resume=dirty)
+
+
+@pytest.mark.parametrize(
+    ("report_content", "diagnostic"),
+    [(b"{", "could not validate retrieval artifacts for answer collection"),
+     (b"{}", "retrieval report does not match the recorded run and frozen manifest")],
+)
+def test_answer_retrieval_preserves_invalid_report_diagnostics(answer_run, report_content, diagnostic):
+    run_dir, *_ = answer_run
+    (run_dir / "report.json").write_bytes(report_content)
+    with pytest.raises(SystemExit, match=diagnostic):
+        answer_v2._read_retrieval(run_dir, resume=False)
 
 
 class _Gen:

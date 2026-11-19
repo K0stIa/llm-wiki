@@ -11,6 +11,7 @@ from pathlib import Path
 
 from g2_reranker_profile import approved_settings, valid_settings
 from measure_v2 import ROOT, build_v2, publish_holdout, receipts, resolve, verified_frozen
+from retrieval_run import read_retrieval_run
 from score_v2 import score_performance, score_retrieval
 
 
@@ -55,11 +56,12 @@ def main() -> int:
         raise SystemExit("performance measurement requires the approved model hashes")
     approved = approved_settings()
     identity = receipts.current_identity(model={"sha256": receipts.approved_model_sha256()})
-    provenance = json.loads((run / "retrieval-run.json").read_text())
-    retrieval = json.loads((run / "report.json").read_text())
-    if ((identity["dirty"] and not args.development) or identity != provenance["identity"] or retrieval["subset"] != subset
-            or retrieval["manifest_sha256"] != receipts.sha256_file(build_v2.MANIFEST)
-            or provenance["report_sha256"] != receipts.sha256_file(run / "report.json")
+    artifacts = read_retrieval_run(run)
+    retrieval = artifacts.report
+    if ((identity["dirty"] and not args.development)
+            or identity != artifacts.provenance.get("identity")
+            or retrieval.get("subset") != subset
+            or retrieval.get("manifest_sha256") != receipts.sha256_file(build_v2.MANIFEST)
             or retrieval.get("reranker_sha256") != receipts.approved_reranker_sha256()
             or not valid_settings(retrieval.get("reranker_config"))
             or (not args.development and retrieval["reranker_config"] != approved)):
