@@ -39,7 +39,8 @@ fixtures = json.load(open(os.environ["FIXTURES"]))
 if a[:2] == ["pr", "list"]:
     key = "open"
 elif a[:2] == ["api", "graphql"]:
-    key = next(field for field in a if field.startswith("pr="))
+    key = next((field for field in a if field.startswith("pr=")), "open")
+    assert key != "open" or ("--paginate" in a and "--slurp" in a)
 else:
     key = a[-1].split("?")[0]
 print(json.dumps(fixtures[key]))
@@ -49,19 +50,28 @@ print(json.dumps(fixtures[key]))
         self.check = ["--pr", "42", "--head", HEAD, "--plan", PLAN]
         self.marker = self.run_command(self.args + self.check + ["--request"]).strip()
         pr = dict(headRefOid=HEAD, state="OPEN", headRefName="issue-7-approval",
-                  isCrossRepository=False, closingIssuesReferences={
+                  isCrossRepository=False, headRepository={"nameWithOwner": REPO}, closingIssuesReferences={
                       "nodes": [], "pageInfo": {"hasNextPage": False}})
         self.pr = pr
         self.fixtures = {
-            "open": [dict(number=42, title="Approval", body="", url="https://github.com/example/wiki/pull/42",
-                          headRefName=pr["headRefName"], headRefOid=HEAD, files=[],
-                          baseRefName="implementation", isDraft=False)],
+            "open": [self.page([self.candidate(42, pr["headRefName"])])],
             "pr=42": [{"data": {"repository": {"pullRequest": pr}}}],
             f"repos/{REPO}/issues/7/comments": [[]],
             f"repos/{REPO}/issues/42/comments": [[comment(1, self.marker, 1), comment(2, "done", 3)]],
             f"repos/{REPO}/collaborators/owner/permission": {"permission": "admin"},
             f"repos/{REPO}/collaborators/guest/permission": {"permission": "read"},
         }
+
+    @staticmethod
+    def candidate(number, branch, repository=REPO):
+        return {"number": number, "headRefName": branch,
+                "headRepository": {"nameWithOwner": repository}}
+
+    @staticmethod
+    def page(nodes, cursor=None):
+        return {"data": {"repository": {"pullRequests": {
+            "nodes": nodes, "pageInfo": {"hasNextPage": cursor is not None, "endCursor": cursor},
+        }}}}
 
     def run_command(self, args, input=None):
         return subprocess.run(args, input=input, text=True, capture_output=True,
@@ -74,6 +84,7 @@ print(json.dumps(fixtures[key]))
         self.save()
         entry = {"number": 7, "title": "Approval", "needsYou": True, "runnable": False}
         deps = self.run_command(self.args + ["--deps"], json.dumps({"7": entry}))
+        self.evidence = json.loads(deps)["7"]
         (self.path / "deps.json").write_text(deps)
         card = {"number": 7, "title": "Approval", "type": "Issue"}
         items = {"items": [{"status": "Blocked", "title": "Approval", "content": card}]}
@@ -93,19 +104,19 @@ print(json.dumps(fixtures[key]))
         for branch, fork in [("issue-70-other", False), ("issue-7-approval", True)]:
             with self.subTest(branch=branch, fork=fork):
                 self.pr.update(headRefName=branch, isCrossRepository=fork)
-                self.fixtures["open"][0]["headRefName"] = branch
+                self.fixtures["open"] = [self.page([self.candidate(42, branch)])]
                 self.assertEqual(self.wave()["resume"], [])
 
     def test_reply_cannot_move_between_prs(self):
-        other = dict(self.fixtures["open"][0], number=43, headRefName="issue-8-approval")
-        self.fixtures["open"].append(other)
+        self.fixtures["open"] = [self.page([self.candidate(42, "issue-7-approval"),
+                                            self.candidate(43, "issue-8-approval")])]
         reply = self.fixtures[f"repos/{REPO}/issues/42/comments"][0].pop()
         self.fixtures[f"repos/{REPO}/issues/43/comments"] = [[reply]]
         self.assertEqual(self.wave()["resume"], [])
 
     def test_ambiguous_workflow_branches_stay_blocked(self):
-        other = dict(self.fixtures["open"][0], number=43, headRefName="issue-7-other")
-        self.fixtures["open"].append(other)
+        self.fixtures["open"] = [self.page([self.candidate(42, "issue-7-approval")], "next"),
+                                 self.page([self.candidate(43, "issue-7-other")])]
         self.assertEqual(self.wave()["resume"], [])
 
     def test_stale_edited_or_untrusted_approval_does_not_resume(self):
@@ -118,6 +129,57 @@ print(json.dumps(fixtures[key]))
                 wave = self.wave()
                 self.assertEqual(wave["resume"], [])
                 self.assertEqual(wave["refreshApproval"], [])
+
+    def test_live_selected_pr_requires_same_origin_metadata(self):
+        self.pr["headRepository"] = None
+        self.assertEqual(self.wave()["resume"], [])
+
+    def test_ambiguous_issue_requests_never_select_a_pr(self):
+        self.fixtures[f"repos/{REPO}/issues/7/comments"] = [[
+            comment(3, self.marker, 0), comment(4, self.marker.replace(HEAD, "b" * 40), 0)]]
+        wave = self.wave()
+        self.assertEqual(wave["resume"], [])
+        self.assertEqual(wave["refreshApproval"], [])
+        self.assertEqual(self.evidence["approvalWhy"], "ambiguous newest human request")
+
+    def test_stale_issue_pin_requires_refresh_even_after_pr_approval(self):
+        self.pr["closingIssuesReferences"]["nodes"] = [
+            {"number": 7, "repository": {"nameWithOwner": REPO}}]
+        self.fixtures[f"repos/{REPO}/issues/7/comments"] = [[
+            comment(3, self.marker.replace(HEAD, "b" * 40), 0)]]
+        wave = self.wave()
+        self.assertEqual(wave["resume"], [])
+        self.assertEqual([card["number"] for card in wave["refreshApproval"]], [7])
+
+    def test_same_repository_candidate_survives_fork_and_invalid_repository(self):
+        self.fixtures["open"] = [self.page([
+            self.candidate(42, "issue-7-approval"),
+            self.candidate(43, "issue-7-approval", "fork/wiki"),
+            self.candidate(44, "issue-7-approval", None),
+        ])]
+        self.assertEqual([card["number"] for card in self.wave()["resume"]], [7])
+
+    def test_sole_candidate_on_later_page(self):
+        first = [self.candidate(n, "unrelated") for n in range(100, 200)]
+        self.fixtures["open"] = [self.page(first, "next"),
+                                 self.page([self.candidate(42, "issue-7-approval")])]
+        self.assertEqual([card["number"] for card in self.wave()["resume"]], [7])
+
+    def test_incomplete_candidate_pages_hold(self):
+        first = self.page([self.candidate(42, "issue-7-approval")], "next")
+        for pages in ([first], [first, self.page(None)]):
+            with self.subTest(pages=pages):
+                self.fixtures["open"] = pages
+                self.assertEqual(self.wave()["resume"], [])
+                self.assertEqual(self.evidence["approvalWhy"], "approval evidence could not be verified")
+
+    def test_unlinked_issue_handoff_and_independent_human_blocker(self):
+        self.fixtures[f"repos/{REPO}/issues/7/comments"] = [[
+            comment(3, "Approval request is on PR #42. Reply there.", 4)]]
+        self.assertEqual([card["number"] for card in self.wave()["resume"]], [7])
+        self.fixtures[f"repos/{REPO}/issues/7/comments"][0].append(
+            comment(4, "Reason tag: 🙋\nTo unblock: Resolve the rollout question.", 5))
+        self.assertEqual(self.wave()["resume"], [])
 
     def test_offline_dependencies_do_not_read_github(self):
         deps = self.run_command(self.args[:-1] + ["", "--deps"],
