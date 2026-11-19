@@ -8,8 +8,6 @@ import hashlib
 import json
 import math
 import os
-import re
-import shutil
 import sqlite3
 import subprocess
 import sys
@@ -121,23 +119,11 @@ def reuse_generation(source: Path, run: Path, projects: set[str], manifest_sha: 
     with closing(sqlite3.connect((source / "authority.db").as_uri() + "?mode=ro", uri=True)) as original:
         with closing(sqlite3.connect(run / "authority.db")) as clone:
             original.backup(clone)
-    for project in sorted(projects):
-        name = hashlib.sha256(project.encode()).hexdigest()
-        origin = source / "indexes" / name
-        generation = (origin / "current").read_text().strip()
-        if not re.fullmatch(r"g-[\da-f-]{36}", generation):
-            raise SystemExit("source generation pointer is invalid")
-        manifest_path = origin / generation / "manifest.json"
-        index = origin / generation / "index.sqlite"
-        manifest = json.loads(manifest_path.read_text())
-        if (manifest["generation"] != generation or manifest["modelDigest"] != model_sha
-                or receipts.sha256_file(index) != manifest["databaseDigest"]):
-            raise SystemExit("source generation digest differs from its manifest")
-        destination = run / "indexes" / name / generation
-        destination.mkdir(parents=True)
-        shutil.copyfile(index, destination / index.name)
-        shutil.copyfile(manifest_path, destination / manifest_path.name)
-        (destination.parent / "current").write_text(generation + "\n")
+    subprocess.run(
+        ["node", "node_modules/tsx/dist/cli.mjs", "src/eval/copy-generation.ts",
+         str(source.resolve()), str(run.resolve()), *sorted(projects)],
+        cwd=ROOT, check=True, timeout=120,
+    )
 
 
 def run_trace(runs: Path, source: Path | None = None) -> Path:

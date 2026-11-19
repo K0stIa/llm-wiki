@@ -2,14 +2,14 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
-import { cpSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { hostname, platform, arch, loadavg } from "node:os";
 import { join, resolve } from "node:path";
 import { performance } from "node:perf_hooks";
 import { promisify } from "node:util";
 import { fileDigestAsync } from "../retrieval/offline.js";
-import { closeQmdReaders, generationRoot, observeRecall, recall } from "../retrieval/qmd-integration.js";
+import { closeQmdReaders, copyGenerationSnapshot, observeRecall, recall } from "../retrieval/qmd-integration.js";
 import { evaluationRerankerSettings } from "./g2-reranker-profile.js";
 
 const execute = promisify(execFile);
@@ -56,13 +56,9 @@ with sqlite3.connect(Path(sys.argv[1]).as_uri() + "?mode=ro", uri=True) as sourc
         print(dest.execute("SELECT count(*) FROM page_heads WHERE project='main'").fetchone()[0])
 `, join(source, "authority.db"), database], { timeout: 20_000 });
 const pages = Number(snapshot.stdout.trim());
-const originalRoot = generationRoot({ ...binding, indexRoot: join(source, "indexes") });
-const copiedRoot = generationRoot(binding);
-const generation = readFileSync(join(originalRoot, "current"), "utf8").trim();
-if (!/^g-[0-9a-f-]{36}$/.test(generation)) throw new Error("unexpected holdout generation name");
-mkdirSync(copiedRoot, { recursive: true });
-cpSync(join(originalRoot, generation), join(copiedRoot, generation), { recursive: true, errorOnExist: true });
-writeFileSync(join(copiedRoot, "current"), generation + "\n");
+await copyGenerationSnapshot({
+  database: join(source, "authority.db"), indexRoot: join(source, "indexes"), project,
+}, binding);
 const buildArgs = ["node_modules/tsx/dist/cli.mjs", "src/retrieval/build-index.ts", database, project, indexRoot, model];
 const build = async () => {
   const start = clock();
