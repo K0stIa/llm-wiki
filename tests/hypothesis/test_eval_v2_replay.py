@@ -1,6 +1,7 @@
 """Development answer replay with synthetic evidence and a local transport stub."""
 import hashlib
 import json
+import stat
 import sys
 from pathlib import Path
 
@@ -67,9 +68,20 @@ def test_replay_pairs_exact_authority_and_independent_controls_and_resumes(priva
     monkeypatch.setattr(replay.answer_v2, "_request_answer", request)
     assert replay.replay(run, timeout=2, max_requests=2) is None
     assert len(packets) == 2
+    response_log = run / replay.DIRECTORY / replay.RESPONSES
+    assert stat.S_IMODE(response_log.stat().st_mode) == 0o600
+    first_rows = response_log.read_bytes()
+    assert "✅".encode() in first_rows
+    for line in first_rows.splitlines(keepends=True):
+        row = json.loads(line)
+        assert set(row) == {"id", "question_id", "raw", "answer", "ranking", "sha256", "record_sha256"}
+        assert line == (json.dumps(row, ensure_ascii=False) + "\n").encode()
+        checksum = row.pop("record_sha256")
+        assert checksum == replay.receipts.sha256_json(row)
     assert not (run / replay.DIRECTORY / replay.REPORT).exists()
     report = replay.replay(run, timeout=2, max_requests=None)
     assert packets[1]["passages"] == [{"passage": 1, "text": "The ✅ exact value and related fact."}]
+    assert response_log.read_bytes().startswith(first_rows)
     assert len(packets) == 5 and packets[3] == packets[4]
     assert all("held-out" not in p["question"] for p in packets)
     assert report["unpaired_positives"] == {"page-only-span-unknown": 1}
@@ -119,6 +131,34 @@ def test_replay_rejects_damaged_completed_row_before_requests(private_run, monke
     monkeypatch.setattr(replay.answer_v2, "_approved_opener", lambda: pytest.fail("contacted endpoint"))
     with pytest.raises(SystemExit, match="damaged or mismatched"):
         replay.replay(run, timeout=2, max_requests=None)
+
+
+@pytest.mark.parametrize("helper", ["_open_response_log", "_append_response"])
+def test_replay_rejects_changed_persistence_source(private_run, monkeypatch, tmp_path, helper):
+    run, _, _, _ = private_run
+    baseline_source = tmp_path / "answer_v2.py"
+    source = Path(replay.answer_v2.__file__).read_bytes()
+    baseline_source.write_bytes(source)
+    monkeypatch.setattr(replay.answer_v2, "__file__", str(baseline_source))
+    monkeypatch.setattr(replay.answer_v2, "_approved_opener", lambda: object())
+    monkeypatch.setattr(replay.answer_v2, "_request_answer", lambda *args: '{"status":"abstain-missing"}')
+    assert replay.replay(run, timeout=2, max_requests=1) is None
+
+    directory = run / replay.DIRECTORY
+    checkpoint = json.loads((directory / replay.CHECKPOINT).read_bytes())
+    assert checkpoint["schema"] == "llm-wiki/development-answer-replay/v1"
+    assert checkpoint["baseline_runner_sha256"] == hashlib.sha256(source).hexdigest()
+    response_log = directory / replay.RESPONSES
+    original_rows = response_log.read_bytes()
+
+    signature = f"def {helper}(".encode()
+    assert source.count(signature) == 1
+    start = source.index(b"\n", source.index(signature)) + 1
+    baseline_source.write_bytes(source[:start] + b"    # Synthetic persistence source edit.\n" + source[start:])
+    monkeypatch.setattr(replay.answer_v2, "_approved_opener", lambda: pytest.fail("contacted endpoint"))
+    with pytest.raises(SystemExit, match="checkpoint does not match"):
+        replay.replay(run, timeout=2, max_requests=None)
+    assert response_log.read_bytes() == original_rows
 
 
 def test_deterministic_slice_sample_includes_both_controls_and_keeps_its_own_checkpoint(private_run, monkeypatch):
