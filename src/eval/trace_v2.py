@@ -121,7 +121,7 @@ def reuse_generation(source: Path, run: Path, projects: set[str], manifest_sha: 
             original.backup(clone)
     subprocess.run(
         ["node", "node_modules/tsx/dist/cli.mjs", "src/eval/copy-generation.ts",
-         str(source.resolve()), str(run.resolve()), *sorted(projects)],
+         str(source.resolve()), str(run.resolve()), model_sha, *sorted(projects)],
         cwd=ROOT, check=True, timeout=120,
     )
 
@@ -211,7 +211,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--run", help="report an existing trace run under .cache/eval/v2/runs")
-    mode.add_argument("--reuse-from", help="clone a verified generation from a private development trace run")
+    mode.add_argument("--reuse-from", help="clone from a private development trace run with writable source indexes")
     args = parser.parse_args()
     runs = (build_v2.WORK / "runs").resolve()
     selected = args.run or args.reuse_from

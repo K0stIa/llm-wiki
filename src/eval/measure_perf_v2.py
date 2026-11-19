@@ -38,7 +38,7 @@ def quality_under_load(rows: list[dict], questions: list[dict], rankings: dict, 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("run_id", help="a completed v2 retrieval run")
+    parser.add_argument("run_id", help="a completed v2 retrieval run with writable source indexes")
     parser.add_argument("--development", action="store_true", help="measure the development partition without publishing")
     args = parser.parse_args()
     subset = "development" if args.development else "holdout"

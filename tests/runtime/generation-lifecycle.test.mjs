@@ -3,7 +3,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { syncBuiltinESMExports } from 'node:module';
 import fsPromises from 'node:fs/promises';
 import { test } from 'node:test';
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, renameSync, readdirSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, renameSync, chmodSync, existsSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
@@ -159,6 +159,25 @@ test('evaluation snapshots refuse malformed generation artifacts', async t => {
   }
 });
 
+test('a source that denies lease creation fails before copying', {skip: process.getuid?.() === 0}, async t => {
+  const {binding, root, generation} = fixture(t);
+  const destination = {...binding, indexRoot: join(binding.indexRoot, 'snapshot')};
+  await (await acquireGeneration(binding)).release();
+  const leases = join(root, 'leases', generation);
+  const pointer = readFileSync(join(root, 'current'));
+  const index = readFileSync(join(root, generation, 'index.sqlite'));
+  chmodSync(leases, 0o500);
+  try {
+    await assert.rejects(copyGenerationSnapshot(binding, destination), /grant write access.*source index root/);
+  } finally {
+    chmodSync(leases, 0o700);
+  }
+  assert.equal(existsSync(generationRoot(destination)), false);
+  assert.deepEqual(readdirSync(leases), []);
+  assert.deepEqual(readFileSync(join(root, 'current')), pointer);
+  assert.deepEqual(readFileSync(join(root, generation, 'index.sqlite')), index);
+});
+
 test('the source survives concurrent cleanup during a failing copy', async t => {
   const {binding,root,generation,leases} = fixture(t);
   const current = join(root, 'current');
@@ -209,26 +228,52 @@ with sqlite3.connect(sys.argv[1]) as db:
     subset: 'development', manifest_sha256: 'fixture',
     identity: {model: {sha256: APPROVED_MODEL_SHA256}},
   }));
+  const second = generationRoot({indexRoot, project: 'second'});
+  mkdirSync(join(second, generation), {recursive: true});
+  writeFileSync(join(second, 'current'), generation);
+  const manifest = JSON.parse(readFileSync(join(savedRoot, generation, 'manifest.json')));
+  manifest.target.project = 'second';
+  writeFileSync(join(second, generation, 'manifest.json'), JSON.stringify(manifest));
+  writeFileSync(join(second, generation, 'index.sqlite'), readFileSync(join(savedRoot, generation, 'index.sqlite')));
   const output = join(source, 'trace');
   mkdirSync(output);
-  execFileSync(python, ['-B', '-c', `
+  const trace = ['-B', '-c', `
 import sqlite3, sys
 from pathlib import Path
 from src.eval.trace_v2 import reuse_generation
 source, destination = map(Path, sys.argv[1:3])
-reuse_generation(source, destination, {'synthetic'}, 'fixture', sys.argv[3])
+reuse_generation(source, destination, {'synthetic', 'second'}, 'fixture', sys.argv[3])
 with sqlite3.connect(destination / 'authority.db') as db:
     assert db.execute('SELECT value FROM fixture').fetchone() == (42,)
-`, source, output, APPROVED_MODEL_SHA256], {timeout: 20_000});
+`];
+  execFileSync(python, [...trace, source, output, APPROVED_MODEL_SHA256], {timeout: 20_000});
   const copied = generationRoot({...binding, indexRoot: join(output, 'indexes')});
   assert.equal(readFileSync(join(copied, 'current'), 'utf8').trim(), generation);
   assert.deepEqual(readFileSync(join(copied, generation, 'index.sqlite')),
     readFileSync(join(savedRoot, generation, 'index.sqlite')));
   assert.deepEqual(readdirSync(join(savedRoot, 'leases', generation)), []);
+  const copiedSecond = generationRoot({indexRoot: join(output, 'indexes'), project: 'second'});
+  assert.equal(readFileSync(join(copiedSecond, 'current'), 'utf8').trim(), generation);
+  assert.deepEqual(readdirSync(join(second, 'leases', generation)), []);
+
+  const otherDigest = digest('alternate expected model');
+  const mismatchOutput = join(source, 'trace-mismatch');
+  mkdirSync(mismatchOutput);
+  writeFileSync(join(source, 'trace-provenance.json'), JSON.stringify({
+    subset: 'development', manifest_sha256: 'fixture',
+    identity: {model: {sha256: otherDigest}},
+  }));
+  const mismatch = spawnSync(python, [...trace, source, mismatchOutput, otherDigest],
+    {encoding: 'utf8', timeout: 20_000});
+  assert.ifError(mismatch.error);
+  assert.equal(mismatch.status, 1);
+  assert.match(mismatch.stderr, /source generation model digest does not match the expected digest/);
+  assert.equal(existsSync(join(mismatchOutput, 'indexes')), false);
+  assert.deepEqual(readdirSync(join(second, 'leases', generation)), []);
 });
 
-test('the performance runner rejects a malformed generation before timing recall', t => {
-  const {binding} = fixture(t);
+test('the performance runner rejects malformed and unleasable generations before timing recall', t => {
+  const {binding, root, generation} = fixture(t);
   const source = binding.indexRoot;
   const rankings = JSON.stringify({buildSeconds: 0});
   const report = JSON.stringify({subset: 'development', raw_rankings_sha256: digest(rankings)});
@@ -259,4 +304,21 @@ with sqlite3.connect(sys.argv[1]) as db:
   assert.match(result.stderr, /invalid generation pointer/);
   assert.equal(result.stdout, '');
   assert.deepEqual(readdirSync(output), ['authority.db']);
+
+  renameSync(join(root, generation), join(original, generation));
+  const manifestPath = join(original, generation, 'manifest.json');
+  const manifest = JSON.parse(readFileSync(manifestPath));
+  manifest.target.project = 'main';
+  writeFileSync(manifestPath, JSON.stringify(manifest));
+  writeFileSync(join(original, 'current'), generation);
+  rmSync(join(original, '.lock'));
+  mkdirSync(join(original, '.lock'));
+  const deniedOutput = join(source, 'perf-denied');
+  const denied = spawnSync(process.execPath, ['--import', 'tsx', 'src/eval/perf_v2.ts',
+    source, deniedOutput, model, model, '--development'], {encoding: 'utf8', timeout: 20_000});
+  assert.ifError(denied.error);
+  assert.equal(denied.status, 1);
+  assert.match(denied.stderr, /grant write access.*source index root/);
+  assert.equal(denied.stdout, '');
+  assert.deepEqual(readdirSync(deniedOutput), ['authority.db']);
 });

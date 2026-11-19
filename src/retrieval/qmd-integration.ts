@@ -119,7 +119,7 @@ function lockHelperProcess() {
     while ((i = helper.buffer.indexOf("\n")) >= 0) {
       const [op, ident] = helper.buffer.slice(0, i).split(" ");
       helper.buffer = helper.buffer.slice(i + 1);
-      if (op === "E") (helper.waiters.get("L" + ident) ?? helper.waiters.get("T" + ident))?.reject(new Error("lock open failed"));
+      if (op === "E") (helper.waiters.get("L" + ident) ?? helper.waiters.get("T" + ident))?.reject(new GenerationLockOpenError("lock open failed"));
       else if (op === "B") helper.waiters.get("T" + ident)?.reject(new LockBusy());
       else helper.waiters.get(op + ident)?.resolve();
     }
@@ -139,6 +139,7 @@ function holdOpen(helper: NonNullable<typeof lockHelper>) {
   const stream = helper.child.stdout as unknown as { ref?: () => void; unref?: () => void };
   if (helper.waiters.size) { helper.child.ref(); stream.ref?.(); } else { helper.child.unref(); stream.unref?.(); }
 }
+class GenerationLockOpenError extends Error {}
 class LockBusy extends Error { constructor() { super("lock busy"); } }
 function lockRequest(helper: NonNullable<typeof lockHelper>, op: "L" | "T" | "U", ident: string, path = "") {
   return new Promise<void>((resolve, reject) => {
@@ -303,11 +304,25 @@ export async function cleanupGenerations(binding: Binding): Promise<string[]> {
 const hasSidecars = (database: string) => ["-wal", "-shm"].some(suffix => existsSync(database + suffix));
 
 /** Copy the immutable generation into a disposable evaluation index root. */
-export async function copyGenerationSnapshot(source: Binding, destination: GenerationLocation): Promise<void> {
+export async function copyGenerationSnapshot(source: Binding, destination: GenerationLocation,
+  expectedModelDigest: string = APPROVED_MODEL_SHA256): Promise<void> {
   if (source.project !== destination.project) throw new Error("snapshot project mismatch");
-  const pin = await acquireGeneration(source);
+  const pin = await acquireGeneration(source).catch((error: unknown) => {
+    if (error instanceof GenerationLockOpenError || (error instanceof Error && "code" in error &&
+      (error.code === "EACCES" || error.code === "EPERM" || error.code === "EROFS"))) {
+      throw new Error(
+        `Cannot acquire the source generation lease for ${source.project}. Check the lock and grant write access ` +
+        `to the source index root at ${generationRoot(source)} or use a writable source run.`,
+        { cause: error },
+      );
+    }
+    throw error;
+  });
   if (!pin) throw new Error("source generation is missing");
   try {
+    if (pin.manifest.modelDigest !== expectedModelDigest) {
+      throw new Error(`source generation model digest does not match the expected digest for ${source.project}`);
+    }
     const index = join(pin.directory, "index.sqlite");
     if (pin.manifest.target.project !== source.project || hasSidecars(index)) {
       throw new Error("source generation is not an immutable index for this project");
