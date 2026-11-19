@@ -99,7 +99,7 @@ def validate(comments, expected, permission):
             return hold("ambiguous newest human request")
         request_comment = latest[0]
         request = parse_request(request_comment)
-        if request is None or any(request.get(k) != v for k, v in expected.items()):
+        if request is None or any(request.get(k) != v for k, v in expected.items() if k != "head"):
             return hold("the latest request does not cover the current code and human steps")
         if timestamp(request_comment.get("updated_at")) != latest_time:
             return hold("approval request was edited; post a fresh request")
@@ -108,6 +108,8 @@ def validate(comments, expected, permission):
             return hold("requester authority could not be verified")
         if not isinstance(request_comment.get("source"), int) or not request_comment.get("id"):
             return hold("request identity is missing")
+        if request["head"] != expected["head"]:
+            return dict(hold("PR head changed after review"), headChanged=True)
         for comment in comments:
             if (not comment.get("id") or not DONE.fullmatch(comment.get("body") or "")
                     or comment.get("source") != request_comment.get("source")):
@@ -135,6 +137,8 @@ class GitHub:
 
     @staticmethod
     def read(*args):
+        if args[:2] == ("pr", "list"):
+            return github_read.read(list(args), "prs-open")[1]
         kind = ("approval" if "graphql" in args else "comments" if "--paginate" in args
                 else "permission" if args[-1].endswith("/permission") else "json")
         return github_read.read(list(args), kind)[1]
@@ -156,18 +160,22 @@ class GitHub:
             raise ValueError("unreadable comment")
         return [dict(comment, source=number) for page in pages for comment in page]
 
+    def open_prs(self):
+        return self.read("pr", "list", "--repo", self.repo, "--state", "open", "--limit", "100",
+                         "--json", "number,title,body,url,headRefName,baseRefName,files,isDraft,headRefOid")
+
     def pr(self, number):
         # Paginate linked issues too: an omitted newer request must never make
         # an older approval authoritative. Remote-repository links are ignored.
         query = '''query($owner:String!,$repo:String!,$pr:Int!,$endCursor:String){
-          repository(owner:$owner,name:$repo){pullRequest(number:$pr){headRefOid state
+          repository(owner:$owner,name:$repo){pullRequest(number:$pr){headRefOid state headRefName isCrossRepository
             closingIssuesReferences(first:100,after:$endCursor){
               pageInfo{hasNextPage endCursor} nodes{number repository{nameWithOwner}}
             }}}}'''
         owner, name = self.repo.split("/")
         pages = self.read("api", "graphql", "--paginate", "--slurp", "-f", f"query={query}",
                           "-F", f"owner={owner}", "-F", f"repo={name}", "-F", f"pr={number}")
-        heads, issues = set(), set()
+        heads, issues, branches = set(), set(), set()
         if not isinstance(pages, list) or not pages:
             raise ValueError("unreadable PR")
         for page in pages:
@@ -177,20 +185,22 @@ class GitHub:
             if pr["state"] != "OPEN":
                 raise ValueError("PR is not open")
             heads.add(pr["headRefOid"])
+            branches.add(pr["headRefName"] if pr["isCrossRepository"] is False else "")
             links = pr["closingIssuesReferences"]
             for issue in links["nodes"]:
                 if issue["repository"]["nameWithOwner"].lower() == self.repo:
                     issues.add(issue["number"])
-        if links["pageInfo"]["hasNextPage"] or len(heads) != 1:
+        if links["pageInfo"]["hasNextPage"] or len(heads) != 1 or len(branches) != 1:
             raise ValueError("PR changed or issue links are incomplete")
         head = heads.pop()
         if not SHA.fullmatch(head):
             raise ValueError("unreadable PR head")
-        return head, issues
+        return head, issues, branches.pop()
 
     def check(self, number, head=None, scope=None, issue=None):
-        current_head, issues = self.pr(number)
-        if issue is not None and issue not in issues:
+        current_head, issues, branch = self.pr(number)
+        workflow_issue = not issues and re.fullmatch(rf"issue-{issue}-.+", branch)
+        if issue is not None and issue not in issues and not workflow_issue:
             return {"approved": False, "why": "request issue is not linked to this PR"}
         if head is not None and current_head != head:
             return {"approved": False, "headChanged": True, "why": "PR head changed after review"}
@@ -200,7 +210,12 @@ class GitHub:
         expected = {"repo": self.repo, "pr": number, "head": current_head}
         if scope is not None:
             expected["scope"] = scope
-        return validate(comments, expected, self.permission)
+        result = validate(comments, expected, self.permission)
+        if workflow_issue:
+            # The fallback can resume a valid approval. A stale PR-side request
+            # keeps an unlinked card blocked until the current head is approved.
+            result.pop("headChanged", None)
+        return result
 
 
 def main():
@@ -220,6 +235,7 @@ def main():
     if args.deps:
         graph = json.load(sys.stdin)
         github = GitHub(args.repo) if args.repo else None
+        open_prs = None
         for entry in graph.values():
             entry["needsYouDone"] = False
             entry["approvalRefresh"] = False
@@ -230,9 +246,19 @@ def main():
                 blocks = trusted_blocks(comments, github.permission)
                 latest = max(blocks, key=lambda c: timestamp(c.get("created_at"))) if blocks else {}
                 request = parse_request(latest)
-                if request is None or request["repo"] != github.repo:
+                issue = entry["number"]
+                if request is not None and request["repo"] == github.repo:
+                    candidates = {request["pr"]}
+                else:
+                    if open_prs is None:
+                        open_prs = github.open_prs()
+                    # The workflow embeds the exact card number in its branch.
+                    # Live PR metadata below independently verifies the branch and repository.
+                    candidates = {pr["number"] for pr in open_prs
+                                  if re.fullmatch(rf"issue-{issue}-.+", pr["headRefName"])}
+                if len(candidates) != 1:
                     continue
-                result = github.check(request["pr"], head=request["head"], issue=entry["number"])
+                result = github.check(candidates.pop(), issue=issue)
                 entry["needsYouDone"] = result["approved"]
                 entry["approvalRefresh"] = result.get("headChanged", False)
                 entry["approvalWhy"] = result["why"]
