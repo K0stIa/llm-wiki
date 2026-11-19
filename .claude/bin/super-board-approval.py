@@ -318,9 +318,6 @@ def main():
                 if request is not None:
                     if request["repo"] != github.repo:
                         continue
-                    if timestamp(blocks[0]["updated_at"]) != timestamp(blocks[0]["created_at"]):
-                        entry["approvalWhy"] = "approval request was edited; post a fresh request"
-                        continue
                     result = github.check(request["pr"], request["head"], issue=issue)
                 else:
                     if open_prs is None:

@@ -220,6 +220,17 @@ print(json.dumps(fixtures[key]))
         latest.append(comment(6, "done", 3))
         self.assert_resumed()
 
+    def test_linked_edited_issue_request_requires_supersession(self):
+        self.link_issues(7)
+        routing_request = comment(3, self.issue_request, 0, edited=True)
+        self.fixtures[ISSUE_COMMENTS] = [[routing_request, comment(4, "done", 3)]]
+        pr_comments = self.fixtures[PR_COMMENTS]
+        self.fixtures[PR_COMMENTS] = [[]]
+        self.assert_held()
+        self.assertIn("request was edited", self.evidence["approvalWhy"])
+        self.fixtures[PR_COMMENTS] = pr_comments
+        self.assert_resumed()
+
     def test_linked_issue_can_still_hold_the_request_and_reply(self):
         self.link_issues(7)
         self.fixtures[ISSUE_COMMENTS] = [[comment(1, self.issue_request, 1), comment(2, "done", 3)]]
