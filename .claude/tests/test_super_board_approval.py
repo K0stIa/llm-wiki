@@ -171,8 +171,8 @@ print(json.dumps(fixtures[key]))
     def test_unlinked_issue_marker_lines_distinguish_examples_from_blockers(self):
         examples = (
             "The Reason tag: wording looks good.",
-            f"Example:\n````text\n```\n{HANDOFF}\n````",
-            f"Example:\n  ~~~text\n{HANDOFF}\n  ~~~",
+            "Use `approval-request:` or `approval-handoff:` in the workflow.",
+            "```text\nAn example without a standalone marker line.\n```",
             "\n".join(f"> {line}" for line in HANDOFF.splitlines()),
             "\n".join(f"    {line}" for line in HANDOFF.splitlines()),
             "\n".join(f"\t{line}" for line in HANDOFF.splitlines()),
@@ -183,7 +183,9 @@ print(json.dumps(fixtures[key]))
         self.assert_resumed()
         for marker in ("Reason tag: 🙋 needs you", "   Reason tag: 🙋 needs you",
                        "[reviewer] [blocker]", "approval-handoff: invalid",
-                       "~~~\nReason tag: example\n~~~~\nReason tag: 🙋 needs you"):
+                       "~~~\nReason tag: example\n~~~~\nReason tag: 🙋 needs you",
+                       f"````text\n```\n{HANDOFF}\n````",
+                       f"  ~~~text\n{HANDOFF}\n  ~~~"):
             with self.subTest(marker=marker):
                 blocker = comment(10, f"Please pause this rollout.\n{marker}", 10)
                 self.fixtures[ISSUE_COMMENTS] = [[*comments, blocker]]
@@ -199,14 +201,21 @@ print(json.dumps(fixtures[key]))
         self.fixtures[ISSUE_COMMENTS][0].append(comment(4, "approval-request: invalid", 4))
         self.assert_held()
 
-    def test_unlinked_fenced_bare_request_example_does_not_hold(self):
+    def test_unlinked_fenced_bare_request_example_holds(self):
         example = f"Example:\n~~~text\n{self.marker}\n~~~"
         comments = [[*self.fixtures[ISSUE_COMMENTS][0], comment(4, example, 4)]]
         self.fixtures["fresh_issue_comments"] = comments
-        self.assert_resumed()
+        self.assert_held()
         del self.fixtures["fresh_issue_comments"]
         self.fixtures[ISSUE_COMMENTS] = comments
-        self.assert_resumed()
+        self.assert_held()
+
+    def test_unlinked_issue_marker_after_html_comment_holds(self):
+        body = "<!--\n```text\n-->\nReason tag: 🙋 needs you\n```\nexample\n```"
+        self.fixtures[ISSUE_COMMENTS][0].append(comment(4, body, 4))
+        self.assert_held()
+        self.assertEqual(self.evidence["approvalWhy"],
+                         "issue has a human block beyond the canonical PR handoff")
 
     def test_unlinked_issue_marker_survives_nested_or_unmatched_fence(self):
         for body in (

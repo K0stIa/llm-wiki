@@ -161,7 +161,12 @@ blocked-by: -
 The last line excludes the card from the dependency sweep. Each new request needs
 a fresh handoff and PR-side `done`. Keep an exact, unedited older handoff only if
 posted between the same-PR canonical request it names and the current request.
-Other issue blockers require manual review.
+Other issue blockers require manual review. On the issue for an unlinked PR, a
+line beginning with `approval-request:`, `approval-handoff:`, `Reason tag:` or
+`[role] [blocker]` can hold the card, with up to three leading ASCII spaces.
+The planner checks the text even inside Markdown examples. Quote example markers
+with a Markdown blockquote or mention them inline. Plain marker lines in examples
+may require manual review.
 
 **Resume.** A human with current repository write, maintain or admin permission
 comments `done` after the newest request, in the same thread. This supports a solo

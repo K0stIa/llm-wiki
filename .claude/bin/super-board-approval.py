@@ -25,8 +25,6 @@ SHA = re.compile(r"[0-9a-f]{40}\Z")
 SCOPE = re.compile(r"[0-9a-f]{64}\Z")
 BLOCK = re.compile(r"Reason tag:[^\n]*🙋|^approval-request:", re.M)
 ISSUE_BLOCK = re.compile(r"[ ]{0,3}(?:Reason tag:|\[\w+\] \[blocker\]|approval-handoff:|approval-request:)")
-ISSUE_LIST = re.compile(r"[ \t]*(?:[-+*]|[0-9]{1,9}[.)])[ \t]+")
-ISSUE_FENCE = re.compile(r"( {0,3})(`{3,}|~{3,})(.*)")
 DONE = re.compile(r"\s*done[.!]?\s*\Z", re.I)
 
 
@@ -70,46 +68,12 @@ def timestamp(value):
     return result
 
 
-def has_issue_block(body):
-    fence = None
-    pending_block = False
-    saw_list = False
-    for line in body.splitlines():
-        delimiter = ISSUE_FENCE.fullmatch(line)
-        if delimiter:
-            indent, run, rest = delimiter.groups()
-            bare = not rest.strip(" \t")
-            if fence:
-                opening_indent, opening_run = fence
-                if not run.startswith(opening_run):
-                    continue
-                if bare and indent == opening_indent:
-                    fence = None
-                    pending_block = False
-                    continue
-                # A competing delimiter makes the earlier span ambiguous.
-                if pending_block:
-                    return True
-                fence = None
-            if (not indent or (not bare and not saw_list)) and (run[0] == "~" or "`" not in rest):
-                fence = (indent, run)
-        elif ISSUE_BLOCK.match(line):
-            if fence is None:
-                return True
-            pending_block = True
-        elif fence is None and ISSUE_LIST.match(line):
-            # An indented fence after a list may belong to that list. A
-            # literal marker in ambiguous nested syntax may hold the card.
-            saw_list = True
-    return pending_block
-
-
 def trusted_blocks(comments, permission, *, unlinked_issue=None):
     result = []
     for block in comments:
         body = block.get("body") or ""
         if unlinked_issue is not None and block.get("source") == unlinked_issue:
-            is_block = has_issue_block(body)
+            is_block = any(ISSUE_BLOCK.match(line) for line in body.split("\n"))
         else:
             is_block = BLOCK.search(body)
         if not is_block:
@@ -343,10 +307,6 @@ def main():
             try:
                 comments = github.comments(entry["number"])
                 blocks = trusted_blocks(comments, github.permission)
-                # A canonical-looking example must not select a linked PR before
-                # the unlinked check can apply the issue marker classifier.
-                blocks = [block for block in blocks
-                          if parse_request(block) is None or has_issue_block(block["body"])]
                 blocks.sort(key=lambda c: timestamp(c.get("created_at")), reverse=True)
                 if len(blocks) > 1 and timestamp(blocks[0]["created_at"]) == timestamp(blocks[1]["created_at"]):
                     entry["approvalWhy"] = "ambiguous newest human request"
