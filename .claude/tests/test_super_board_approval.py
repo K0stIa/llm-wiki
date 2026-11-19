@@ -149,6 +149,25 @@ print(json.dumps(fixtures[key]))
         self.assert_held()
         self.assertTrue(self.evidence["approvalRefresh"])
 
+    def test_stale_latest_pr_request_holds_without_refresh_when_issue_pin_matches(self):
+        self.link_issues(7)
+        self.fixtures[ISSUE_COMMENTS] = [[comment(3, self.issue_request, 0), comment(4, "done", 1)]]
+        self.fixtures[PR_COMMENTS] = [[comment(5, self.marker.replace(HEAD, "b" * 40), 2)]]
+        self.assert_held()
+        self.assertFalse(self.evidence["approvalRefresh"])
+
+    def test_fenced_handoff_example_does_not_supersede_linked_approval(self):
+        self.link_issues(7)
+        self.fixtures[ISSUE_COMMENTS] = [[comment(3, self.issue_request, 0), comment(4, "done", 1),
+                                         comment(5, "```text\napproval-handoff: example\n```", 4)]]
+        self.fixtures[PR_COMMENTS] = [[]]
+        self.assert_resumed()
+
+    def test_fenced_handoff_example_does_not_supersede_standalone_approval(self):
+        self.fixtures[PR_COMMENTS][0].append(comment(5, "```text\napproval-handoff: example\n```", 4))
+        self.wave()
+        self.assertTrue(json.loads(self.run_command(self.check))["approved"])
+
     def test_workflow_candidate_pagination(self):
         candidate = self.candidate(42, "issue-7-approval")
         first = self.page([self.candidate(44, "issue-7-approval", None),
@@ -218,6 +237,7 @@ print(json.dumps(fixtures[key]))
         self.fixtures[PR_COMMENTS][0].append(comment(6, "done", 6))
         self.assert_resumed()
         for blockers in ([old], [old, new, comment(8, "[reviewer] [blocker] Check rollout.", 7)],
+                         [old, new, comment(8, " approval-handoff: invalid", 7)],
                          [dict(old, updated_at=new["created_at"]), new],
                          [dict(old, body=HANDOFF.replace("comment-1", "comment-99")), new]):
             self.fixtures[ISSUE_COMMENTS] = [blockers]

@@ -23,7 +23,7 @@ _reader_spec.loader.exec_module(github_read)
 PREFIX = "approval-request: "
 SHA = re.compile(r"[0-9a-f]{40}\Z")
 SCOPE = re.compile(r"[0-9a-f]{64}\Z")
-BLOCK = re.compile(r"Reason tag:[^\n]*🙋|^[ \t]*approval-handoff:|^approval-request:", re.M)
+BLOCK = re.compile(r"Reason tag:[^\n]*🙋|^approval-request:", re.M)
 DONE = re.compile(r"\s*done[.!]?\s*\Z", re.I)
 
 
@@ -72,7 +72,7 @@ def trusted_blocks(comments, permission, *, unlinked_issue=None):
     for block in comments:
         body = block.get("body") or ""
         issue_block = (unlinked_issue is not None and block.get("source") == unlinked_issue
-                       and re.search(r"Reason tag:|^\[\w+\] \[blocker\]", body, re.M))
+                       and re.search(r"Reason tag:|^\[\w+\] \[blocker\]|^[ \t]*approval-handoff:", body, re.M))
         if not (issue_block or BLOCK.search(body)):
             continue
         user = block.get("user") or {}
@@ -129,7 +129,7 @@ def validate(comments, expected, permission, *, unlinked_issue=None):
                 ):
                     return hold("issue has a human block beyond the canonical PR handoff")
         request = parse_request(request_comment)
-        if request is None or any(request.get(k) != v for k, v in expected.items() if k != "head"):
+        if request is None or any(request.get(k) != v for k, v in expected.items()):
             return hold("the latest request does not cover the current code and human steps")
         if timestamp(request_comment.get("updated_at")) != latest_time:
             return hold("approval request was edited; post a fresh request")
@@ -138,8 +138,6 @@ def validate(comments, expected, permission, *, unlinked_issue=None):
             return hold("requester authority could not be verified")
         if not isinstance(request_comment.get("source"), int) or not request_comment.get("id"):
             return hold("request identity is missing")
-        if request["head"] != expected["head"]:
-            return dict(hold("PR head changed after review"), headChanged=True)
         for comment in comments:
             if (not comment.get("id") or not DONE.fullmatch(comment.get("body") or "")
                     or comment.get("source") != request_comment.get("source")):
@@ -277,10 +275,7 @@ class GitHub:
         expected = {"repo": self.repo, "pr": number, "head": current_head}
         if scope is not None:
             expected["scope"] = scope
-        result = validate(comments, expected, self.permission, unlinked_issue=unlinked_issue)
-        if unlinked_issue is not None:
-            result.pop("headChanged", None)
-        return result
+        return validate(comments, expected, self.permission, unlinked_issue=unlinked_issue)
 
 
 def main():
