@@ -189,6 +189,17 @@ print(json.dumps(fixtures[key]))
                 self.fixtures[ISSUE_COMMENTS] = [[*comments, blocker]]
                 self.assert_held()
 
+    def test_unlinked_issue_marker_survives_nested_or_unmatched_fence(self):
+        for body in (
+            "- ```text\n  example\n  ```\nReason tag: 🙋 needs you",
+            "Example:\n~~~text\nReason tag: 🙋 needs you",
+            "- ```text\n  example\n  ```\nReason tag: 🙋 needs you\n```",
+            "- Example:\n  ~~~text\n  approval-handoff: ambiguous\n  ~~~",
+        ):
+            with self.subTest(body=body):
+                self.fixtures[ISSUE_COMMENTS] = [[comment(3, HANDOFF, 2), comment(4, body, 4)]]
+                self.assert_held()
+
     def test_workflow_candidate_pagination(self):
         candidate = self.candidate(42, "issue-7-approval")
         first = self.page([self.candidate(44, "issue-7-approval", None),
