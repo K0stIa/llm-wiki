@@ -8,7 +8,9 @@ import { hostname, platform, arch, loadavg } from "node:os";
 import { join, resolve } from "node:path";
 import { performance } from "node:perf_hooks";
 import { promisify } from "node:util";
+import { fileDigestAsync } from "../retrieval/offline.js";
 import { closeQmdReaders, generationRoot, observeRecall, recall } from "../retrieval/qmd-integration.js";
+import { evaluationRerankerSettings } from "./g2-reranker-profile.js";
 
 const execute = promisify(execFile);
 const [source, output, model, reranker] = process.argv.slice(2, 6).map(value => resolve(value));
@@ -37,11 +39,13 @@ const dirty = (await execute("git", ["status", "--porcelain", "--untracked-files
   .trimEnd().split("\n").filter(line => line && !line.startsWith("?? .verification/"));
 if (subset === "holdout" && dirty.length) throw new Error("tracked release candidate changed before measurement");
 
+const rerankerSettings = evaluationRerankerSettings(subset === "development");
+const rerankerSha = await fileDigestAsync(reranker);
 mkdirSync(output, { mode: 0o700 });
 const database = join(output, "authority.db");
 const indexRoot = join(output, "indexes");
 const project = "main";
-const binding = { database, indexRoot, project, model, reranker: { model: reranker, device: "vulkan" as const, depth: 24, docTokens: 512 } };
+const binding = { database, indexRoot, project, model, reranker: { model: reranker, ...rerankerSettings } };
 const python = join(root, ".venv/bin/python");
 const snapshot = await execute(python, ["-B", "-c", `
 import sqlite3, sys
@@ -172,9 +176,10 @@ try {
   await sampling;
   const overlap = new Set(rows.filter(row => visibility.some(write =>
     row.start <= write.commit_at && write.commit_at <= row.end)).map(row => row.reader)).size;
+  const { model: _rerankerPath, ...observedReranker } = binding.reranker;
   const measurement = {
     commit, manifest_sha256: report.manifest_sha256, embedding_sha256: report.model_sha256,
-    reranker_sha256: report.reranker_sha256, reranker: report.reranker_config,
+    reranker_sha256: rerankerSha, reranker: observedReranker,
     script_sha256: sha(readFileSync(new URL(import.meta.url))), scope: "explicit local build and promotion; one batch",
     machine_sha256: sha(hostname()), platform: platform(), arch: arch(), load_average: startLoad,
     pages, readers: 10, warm_samples: rows.length, readers_overlapping_publication: overlap,

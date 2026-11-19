@@ -9,6 +9,7 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
+from g2_reranker_profile import approved_settings, valid_settings
 from measure_v2 import ROOT, build_v2, publish_holdout, receipts, resolve, verified_frozen
 from score_v2 import score_performance, score_retrieval
 
@@ -52,6 +53,7 @@ def main() -> int:
     if receipts.sha256_file(model) != receipts.approved_model_sha256() or \
             receipts.sha256_file(reranker) != receipts.approved_reranker_sha256():
         raise SystemExit("performance measurement requires the approved model hashes")
+    approved = approved_settings()
     identity = receipts.current_identity(model={"sha256": receipts.approved_model_sha256()})
     provenance = json.loads((run / "retrieval-run.json").read_text())
     retrieval = json.loads((run / "report.json").read_text())
@@ -59,7 +61,8 @@ def main() -> int:
             or retrieval["manifest_sha256"] != receipts.sha256_file(build_v2.MANIFEST)
             or provenance["report_sha256"] != receipts.sha256_file(run / "report.json")
             or retrieval.get("reranker_sha256") != receipts.approved_reranker_sha256()
-            or retrieval.get("reranker_config") != {"device": "vulkan", "depth": 24, "docTokens": 512}):
+            or not valid_settings(retrieval.get("reranker_config"))
+            or (not args.development and retrieval["reranker_config"] != approved)):
         raise SystemExit(f"performance measurement requires a current v2 {subset} run with the approved profile")
     manifest, questions, split, _, _ = verified_frozen()
     expected = [{k: q[k] for k in ("id", "query", "project")} for q in questions if split[q["id"]] == subset]
@@ -83,6 +86,12 @@ def main() -> int:
     if (data["commit"] != identity["commit"] or data["manifest_sha256"] != retrieval["manifest_sha256"]
             or data["script_sha256"] != receipts.sha256_file(ROOT / "src/eval/perf_v2.ts")):
         raise SystemExit("performance observations do not match the run provenance")
+    observed = data.get("reranker")
+    if (not valid_settings(observed) or data.get("reranker_sha256") != receipts.approved_reranker_sha256()
+            or (not args.development and observed != approved)):
+        raise SystemExit("performance observations differ from the required reranker profile")
+    if args.development and observed != retrieval["reranker_config"]:
+        raise SystemExit("performance reranker settings differ from the retrieval run")
     report = score_performance(data["rows"], data["visibility"], data["service_peak_rss_bytes"], manifest["thresholds"])
     rankings = resolve(output / "authority.db", {"rankings": {
         row["id"]: {"status": row["result"], "coverage": row["coverage"], "bytes": row["bytes"],
@@ -90,6 +99,7 @@ def main() -> int:
     }})
     report["under_load_quality"] = quality_under_load(data["rows"], questions, rankings, manifest["thresholds"])
     report.update({"commit": identity["commit"], "manifest_sha256": data["manifest_sha256"],
+                   "reranker_config": observed, "reranker_sha256": data["reranker_sha256"],
                    "observations_sha256": receipts.sha256_file(raw), "scope": data["scope"],
                    "subset": subset, "sampled_process_tree_peak_rss_bytes": data["sampled_process_tree_peak_rss_bytes"]})
     report_path = output / "report.json"

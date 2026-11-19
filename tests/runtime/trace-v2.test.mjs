@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { copyFileSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
+import { pathToFileURL } from 'node:url';
+import { evaluationRerankerSettings } from '../../src/eval/g2-reranker-profile.ts';
 import { candidateKeys, evidenceStages, feasibleEvidence } from '../../src/eval/trace_v2.ts';
 import { observeRecall, recall } from '../../src/retrieval/qmd-integration.ts';
 
@@ -110,4 +112,50 @@ test('clause-only and exact hits contribute to the ceiling independently of rera
   assert.deepEqual(missed.clauses, [['clause-alternative']]);
   assert.deepEqual(missed.rerankHead, []);
   assert.equal(missed.loss, 'not-selected');
+});
+
+test('the frozen profile rejects overrides while performance development accepts them', t => {
+  const keys = ['WIKI_EVAL_RERANK_DEVICE', 'WIKI_EVAL_RERANK_DEPTH', 'WIKI_EVAL_RERANK_TOKENS'];
+  const previous = keys.map(key => process.env[key]);
+  t.after(() => keys.forEach((key, i) => {
+    if (previous[i] === undefined) delete process.env[key];
+    else process.env[key] = previous[i];
+  }));
+  keys.forEach(key => delete process.env[key]);
+  assert.deepEqual(evaluationRerankerSettings(), { device: 'vulkan', depth: 24, docTokens: 512 });
+  process.env.WIKI_EVAL_RERANK_DEVICE = 'cpu';
+  process.env.WIKI_EVAL_RERANK_DEPTH = '30';
+  process.env.WIKI_EVAL_RERANK_TOKENS = '256';
+  assert.throws(() => evaluationRerankerSettings(), /overrides differ/);
+  assert.deepEqual(evaluationRerankerSettings(true), { device: 'cpu', depth: 30, docTokens: 256 });
+  process.env.WIKI_EVAL_RERANK_DEPTH = '65';
+  assert.throws(() => evaluationRerankerSettings(true), /invalid G2 reranker settings/);
+});
+
+test('the profile accepts integer-valued JSON numbers and rejects invalid numeric fields', async t => {
+  const dir = mkdtempSync(join(tmpdir(), 'g2-profile-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const modulePath = join(dir, 'g2-reranker-profile.mts');
+  copyFileSync(new URL('../../src/eval/g2-reranker-profile.ts', import.meta.url), modulePath);
+  const { evaluationRerankerSettings: load } = await import(pathToFileURL(modulePath).href);
+  const profile = join(dir, 'g2-reranker-profile.json');
+  const writeProfile = (version, depth, tokens) => writeFileSync(profile,
+    `{"version":${version},"settings":{"device":"vulkan","depth":${depth},"docTokens":${tokens}}}`);
+  for (const key of ['WIKI_EVAL_RERANK_DEVICE', 'WIKI_EVAL_RERANK_DEPTH', 'WIKI_EVAL_RERANK_TOKENS']) {
+    const previous = process.env[key];
+    delete process.env[key];
+    t.after(() => {
+      if (previous !== undefined) process.env[key] = previous;
+    });
+  }
+
+  writeProfile('1.0', '24.0', '512.0');
+  assert.deepEqual(load(), { device: 'vulkan', depth: 24, docTokens: 512 });
+  for (const fields of [
+    ['true', '24', '512'], ['1', 'true', '512'], ['1', '24', 'false'],
+    ['1', '24.5', '512'], ['1', '24', '512.5'], ['1', '65.0', '512'], ['1', '24', '31.0'],
+  ]) {
+    writeProfile(...fields);
+    assert.throws(() => load(), /invalid G2 reranker profile/, fields.join(', '));
+  }
 });

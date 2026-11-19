@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "settings": {
+    "device": "vulkan",
+    "depth": 24,
+    "docTokens": 512
+  }
+}
