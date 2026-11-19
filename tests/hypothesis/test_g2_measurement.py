@@ -4,6 +4,8 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[2]
 spec = importlib.util.spec_from_file_location("measure_g2", ROOT / "src/retrieval/measure_g2.py")
 measurement = importlib.util.module_from_spec(spec)
@@ -120,8 +122,6 @@ def test_performance_receipt_checks_observed_profile(tmp_path, monkeypatch):
 
 
 def test_malformed_approved_profile_refuses_admission(tmp_path, monkeypatch):
-    import pytest
-
     sys.path.insert(0, str(ROOT / "src" / "eval"))
     import g2_reranker_profile
 
@@ -130,3 +130,87 @@ def test_malformed_approved_profile_refuses_admission(tmp_path, monkeypatch):
     profile.write_text(json.dumps({"version": 1, "settings": {"device": "vulkan", "depth": 24}}))
     with pytest.raises(ValueError, match="invalid G2 reranker profile"):
         g2_reranker_profile.approved_settings()
+
+
+@pytest.mark.parametrize(("version", "depth", "tokens", "valid"), [
+    (1.0, 24.0, 512.0, True),
+    (True, 24, 512, False),
+    (1, True, 512, False),
+    (1, 24, False, False),
+    (1, 24.5, 512, False),
+    (1, 24, 512.5, False),
+    (1, 65.0, 512, False),
+    (1, 24, 31.0, False),
+])
+def test_profile_integer_json_numbers(tmp_path, monkeypatch, version, depth, tokens, valid):
+    sys.path.insert(0, str(ROOT / "src" / "eval"))
+    import g2_reranker_profile
+
+    monkeypatch.setattr(g2_reranker_profile, "__file__", str(tmp_path / "g2_reranker_profile.py"))
+    settings = {"device": "vulkan", "depth": depth, "docTokens": tokens}
+    (tmp_path / "g2-reranker-profile.json").write_text(json.dumps({"version": version, "settings": settings}))
+    if valid:
+        assert g2_reranker_profile.approved_settings() == settings
+    else:
+        with pytest.raises(ValueError, match="invalid G2 reranker profile"):
+            g2_reranker_profile.approved_settings()
+
+
+@pytest.mark.parametrize("observed_depth", [24, 30])
+def test_development_performance_checks_retrieval_profile_before_scoring(tmp_path, monkeypatch, observed_depth):
+    sys.path.insert(0, str(ROOT / "src" / "eval"))
+    import measure_perf_v2 as perf
+
+    run = tmp_path / "runs" / "fixture"
+    run.mkdir(parents=True)
+    model = tmp_path / "model"
+    model.write_bytes(b"synthetic model")
+    reranker = tmp_path / "reranker"
+    reranker.write_bytes(b"synthetic reranker")
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text("{}")
+    digest = perf.receipts.sha256_file
+    identity = {"commit": "fixture", "dirty": False, "model": {"sha256": digest(model)}}
+    settings = {"device": "cpu", "depth": 30, "docTokens": 256}
+    retrieval = {"subset": "development", "manifest_sha256": digest(manifest),
+                 "reranker_sha256": digest(reranker), "reranker_config": settings}
+    (run / "report.json").write_text(json.dumps(retrieval))
+    (run / "retrieval-run.json").write_text(json.dumps({
+        "identity": identity, "report_sha256": digest(run / "report.json"),
+    }))
+    (run / "questions.json").write_text("[]")
+    monkeypatch.setattr(perf.build_v2, "WORK", tmp_path)
+    monkeypatch.setattr(perf.build_v2, "MANIFEST", manifest)
+    monkeypatch.setattr(perf.receipts, "approved_model_sha256", lambda: digest(model))
+    monkeypatch.setattr(perf.receipts, "approved_reranker_sha256", lambda: digest(reranker))
+    monkeypatch.setattr(perf.receipts, "current_identity", lambda **kwargs: identity)
+    monkeypatch.setattr(perf, "verified_frozen", lambda: ({"thresholds": {}}, [], {}, None, None))
+    monkeypatch.setenv("WIKI_TEST_CACHED_MODEL", str(model))
+    monkeypatch.setenv("WIKI_EVAL_RERANKER", str(reranker))
+    monkeypatch.setattr(sys, "argv", ["measure_perf_v2.py", "fixture", "--development"])
+
+    def workload(command, **kwargs):
+        assert command[-1] == "--development"
+        output = run / "performance"
+        output.mkdir()
+        (output / "performance.json").write_text(json.dumps({
+            "commit": identity["commit"], "manifest_sha256": digest(manifest),
+            "script_sha256": digest(perf.ROOT / "src/eval/perf_v2.ts"),
+            "reranker": {**settings, "depth": observed_depth}, "reranker_sha256": digest(reranker),
+            "rows": [], "visibility": [], "service_peak_rss_bytes": 0,
+            "scope": "synthetic", "sampled_process_tree_peak_rss_bytes": 0,
+        }))
+
+    scored = []
+    monkeypatch.setattr(perf.subprocess, "run", workload)
+    monkeypatch.setattr(perf, "score_performance", lambda *args: scored.append(True) or {"pass": True})
+    monkeypatch.setattr(perf, "resolve", lambda *args: {})
+    monkeypatch.setattr(perf, "quality_under_load", lambda *args: {})
+    monkeypatch.setattr(perf, "publish_holdout", lambda *args: pytest.fail("development published a receipt"))
+    if observed_depth == settings["depth"]:
+        assert perf.main() == 0
+        assert scored == [True]
+    else:
+        with pytest.raises(SystemExit, match="reranker settings differ from the retrieval run"):
+            perf.main()
+        assert not scored

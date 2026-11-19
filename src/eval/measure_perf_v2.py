@@ -90,6 +90,8 @@ def main() -> int:
     if (not valid_settings(observed) or data.get("reranker_sha256") != receipts.approved_reranker_sha256()
             or (not args.development and observed != approved)):
         raise SystemExit("performance observations differ from the required reranker profile")
+    if args.development and observed != retrieval["reranker_config"]:
+        raise SystemExit("performance reranker settings differ from the retrieval run")
     report = score_performance(data["rows"], data["visibility"], data["service_peak_rss_bytes"], manifest["thresholds"])
     rankings = resolve(output / "authority.db", {"rankings": {
         row["id"]: {"status": row["result"], "coverage": row["coverage"], "bytes": row["bytes"],
