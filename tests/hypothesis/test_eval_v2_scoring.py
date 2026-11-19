@@ -3,6 +3,7 @@ import fcntl
 import hashlib
 import io
 import json
+import stat
 import os
 import sqlite3
 import sys
@@ -311,6 +312,7 @@ def test_answer_collection_resumes_after_timeout_and_torn_line(answer_run, monke
     assert "1/2" in str(exc.value)
     assert not (run_dir / "answer-run.json").exists()
     responses = run_dir / "answers.jsonl"
+    assert stat.S_IMODE(responses.stat().st_mode) == 0o600
     first_row = responses.read_bytes()
     assert json.loads(first_row)["id"] == "a"
     responses.write_bytes(first_row + b'{"unfinished":')

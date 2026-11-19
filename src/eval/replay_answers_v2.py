@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import os
 import sqlite3
 from collections import Counter
 from contextlib import closing
@@ -252,10 +251,7 @@ def _collect(run, directory, dir_fd, cases, requests, identity, retrieval, prove
     else:
         answer_v2._write_metadata(checkpoint_path, checkpoint, dir_fd)
 
-    if not responses.exists():
-        responses.touch(mode=0o600, exist_ok=False)
-        os.fsync(dir_fd)
-    with responses.open("r+b") as output:
+    with answer_v2._open_response_log(responses, dir_fd) as output:
         ids = [request_id for request_id, _, _ in requests]
         rankings = {request_id: ranking for request_id, _, ranking in requests}
         completed = answer_v2._verified_prefix(output, ids, rankings)
@@ -275,10 +271,7 @@ def _collect(run, directory, dir_fd, cases, requests, identity, retrieval, prove
                       "ranking": ranking, "sha256": answer_digest(answer, ranking)}
             if evidence_refs:
                 record["finish_reason"] = finish_reason
-            record["record_sha256"] = receipts.sha256_json(record)
-            output.write((json.dumps(record, ensure_ascii=False) + "\n").encode())
-            output.flush()
-            os.fsync(output.fileno())
+            answer_v2._append_response(output, record)
             completed += 1
         if completed < len(requests):
             print(f"Retained {completed}/{len(requests)} development replay responses.")
