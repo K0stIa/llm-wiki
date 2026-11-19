@@ -36,9 +36,7 @@ class ApprovalResume(unittest.TestCase):
 import json, os, sys
 a = sys.argv[1:]
 fixtures = json.load(open(os.environ["FIXTURES"]))
-if a[:2] == ["pr", "list"]:
-    key = "open"
-elif a[:2] == ["api", "graphql"]:
+if a[:2] == ["api", "graphql"]:
     key = next((field for field in a if field.startswith("pr=")), "open")
     assert key != "open" or ("--paginate" in a and "--slurp" in a)
 else:
@@ -77,11 +75,8 @@ print(json.dumps(fixtures[key]))
         return subprocess.run(args, input=input, text=True, capture_output=True,
                               cwd=ROOT, env=self.env, check=True).stdout
 
-    def save(self):
-        (self.path / "responses.json").write_text(json.dumps(self.fixtures))
-
     def wave(self):
-        self.save()
+        (self.path / "responses.json").write_text(json.dumps(self.fixtures))
         entry = {"number": 7, "title": "Approval", "needsYou": True, "runnable": False}
         deps = self.run_command(self.args + ["--deps"], json.dumps({"7": entry}))
         self.evidence = json.loads(deps)["7"]
@@ -173,21 +168,34 @@ print(json.dumps(fixtures[key]))
                 self.assertEqual(self.wave()["resume"], [])
                 self.assertEqual(self.evidence["approvalWhy"], "approval evidence could not be verified")
 
-    def test_unlinked_issue_handoff_and_independent_human_blocker(self):
-        url = "https://github.com/Example/Wiki/pull/42#issuecomment-1"
-        body = ("[reviewer] [blocker] 🙋 Your turn on #7 — Approval\n\n"
-                "Review PR #42 and post a new PR comment containing only `done`. "
-                f"[Pinned approval request]({url})\n\n"
-                "<details><summary>Why, and what I checked</summary>\n\n"
-                "Reason tag: 🙋 needs you · Owner: repository maintainer\nblocked-by: -\n</details>")
+    def test_unlinked_handoff_requires_exact_unedited_pointer(self):
+        body = "Reason tag: 🙋 needs you\napproval-handoff: https://github.com/example/wiki/pull/42#issuecomment-1"
         issues = self.fixtures[f"repos/{REPO}/issues/7/comments"][0]
-        for pointer, resume in [(comment(3, body, 2), [7]),
-                                (comment(3, body, 2, edited=True), []),
-                                (comment(3, body.replace("comment-1", "comment-2"), 2), []),
-                                (comment(3, body.replace("/pull/", "/issues/"), 2), [])]:
-            issues[:] = [pointer]
-            self.assertEqual([card["number"] for card in self.wave()["resume"]], resume)
-        issues[:] = [comment(3, body, 2), comment(4, "Reason tag: 🙋\nResolve rollout.", 5)]
+        for text, edited, resume in [
+            (body, False, [7]),
+            (body, True, []),
+            (body.replace("comment-1", "comment-2"), False, []),
+            (body.replace("/pull/", "/issues/"), False, []),
+            (body + "\nVerify the rollout first.", False, []),
+            (body.replace("\n", "\nVerify rollout.\n"), False, []),
+            ("Keep blocked until rollout.\n" + body, False, []),
+        ]:
+            with self.subTest(text=text, edited=edited):
+                issues[:] = [comment(3, text, 2, edited=edited)]
+                self.assertEqual([card["number"] for card in self.wave()["resume"]], resume)
+
+        for text, second in [("Reason tag: 🙋\nResolve rollout.", 5), ("[reviewer] [blocker] Resolve rollout.", 0)]:
+            issues[:] = [comment(3, body, 2), comment(4, text, second)]
+            self.assertEqual(self.wave()["resume"], [])
+
+    def test_legacy_handoff_prose_holds(self):
+        body = (
+            "[reviewer] [blocker] 🙋 Your turn on #7 — Approval\n\n"
+            "Review PR #42 and post a new PR comment containing only `done`. "
+            "[Pinned approval request](https://github.com/example/wiki/pull/42#issuecomment-1)\n\n"
+            "Reason tag: 🙋 needs you"
+        )
+        self.fixtures[f"repos/{REPO}/issues/7/comments"] = [[comment(3, body, 2)]]
         self.assertEqual(self.wave()["resume"], [])
 
     def test_fallback_rejects_existing_links(self):
@@ -201,6 +209,18 @@ print(json.dumps(fixtures[key]))
         self.fixtures[f"repos/{REPO}/issues/42/comments"] = self.fixtures[f"repos/{REPO}/issues/8/comments"]
         self.assertEqual(self.wave()["resume"], [])
 
+    def test_linked_card_request_can_be_superseded_on_another_linked_issue(self):
+        self.pr["closingIssuesReferences"]["nodes"] = [
+            {"number": n, "repository": {"nameWithOwner": REPO}} for n in (7, 8)]
+        self.fixtures[f"repos/{REPO}/issues/7/comments"] = [[
+            comment(3, self.marker, 0), comment(4, "done", 1)]]
+        self.fixtures[f"repos/{REPO}/issues/42/comments"] = [[]]
+        latest = [comment(5, self.marker, 2)]
+        self.fixtures[f"repos/{REPO}/issues/8/comments"] = [latest]
+        self.assertEqual(self.wave()["resume"], [])
+        latest.append(comment(6, "done", 3))
+        self.assertEqual([card["number"] for card in self.wave()["resume"]], [7])
+
     def test_offline_dependencies_do_not_read_github(self):
         deps = self.run_command(self.args[:-1] + ["", "--deps"],
                                 json.dumps({"7": {"number": 7, "needsYou": True}}))
@@ -212,7 +232,6 @@ print(json.dumps(fixtures[key]))
         self.fixtures[f"repos/{REPO}/issues/7/comments"] = self.fixtures.pop(
             f"repos/{REPO}/issues/42/comments")
         self.fixtures[f"repos/{REPO}/issues/42/comments"] = [[]]
-        self.fixtures["open"] = []
         self.assertEqual([card["number"] for card in self.wave()["resume"]], [7])
         self.pr.update(isCrossRepository=True, headRepository={"nameWithOwner": "fork/wiki"})
         self.assertEqual([card["number"] for card in self.wave()["resume"]], [7])
@@ -221,7 +240,6 @@ print(json.dumps(fixtures[key]))
         wave = self.wave()
         self.assertEqual(wave["resume"], [])
         self.assertEqual([card["number"] for card in wave["refreshApproval"]], [7])
-
 
 
 if __name__ == "__main__":

@@ -356,8 +356,8 @@ two complete builds. In order, no shortcuts:
      verbatim into `To unblock`, label `needs-you`, `blocked-by: -`. After the human
      comments `done` after the current pinned request, the next wave verifies their
      permission and the head, then moves it to Review. Re-run the gate; labels do not
-     authorize it. For exits 7 and 8, copy `approval-request:` into the canonical
-     issue block and link it from the PR (no duplicate request); see block-template.md.
+     authorize it. For exits 7 and 8, use the canonical request and handoff format
+     in block-template.md for the PR's GitHub closing-link status.
    - The rule in one line: the robot migrates the databases it was allowed to test its
      work; live databases, money, auth and destructive schema changes wait for a person.
 3. **Confirm the merge landed** — never trust the merge command's exit code:

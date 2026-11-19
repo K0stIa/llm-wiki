@@ -149,6 +149,18 @@ post a new one when the code, steps or actual human question changes. Do not
 repost the same pending request on every poll or retry. Generic credential or
 product blocks without a PR remain manual; a bare `done` does not automate them.
 
+**Card without a GitHub closing link.** For a same-repository `issue-<N>-<slug>`
+PR, post the canonical request and human steps on the PR. Post this exact issue
+comment with the request permalink and no trailing newline.
+
+```text
+Reason tag: 🙋 needs you
+approval-handoff: https://github.com/<owner>/<repo>/pull/<PR>#issuecomment-<request-id>
+```
+
+A stale pointer or other issue blocker, including a historical prose handoff,
+requires manual review. The human replies `done` on the PR.
+
 **Resume.** A human with current repository write, maintain or admin permission
 comments `done` after the newest request, in the same thread. This supports a solo
 owner approving their own PR. The planner verifies identity, permission, linked
