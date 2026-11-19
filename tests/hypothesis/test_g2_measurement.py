@@ -103,7 +103,7 @@ def test_performance_receipt_checks_observed_profile(tmp_path, monkeypatch, caps
     performance = tmp_path / "performance.json"
     published = []
     monkeypatch.setattr(receipts, "approved_reranker_sha256", lambda: "approved-model")
-    monkeypatch.setattr(receipts, "write_measurement", lambda *args: published.append(args) or ROOT / "receipt.json")
+    monkeypatch.setattr(receipts, "write_measurement", lambda *args, **kwargs: published.append(kwargs) or ROOT / "receipt.json")
     settings = {"subset": "holdout", "reranker_config": approved, "reranker_sha256": "approved-model"}
     retrieval.write_text(json.dumps(settings))
     provenance.write_text(json.dumps({"report_sha256": receipts.sha256_file(retrieval),
@@ -128,6 +128,8 @@ def test_performance_receipt_checks_observed_profile(tmp_path, monkeypatch, caps
                                            "reranker_sha256": digest}))
         publish_holdout("g2.performance", tmp_path, performance, True)
         assert len(published) == count
+        if count:
+            assert published[-1]["report_sha256"] == receipts.sha256_file(performance)
 
 
 @pytest.mark.parametrize("version", [1, 2])
@@ -218,7 +220,8 @@ def test_profile_integer_json_numbers(tmp_path, monkeypatch, version, depth, tok
 
 
 @pytest.mark.parametrize("observed_depth", [24, 30])
-def test_development_performance_checks_retrieval_profile_before_scoring(tmp_path, monkeypatch, observed_depth):
+@pytest.mark.parametrize("invalid_report", [None, "digest", "shape"])
+def test_development_performance_checks_retrieval_profile_before_scoring(tmp_path, monkeypatch, observed_depth, invalid_report):
     sys.path.insert(0, str(ROOT / "src" / "eval"))
     import measure_perf_v2 as perf
 
@@ -268,6 +271,18 @@ def test_development_performance_checks_retrieval_profile_before_scoring(tmp_pat
     monkeypatch.setattr(perf, "resolve", lambda *args: {})
     monkeypatch.setattr(perf, "quality_under_load", lambda *args: {})
     monkeypatch.setattr(perf, "publish_holdout", lambda *args: pytest.fail("development published a receipt"))
+    if invalid_report:
+        report = run / "report.json"
+        report.write_text("[]")
+        if invalid_report == "shape":
+            provenance_path = run / "retrieval-run.json"
+            provenance = json.loads(provenance_path.read_text())
+            provenance["report_sha256"] = digest(report)
+            provenance_path.write_text(json.dumps(provenance))
+        monkeypatch.setattr(perf.subprocess, "run", lambda *a, **kw: pytest.fail("workload started"))
+        with pytest.raises(SystemExit, match="retrieval (report|artifacts)"):
+            perf.main()
+        return
     if observed_depth == settings["depth"]:
         assert perf.main() == 0
         assert scored == [True]
@@ -275,3 +290,38 @@ def test_development_performance_checks_retrieval_profile_before_scoring(tmp_pat
         with pytest.raises(SystemExit, match="reranker settings differ from the retrieval run"):
             perf.main()
         assert not scored
+
+
+def test_receipt_rejects_report_replaced_between_parse_and_hash(tmp_path, monkeypatch):
+    monkeypatch.syspath_prepend(str(ROOT / "src" / "eval"))
+    from measure_v2 import publish_holdout, receipts
+
+    report = tmp_path / "report.json"
+    profile = {"subset": "holdout", "reranker_config": {"device": "vulkan", "depth": 24, "docTokens": 512},
+               "reranker_sha256": "approved-model"}
+    report.write_text(json.dumps({"subset": "development"}))
+    attested_digest = receipts.sha256_file(report)
+    (tmp_path / "retrieval-run.json").write_text(json.dumps({
+        "identity": {}, "started": "synthetic", "report_sha256": attested_digest,
+    }))
+    read_bytes = Path.read_bytes
+
+    def replace_report(path):
+        data = read_bytes(path)
+        if path == report:
+            path.write_text(json.dumps(profile))
+        return data
+
+    monkeypatch.setattr(Path, "read_bytes", replace_report)
+    digest = receipts.sha256_file
+
+    def replace_after_hash(path):
+        result = digest(path)
+        if path == report:
+            path.write_text(json.dumps(profile))
+        return result
+
+    monkeypatch.setattr(receipts, "sha256_file", replace_after_hash)
+    monkeypatch.setattr(receipts, "approved_reranker_sha256", lambda: "approved-model")
+    monkeypatch.setattr(receipts, "write_measurement", lambda *a, **kw: pytest.fail("published an unattested report"))
+    publish_holdout("g2.recall-thresholds", tmp_path, report, True)

@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from build_v2 import ENDPOINT, MODEL, MANIFEST, WORK
+from retrieval_run import read_retrieval_run
 from score_v2 import answer_digest, score_answers
 import answer_evidence
 
@@ -63,24 +64,19 @@ def _read_retrieval(run: Path, *, resume: bool) -> tuple[dict, dict, dict, str]:
     import receipts
 
     try:
-        provenance_bytes = (run / "retrieval-run.json").read_bytes()
-        provenance = json.loads(provenance_bytes)
-        identity = provenance["identity"]
+        artifacts = read_retrieval_run(run, include_raw=True)
+        identity = artifacts.provenance["identity"]
         model = {"sha256": receipts.approved_model_sha256()}
         if identity != receipts.current_identity(model=model) or (resume and identity["dirty"]):
             raise SystemExit("answer collection requires retrieval from the current checkout identity"
                              + (" and a clean checkout" if resume else ""))
-        report_bytes = (run / "report.json").read_bytes()
-        report = json.loads(report_bytes)
-        if (provenance["report_sha256"] != hashlib.sha256(report_bytes).hexdigest()
-                or report["manifest_sha256"] != receipts.sha256_file(MANIFEST)
+        report = artifacts.report
+        if (report["manifest_sha256"] != receipts.sha256_file(MANIFEST)
                 or report["model_sha256"] != model["sha256"]
                 or report["subset"] not in {"development", "holdout"}):
             raise SystemExit("retrieval report does not match the recorded run and frozen manifest")
-        raw = (run / "raw.json").read_bytes()
-        if report["raw_rankings_sha256"] != hashlib.sha256(raw).hexdigest():
-            raise SystemExit("raw rankings do not match the recorded retrieval run")
-        return identity, report, json.loads(raw), hashlib.sha256(provenance_bytes).hexdigest()
+        assert artifacts.raw is not None
+        return identity, report, artifacts.raw, artifacts.provenance_sha256
     except (OSError, ValueError, KeyError, TypeError):
         raise SystemExit("could not validate retrieval artifacts for answer collection") from None
 

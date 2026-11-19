@@ -360,7 +360,7 @@ def test_answer_resume_rejects_an_altered_complete_row(answer_run, monkeypatch):
     assert not (run_dir / "answer-run.json").exists()
 
 
-@pytest.mark.parametrize("invalid", ["stale", "raw checksum", "legacy", "lock", "deadline"])
+@pytest.mark.parametrize("invalid", ["stale", "raw checksum", "raw shape", "legacy", "lock", "deadline"])
 def test_answer_resume_rejects_unverified_inputs_before_network(answer_run, monkeypatch, invalid):
     run_dir, *_ = answer_run
     flags = []
@@ -368,6 +368,17 @@ def test_answer_resume_rejects_unverified_inputs_before_network(answer_run, monk
         monkeypatch.setattr(measure_v2.receipts, "current_identity", lambda **_: {"commit": "c" * 40})
     elif invalid == "raw checksum":
         (run_dir / "raw.json").write_text("{}")
+    elif invalid == "raw shape":
+        raw = run_dir / "raw.json"
+        raw.write_text("[]")
+        report_path = run_dir / "report.json"
+        report = json.loads(report_path.read_text())
+        report["raw_rankings_sha256"] = measure_v2.receipts.sha256_file(raw)
+        report_path.write_text(json.dumps(report))
+        provenance_path = run_dir / "retrieval-run.json"
+        provenance = json.loads(provenance_path.read_text())
+        provenance["report_sha256"] = measure_v2.receipts.sha256_file(report_path)
+        provenance_path.write_text(json.dumps(provenance))
     elif invalid == "legacy":
         (run_dir / "answers.jsonl").write_text("{}\n")
     elif invalid == "deadline":
