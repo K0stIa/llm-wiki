@@ -403,6 +403,38 @@ def test_answer_resume_rejects_unverified_inputs_before_network(answer_run, monk
         os.close(fd)
 
 
+@pytest.mark.parametrize(
+    ("ineligible", "diagnostic"),
+    [
+        ("stale", "current checkout identity"),
+        ("dirty", "and a clean checkout"),
+        ("manifest_sha256", "recorded run and frozen manifest"),
+        ("model_sha256", "recorded run and frozen manifest"),
+        ("subset", "recorded run and frozen manifest"),
+    ],
+)
+def test_answer_retrieval_checks_eligibility_before_raw(answer_run, monkeypatch, ineligible, diagnostic):
+    run_dir, _, _, report, identity = answer_run
+    (run_dir / "raw.json").unlink()
+    provenance_path = run_dir / "retrieval-run.json"
+    provenance = json.loads(provenance_path.read_text())
+
+    if ineligible == "stale":
+        monkeypatch.setattr(measure_v2.receipts, "current_identity", lambda **_: {"commit": "c" * 40})
+    elif ineligible == "dirty":
+        identity["dirty"] = True
+        provenance["identity"] = identity
+    else:
+        report[ineligible] = "ineligible"
+        report_path = run_dir / "report.json"
+        report_path.write_text(json.dumps(report))
+        provenance["report_sha256"] = measure_v2.receipts.sha256_file(report_path)
+    provenance_path.write_text(json.dumps(provenance))
+
+    with pytest.raises(SystemExit, match=diagnostic):
+        answer_v2._read_retrieval(run_dir, resume=True)
+
+
 class _Gen:
     def __init__(self, pages):
         self.pages = pages

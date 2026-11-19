@@ -12,7 +12,6 @@ class RetrievalRun:
     provenance: dict
     provenance_sha256: str
     report: dict
-    raw: dict | None
 
 
 def _read_object(data: bytes) -> dict:
@@ -22,7 +21,7 @@ def _read_object(data: bytes) -> dict:
     return value
 
 
-def read_retrieval_run(run: Path, *, include_raw: bool = False) -> RetrievalRun:
+def read_retrieval_run(run: Path) -> RetrievalRun:
     """Verify each consumed artifact against the digest of the bytes being parsed."""
     try:
         provenance_bytes = (run / "retrieval-run.json").read_bytes()
@@ -31,12 +30,17 @@ def read_retrieval_run(run: Path, *, include_raw: bool = False) -> RetrievalRun:
         if provenance["report_sha256"] != hashlib.sha256(report_bytes).hexdigest():
             raise SystemExit("retrieval report does not match the recorded run")
         report = _read_object(report_bytes)
-        raw = None
-        if include_raw:
-            raw_bytes = (run / "raw.json").read_bytes()
-            if report["raw_rankings_sha256"] != hashlib.sha256(raw_bytes).hexdigest():
-                raise SystemExit("raw rankings do not match the recorded retrieval run")
-            raw = _read_object(raw_bytes)
-        return RetrievalRun(provenance, hashlib.sha256(provenance_bytes).hexdigest(), report, raw)
+        return RetrievalRun(provenance, hashlib.sha256(provenance_bytes).hexdigest(), report)
+    except (OSError, ValueError, KeyError):
+        raise SystemExit("could not validate retrieval artifacts") from None
+
+
+def read_raw_rankings(run: Path, report: dict) -> dict:
+    """Read raw rankings attested by an already verified retrieval report."""
+    try:
+        raw_bytes = (run / "raw.json").read_bytes()
+        if report["raw_rankings_sha256"] != hashlib.sha256(raw_bytes).hexdigest():
+            raise SystemExit("raw rankings do not match the recorded retrieval run")
+        return _read_object(raw_bytes)
     except (OSError, ValueError, KeyError):
         raise SystemExit("could not validate retrieval artifacts") from None
