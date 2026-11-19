@@ -96,7 +96,10 @@ def resolve(db: Path, raw: dict) -> dict:
 def publish_holdout(check: str, run: Path, report: Path, passed: bool) -> None:
     artifacts = read_retrieval_run(run)
     provenance, settings = artifacts.provenance, artifacts.report
-    if settings.get("subset") != "holdout":
+    subset = settings.get("subset")
+    if subset not in ("development", "holdout"):
+        raise SystemExit("retrieval report subset must be development or holdout")
+    if subset == "development":
         return
     approved = approved_settings()
     model_sha = receipts.approved_reranker_sha256()
