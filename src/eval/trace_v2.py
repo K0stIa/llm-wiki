@@ -243,6 +243,10 @@ def main() -> int:
             or provenance["version"] not in (1, 2) or provenance["outputs_sha256"].keys() != expected_outputs
             or any(receipts.sha256_file(run / name) != digest for name, digest in provenance["outputs_sha256"].items())):
         raise SystemExit("saved trace does not match its recorded development provenance")
+    report = json.loads((run / "report.json").read_text())
+    observed = report.get("reranker_config") if isinstance(report, dict) else None
+    if not valid_settings(observed) or observed != provenance["reranker_config"]:
+        raise SystemExit("saved trace report does not match its recorded development provenance")
     print(f"run={run.name}")
     print(json.dumps(json.loads((run / "trace-report.json").read_text()), indent=2))
     return 0

@@ -130,7 +130,8 @@ def test_performance_receipt_checks_observed_profile(tmp_path, monkeypatch, caps
         assert len(published) == count
 
 
-def test_saved_trace_reports_historical_settings_and_checks_integrity(tmp_path, monkeypatch, capsys):
+@pytest.mark.parametrize("version", [1, 2])
+def test_saved_trace_reports_historical_settings_and_checks_integrity(tmp_path, monkeypatch, capsys, version):
     sys.path.insert(0, str(ROOT / "src" / "eval"))
     import trace_v2
 
@@ -140,14 +141,19 @@ def test_saved_trace_reports_historical_settings_and_checks_integrity(tmp_path, 
     run.mkdir(mode=0o700, parents=True)
     historical = {**trace_v2.approved_settings(), "depth": 30}
     assert historical != trace_v2.approved_settings()
-    report = {"reranker_config": historical}
-    for name in trace_v2.OUTPUTS:
-        (run / name).write_text(json.dumps(report if name == "trace-report.json" else {}))
+    diagnostic = {"subset": "development"}
+    outputs = set(trace_v2.OUTPUTS)
+    if version == 1:
+        outputs.remove("trace-questions.json")
+    for name in outputs:
+        (run / name).write_text("{}")
+    (run / "report.json").write_text(json.dumps({"reranker_config": historical}))
+    (run / "trace-report.json").write_text(json.dumps(diagnostic))
     provenance = {
-        "version": 2,
+        "version": version,
         "subset": "development",
         "reranker_config": historical,
-        "outputs_sha256": {name: trace_v2.receipts.sha256_file(run / name) for name in trace_v2.OUTPUTS},
+        "outputs_sha256": {name: trace_v2.receipts.sha256_file(run / name) for name in outputs},
     }
     provenance_path = run / "trace-provenance.json"
     provenance_path.write_text(json.dumps(provenance))
@@ -155,7 +161,13 @@ def test_saved_trace_reports_historical_settings_and_checks_integrity(tmp_path, 
     assert trace_v2.main() == 0
     header, body = capsys.readouterr().out.split("\n", 1)
     assert header == "run=historical"
-    assert json.loads(body) == report
+    assert json.loads(body) == diagnostic
+
+    mismatched = {**historical, "depth": 31}
+    assert trace_v2.valid_settings(mismatched)
+    provenance_path.write_text(json.dumps({**provenance, "reranker_config": mismatched}))
+    with pytest.raises(SystemExit, match="recorded development provenance"):
+        trace_v2.main()
 
     provenance_path.write_text(json.dumps({**provenance, "reranker_config": {**historical, "depth": 0}}))
     with pytest.raises(SystemExit, match="recorded development provenance"):
