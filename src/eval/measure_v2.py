@@ -27,6 +27,7 @@ sys.path.insert(0, str(ROOT / "src" / "eval"))
 sys.path.insert(0, str(ROOT / "src" / "verification"))
 from authority import ChangeKind, DecisionKind, connect_knowledge  # noqa: E402
 import build_v2  # noqa: E402
+from g2_reranker_profile import approved_settings, valid_settings  # noqa: E402
 import receipts  # noqa: E402
 import score_v2  # noqa: E402
 
@@ -99,10 +100,17 @@ def publish_holdout(check: str, run: Path, report: Path, passed: bool) -> None:
     settings = json.loads(retrieval.read_text())
     if settings["subset"] != "holdout":
         return
-    if (settings.get("reranker_config") != {"device": "vulkan", "depth": 24, "docTokens": 512}
-            or settings.get("reranker_sha256") != receipts.approved_reranker_sha256()):
-        print("Measurement receipt withheld because the run differs from the approved D14 profile.")
-        return
+    approved = approved_settings()
+    model_sha = receipts.approved_reranker_sha256()
+    reports = [settings]
+    if check == "g2.performance":
+        reports.append(json.loads(report.read_text()))
+    for measured in reports:
+        observed = measured.get("reranker_config")
+        if (measured.get("subset") != "holdout" or not valid_settings(observed) or observed != approved
+                or measured.get("reranker_sha256") != model_sha):
+            print("Measurement receipt withheld because the run differs from the approved D14 profile.")
+            return
     path = receipts.write_measurement(check, provenance["identity"], provenance["started"], report,
                                       passed, [Path(sys.executable).name, *sys.argv])
     print(f"Measurement receipt: {path.relative_to(ROOT)}")

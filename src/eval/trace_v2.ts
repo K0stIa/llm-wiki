@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import * as z from "zod/v4";
 import { buildGeneration, recall, closeQmdReaders, observeRecall, recallSpansOverlap } from "../retrieval/qmd-integration.js";
 import type { RecallTrace, Reranker } from "../retrieval/qmd-integration.js";
+import { evaluationRerankerSettings } from "./g2-reranker-profile.js";
 
 const goldSchema = z.object({ page: z.string().min(1), span: z.string().min(1).nullable(), revision: z.literal("current").optional() });
 const developmentSchema = z.strictObject({
@@ -97,10 +98,7 @@ export function evidenceStages(keys: Set<string>, lists: RecallTrace, union: Set
 function frozenReranker(): Reranker {
   const model = process.env.WIKI_EVAL_RERANKER;
   if (!model) throw new Error("set WIKI_EVAL_RERANKER to the approved cached GGUF");
-  const device = z.literal("vulkan").parse(process.env.WIKI_EVAL_RERANK_DEVICE ?? "vulkan");
-  const depth = z.literal("24").parse(process.env.WIKI_EVAL_RERANK_DEPTH ?? "24");
-  const docTokens = z.literal("512").parse(process.env.WIKI_EVAL_RERANK_TOKENS ?? "512");
-  return { model, device, depth: Number(depth), docTokens: Number(docTokens) };
+  return { model, ...evaluationRerankerSettings() };
 }
 
 async function main() {

@@ -22,9 +22,9 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src" / "eval"))
 import build_v2  # noqa: E402
 import measure_v2  # noqa: E402
+from g2_reranker_profile import approved_settings, valid_settings  # noqa: E402
 from measure_v2 import receipts, score_v2  # noqa: E402
 
-PROFILE = {"device": "vulkan", "depth": 24, "docTokens": 512}
 OUTPUTS = (
     "questions.json", "trace-questions.json", "trace.json", "raw.json", "oracle-raw.json",
     "report.json", "retrieval-run.json", "trace-report.json",
@@ -143,8 +143,9 @@ def reuse_generation(source: Path, run: Path, projects: set[str], manifest_sha: 
 def run_trace(runs: Path, source: Path | None = None) -> Path:
     model, model_sha = checked_model("WIKI_TEST_CACHED_MODEL", receipts.approved_model_sha256())
     reranker, reranker_sha = checked_model("WIKI_EVAL_RERANKER", receipts.approved_reranker_sha256())
+    approved = approved_settings()
     for variable, key in (("WIKI_EVAL_RERANK_DEVICE", "device"), ("WIKI_EVAL_RERANK_DEPTH", "depth"), ("WIKI_EVAL_RERANK_TOKENS", "docTokens")):
-        if os.environ.get(variable, str(PROFILE[key])) != str(PROFILE[key]):
+        if os.environ.get(variable, str(approved[key])) != str(approved[key]):
             raise SystemExit(f"{variable} differs from the approved D14 profile")
     identity = receipts.current_identity(model={"sha256": model_sha})
     changed_files_sha = code_digest(identity)
@@ -172,7 +173,10 @@ def run_trace(runs: Path, source: Path | None = None) -> Path:
     if completed.returncode:
         raise SystemExit(f"trace runner exited {completed.returncode}; see {run.name}/runner-stderr.log")
     trace, raw, oracle = (json.loads((run / name).read_text()) for name in ("trace.json", "raw.json", "oracle-raw.json"))
-    if trace["subset"] != "development" or any(data["reranker"] != PROFILE for data in (trace, raw, oracle)):
+    observed = trace["reranker"]
+    if trace["subset"] != "development" or any(
+        not valid_settings(data["reranker"]) or data["reranker"] != approved for data in (trace, raw, oracle)
+    ):
         raise SystemExit("trace outputs differ from the development D14 profile")
     if any(entries.keys() != {q["id"] for q in dev} for entries in (trace["traces"], raw["rankings"], oracle["rankings"])):
         raise SystemExit("trace output does not cover the exact development split")
@@ -190,7 +194,7 @@ def run_trace(runs: Path, source: Path | None = None) -> Path:
         "manifest_sha256": manifest_sha,
         "model_sha256": model_sha,
         "reranker_sha256": reranker_sha,
-        "reranker_config": PROFILE,
+        "reranker_config": observed,
         "raw_rankings_sha256": receipts.sha256_file(run / "raw.json"),
     })
     if not all(r["status"] == "ok" and r["coverage"] == "hybrid-current" and not r["degradation"] for r in raw["rankings"].values()):
@@ -212,7 +216,7 @@ def run_trace(runs: Path, source: Path | None = None) -> Path:
         "version": 2, "subset": "development", "identity": identity, "changed_files_sha256": changed_files_sha,
         "manifest_sha256": manifest_sha, "started": started.isoformat(), "reranker_sha256": reranker_sha,
         "generation_source": source.name if source else None,
-        "reranker_config": PROFILE, "outputs_sha256": {name: receipts.sha256_file(run / name) for name in OUTPUTS},
+        "reranker_config": observed, "outputs_sha256": {name: receipts.sha256_file(run / name) for name in OUTPUTS},
     })
     return run
 
@@ -235,7 +239,8 @@ def main() -> int:
         run = run_trace(runs)
     provenance = json.loads((run / "trace-provenance.json").read_text())
     expected_outputs = set(OUTPUTS) if provenance["version"] == 2 else set(OUTPUTS) - {"trace-questions.json"}
-    if (provenance["subset"] != "development" or provenance["reranker_config"] != PROFILE
+    if (provenance["subset"] != "development" or not valid_settings(provenance["reranker_config"])
+            or provenance["reranker_config"] != approved_settings()
             or provenance["version"] not in (1, 2) or provenance["outputs_sha256"].keys() != expected_outputs
             or any(receipts.sha256_file(run / name) != digest for name, digest in provenance["outputs_sha256"].items())):
         raise SystemExit("saved trace does not match its recorded development provenance")

@@ -88,3 +88,45 @@ def test_lexical_candidates_prioritize_subject_terms(tmp_path):
     assert [pages[key] for key in snapshot["lexical"]] == ["subject"]
     fallback = retrieval.snapshot(store, "main", "Where would this be used?")
     assert [pages[key] for key in fallback["lexical"]] == ["filler"]
+
+
+def test_performance_receipt_checks_observed_profile(tmp_path, monkeypatch):
+    sys.path.insert(0, str(ROOT / "src" / "eval"))
+    from measure_v2 import publish_holdout, receipts
+
+    approved = {"device": "vulkan", "depth": 24, "docTokens": 512}
+    retrieval = tmp_path / "report.json"
+    provenance = tmp_path / "retrieval-run.json"
+    performance = tmp_path / "performance.json"
+    published = []
+    monkeypatch.setattr(receipts, "approved_reranker_sha256", lambda: "approved-model")
+    monkeypatch.setattr(receipts, "write_measurement", lambda *args: published.append(args) or ROOT / "receipt.json")
+    settings = {"subset": "holdout", "reranker_config": approved, "reranker_sha256": "approved-model"}
+    for subset, measured_subset, observed, digest, count in (
+        ("holdout", "holdout", {**approved, "depth": 30}, "approved-model", 0),
+        ("holdout", "holdout", {**approved, "depth": 24.0}, "approved-model", 0),
+        ("holdout", "holdout", approved, "wrong-model", 0),
+        ("development", "development", approved, "approved-model", 0),
+        ("holdout", "development", approved, "approved-model", 0),
+        ("holdout", "holdout", approved, "approved-model", 1),
+    ):
+        retrieval.write_text(json.dumps({**settings, "subset": subset}))
+        provenance.write_text(json.dumps({"report_sha256": receipts.sha256_file(retrieval),
+                                          "identity": {}, "started": "synthetic"}))
+        performance.write_text(json.dumps({"subset": measured_subset, "reranker_config": observed,
+                                           "reranker_sha256": digest}))
+        publish_holdout("g2.performance", tmp_path, performance, True)
+        assert len(published) == count
+
+
+def test_malformed_approved_profile_refuses_admission(tmp_path, monkeypatch):
+    import pytest
+
+    sys.path.insert(0, str(ROOT / "src" / "eval"))
+    import g2_reranker_profile
+
+    monkeypatch.setattr(g2_reranker_profile, "__file__", str(tmp_path / "g2_reranker_profile.py"))
+    profile = tmp_path / "g2-reranker-profile.json"
+    profile.write_text(json.dumps({"version": 1, "settings": {"device": "vulkan", "depth": 24}}))
+    with pytest.raises(ValueError, match="invalid G2 reranker profile"):
+        g2_reranker_profile.approved_settings()

@@ -4,6 +4,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
+import { evaluationRerankerSettings } from '../../src/eval/g2-reranker-profile.ts';
 import { candidateKeys, evidenceStages, feasibleEvidence } from '../../src/eval/trace_v2.ts';
 import { observeRecall, recall } from '../../src/retrieval/qmd-integration.ts';
 
@@ -110,4 +111,22 @@ test('clause-only and exact hits contribute to the ceiling independently of rera
   assert.deepEqual(missed.clauses, [['clause-alternative']]);
   assert.deepEqual(missed.rerankHead, []);
   assert.equal(missed.loss, 'not-selected');
+});
+
+test('the frozen profile rejects overrides while performance development accepts them', t => {
+  const keys = ['WIKI_EVAL_RERANK_DEVICE', 'WIKI_EVAL_RERANK_DEPTH', 'WIKI_EVAL_RERANK_TOKENS'];
+  const previous = keys.map(key => process.env[key]);
+  t.after(() => keys.forEach((key, i) => {
+    if (previous[i] === undefined) delete process.env[key];
+    else process.env[key] = previous[i];
+  }));
+  keys.forEach(key => delete process.env[key]);
+  assert.deepEqual(evaluationRerankerSettings(), { device: 'vulkan', depth: 24, docTokens: 512 });
+  process.env.WIKI_EVAL_RERANK_DEVICE = 'cpu';
+  process.env.WIKI_EVAL_RERANK_DEPTH = '30';
+  process.env.WIKI_EVAL_RERANK_TOKENS = '256';
+  assert.throws(() => evaluationRerankerSettings(), /overrides differ/);
+  assert.deepEqual(evaluationRerankerSettings(true), { device: 'cpu', depth: 30, docTokens: 256 });
+  process.env.WIKI_EVAL_RERANK_DEPTH = '65';
+  assert.throws(() => evaluationRerankerSettings(true), /invalid G2 reranker settings/);
 });
