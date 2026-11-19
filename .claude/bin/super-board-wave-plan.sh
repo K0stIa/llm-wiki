@@ -168,7 +168,7 @@ echo "$ITEMS" | jq --argjson cols "$COLUMNS" --argjson cap "$MAX_WORKERS" --argj
       # these to Ready before launching, so they join this very wave.
       sweep: [ $all[]
                | select(.status == "Blocked")
-               | select(free(.number) and (dep(.number).needsYou | not))
+               | select(free(.number))
                | { number, title,
                    clearedBy: (dep(.number) | .blockers) } ],
 

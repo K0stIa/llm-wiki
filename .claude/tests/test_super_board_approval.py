@@ -55,6 +55,7 @@ print(json.dumps(fixtures[key]))
         self.check = [str(BIN / "super-board-approval.py"), "--repo", REPO, "--pr", "42",
                       "--head", HEAD, "--plan", PLAN]
         self.marker = self.run_command(self.check + ["--request"]).strip()
+        self.issue_request = f"Reason tag: 🙋 needs you\n{self.marker}\nblocked-by: -"
         pr = dict(headRefOid=HEAD, state="OPEN", headRefName="issue-7-approval",
                   isCrossRepository=False, headRepository={"nameWithOwner": REPO}, closingIssuesReferences={
                       "nodes": [], "pageInfo": {"hasNextPage": False}})
@@ -87,9 +88,10 @@ print(json.dumps(fixtures[key]))
         return subprocess.run(args, text=True, capture_output=True,
                               cwd=ROOT, env=self.env, check=True).stdout
 
-    def wave(self):
+    def wave(self, labels=()):
         issue = dict(number=7, title="Approval", state="OPEN", body="## Blocked by\n- None.",
-                     labels={"nodes": []}, comments={"nodes": sum(self.fixtures[ISSUE_COMMENTS], [])})
+                     labels={"nodes": [{"name": name} for name in labels]},
+                     comments={"nodes": sum(self.fixtures[ISSUE_COMMENTS], [])})
         self.fixtures["issues"] = [{"data": {"repository": {"issues": {
             "nodes": [issue], "pageInfo": {"hasNextPage": False},
         }}}}]
@@ -97,7 +99,8 @@ print(json.dumps(fixtures[key]))
         deps = self.run_command(["bash", str(BIN / "super-board-deps.sh"), "--repo", REPO])
         self.evidence = json.loads(deps)["7"]
         (self.path / "deps.json").write_text(deps)
-        item = {"status": "Blocked", "title": "Approval", "content": {"number": 7, "type": "Issue"}}
+        item = {"status": "Blocked", "title": "Approval", "labels": list(labels),
+                "content": {"number": 7, "type": "Issue"}}
         (self.path / "items.json").write_text(json.dumps({"items": [item]}))
         return json.loads(self.run_command([
             "bash", str(BIN / "super-board-wave-plan.sh"), "--config", str(self.path / "config.json"),
@@ -135,14 +138,14 @@ print(json.dumps(fixtures[key]))
 
     def test_ambiguous_issue_requests_never_select_a_pr(self):
         self.fixtures[ISSUE_COMMENTS] = [[
-            comment(3, self.marker, 0), comment(4, self.marker.replace(HEAD, "b" * 40), 0)]]
+            comment(3, self.issue_request, 0), comment(4, self.issue_request.replace(HEAD, "b" * 40), 0)]]
         self.assert_held()
         self.assertFalse(self.evidence["approvalRefresh"])
         self.assertEqual(self.evidence["approvalWhy"], "ambiguous newest human request")
 
     def test_stale_issue_pin_requires_refresh_even_after_pr_approval(self):
         self.link_issues(7)
-        self.fixtures[ISSUE_COMMENTS] = [[comment(3, self.marker.replace(HEAD, "b" * 40), 0)]]
+        self.fixtures[ISSUE_COMMENTS] = [[comment(3, self.issue_request.replace(HEAD, "b" * 40), 0)]]
         self.assert_held()
         self.assertTrue(self.evidence["approvalRefresh"])
 
@@ -158,25 +161,26 @@ print(json.dumps(fixtures[key]))
             self.assert_held()
 
     def test_unlinked_handoff_requires_exact_unedited_pointer(self):
-        for body in ("Thanks.", HANDOFF.replace("/pull/", "/issues/"), HANDOFF + "\nVerify rollout."):
+        for body in ("Thanks.", HANDOFF.replace("/pull/", "/issues/"), HANDOFF + "\nVerify rollout.", HANDOFF.rsplit("\n", 1)[0]):
             self.fixtures[ISSUE_COMMENTS] = [[comment(3, body, 2)]]
             self.assertEqual(self.wave()["resume"], [])
         for comments in ([], [comment(3, HANDOFF, 2, edited=True)]):
             self.fixtures[ISSUE_COMMENTS] = [comments]
             self.assertEqual(self.wave()["resume"], [])
+        self.assertTrue(json.loads(self.run_command(self.check))["approved"])
 
     def test_sweep_and_resume_use_distinct_evidence(self):
         reply = self.fixtures[PR_COMMENTS][0].pop()
-        for suffix in ("\nblocked-by: -", "", "\nblocked-by: 99", "\nblocked-by: typo"):
-            text = HANDOFF.rsplit("\n", 1)[0] + suffix
-            self.fixtures[ISSUE_COMMENTS] = [[comment(3, text, 2)]]
-            self.assert_held()
-        self.fixtures[PR_COMMENTS][0].append(reply)
         self.assert_held()
-        self.fixtures[ISSUE_COMMENTS] = [[comment(3, HANDOFF, 2)]]
+        self.fixtures[PR_COMMENTS][0].append(reply)
         self.assert_resumed()
-        self.fixtures[ISSUE_COMMENTS] = [[comment(3, "blocked-by: 99", 2)]]
-        self.assertEqual(self.wave()["sweep"][0]["clearedBy"], [99])
+        dependency = comment(3, "blocked-by: 99", 2)
+        for extra, labels in (([], ()), ([comment(4, "approval-handoff: invalid", 3, "guest")], ()),
+                              ([], ("needs-you",))):
+            self.fixtures[ISSUE_COMMENTS] = [[dependency, *extra]]
+            wave = self.wave(labels)
+            self.assertEqual(wave["resume"], [])
+            self.assertEqual([(c["number"], c["clearedBy"]) for c in wave["sweep"]], [(7, [99])])
 
     def assert_resumed(self):
         wave = self.wave()
@@ -208,7 +212,7 @@ print(json.dumps(fixtures[key]))
 
     def test_linked_card_request_can_be_superseded_on_another_linked_issue(self):
         self.link_issues(7, 8)
-        self.fixtures[ISSUE_COMMENTS] = [[comment(3, self.marker, 0), comment(4, "done", 1)]]
+        self.fixtures[ISSUE_COMMENTS] = [[comment(3, self.issue_request, 0), comment(4, "done", 1)]]
         self.fixtures[PR_COMMENTS] = [[]]
         latest = [comment(5, self.marker, 2)]
         self.fixtures[f"repos/{REPO}/issues/8/comments"] = [latest]
@@ -218,7 +222,8 @@ print(json.dumps(fixtures[key]))
 
     def test_linked_issue_can_still_hold_the_request_and_reply(self):
         self.link_issues(7)
-        self.fixtures[ISSUE_COMMENTS], self.fixtures[PR_COMMENTS] = self.fixtures[PR_COMMENTS], [[]]
+        self.fixtures[ISSUE_COMMENTS] = [[comment(1, self.issue_request, 1), comment(2, "done", 3)]]
+        self.fixtures[PR_COMMENTS] = [[]]
         self.assert_resumed()
         self.fixtures["fresh_issue_comments"] = [[
             *self.fixtures[ISSUE_COMMENTS][0], comment(4, "Reason tag: 🙋 needs you", 4)]]
