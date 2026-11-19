@@ -104,13 +104,8 @@ def validate(comments, expected, permission, *, unlinked_issue=None):
     try:
         blocks = trusted_blocks(comments, permission, unlinked_issue=unlinked_issue)
         if unlinked_issue is not None:
-            pr_blocks = [c for c in blocks if c["source"] == expected["pr"]]
-            latest_pr = max(pr_blocks, key=lambda c: timestamp(c["created_at"]), default=None)
-            if any(c["source"] != expected["pr"] and (
-                latest_pr is None or not is_pr_handoff(c, unlinked_issue, latest_pr, expected)
-            ) for c in blocks):
-                return hold("issue has a human block beyond the canonical PR handoff")
-            blocks = pr_blocks
+            issue_blocks = [c for c in blocks if c["source"] != expected["pr"]]
+            blocks = [c for c in blocks if c["source"] == expected["pr"]]
         if not blocks:
             return hold("no request from a trusted repository collaborator")
         # Any later human block supersedes the old request, including one with
@@ -120,6 +115,10 @@ def validate(comments, expected, permission, *, unlinked_issue=None):
         if len(latest) != 1:
             return hold("ambiguous newest human request")
         request_comment = latest[0]
+        if unlinked_issue is not None and not (issue_blocks and all(
+            is_pr_handoff(c, unlinked_issue, request_comment, expected) for c in issue_blocks
+        )):
+            return hold("issue has a human block beyond the canonical PR handoff")
         request = parse_request(request_comment)
         if request is None or any(request.get(k) != v for k, v in expected.items() if k != "head"):
             return hold("the latest request does not cover the current code and human steps")
@@ -197,7 +196,7 @@ class GitHub:
              "-F", f"owner={owner}", "-F", f"repo={name}"], "array")
         if not pages:
             raise ValueError("missing open PR pages")
-        branches, seen, cursors = {}, set(), set()
+        branches, cursors = {}, set()
         for index, page in enumerate(pages):
             prs = page["data"]["repository"]["pullRequests"]
             info, nodes = prs["pageInfo"], prs["nodes"]
@@ -211,12 +210,10 @@ class GitHub:
                 cursors.add(cursor)
             for pr in nodes:
                 number, branch = pr["number"], pr["headRefName"]
-                if type(number) is not int or number < 1 or number in seen or not isinstance(branch, str) or not branch:
+                if type(number) is not int or number < 1 or number in branches or not isinstance(branch, str) or not branch:
                     raise ValueError("invalid open PR identity")
-                seen.add(number)
-                if self.same_origin(pr):
-                    branches[number] = branch
-        return branches
+                branches[number] = branch if self.same_origin(pr) else None
+        return {number: branch for number, branch in branches.items() if branch}
 
     def pr(self, number):
         # Paginate linked issues too: an omitted newer request must never make
@@ -257,7 +254,7 @@ class GitHub:
             raise ValueError("unreadable PR head")
         return head, issues, branches.pop(), has_links
 
-    def check(self, number, head=None, scope=None, *, issue=None, issue_comments=(), unlinked_issue=None):
+    def check(self, number, head=None, scope=None, *, issue=None, unlinked_issue=None):
         current_head, issues, branch, has_links = self.pr(number)
         if issue is not None and issue not in issues:
             return {"approved": False, "why": "request issue is not linked to this PR"}
@@ -265,11 +262,10 @@ class GitHub:
             return {"approved": False, "why": "expected an unlinked same-repository workflow PR"}
         if head is not None and current_head != head:
             return {"approved": False, "headChanged": True, "why": "PR head changed after review"}
-        comments = list(issue_comments)
-        for source in sorted((issues | {number}) - {issue}):
-            comments.extend(self.comments(source))
+        sources = issues | {number}
         if unlinked_issue is not None:
-            comments.extend(self.comments(unlinked_issue))
+            sources.add(unlinked_issue)
+        comments = [comment for source in sorted(sources) for comment in self.comments(source)]
         expected = {"repo": self.repo, "pr": number, "head": current_head}
         if scope is not None:
             expected["scope"] = scope
@@ -317,7 +313,7 @@ def main():
                     if timestamp(blocks[0]["updated_at"]) != timestamp(blocks[0]["created_at"]):
                         entry["approvalWhy"] = "approval request was edited; post a fresh request"
                         continue
-                    result = github.check(request["pr"], request["head"], issue=issue, issue_comments=comments)
+                    result = github.check(request["pr"], request["head"], issue=issue)
                 else:
                     if open_prs is None:
                         open_prs = github.open_prs()
