@@ -169,6 +169,21 @@ print(json.dumps(fixtures[key]))
             self.assertEqual(self.wave()["resume"], [])
         self.assertTrue(json.loads(self.run_command(self.check))["approved"])
 
+    def test_same_second_handoff_requires_exact_trusted_pointer_and_later_reply(self):
+        self.fixtures[ISSUE_COMMENTS] = [[comment(3, HANDOFF, 1)]]
+        self.assert_resumed()
+        for invalid in (comment(3, HANDOFF, 0), comment(3, HANDOFF, 1, "guest"),
+                        comment(3, HANDOFF, 1, edited=True),
+                        comment(3, HANDOFF.replace("comment-1", "comment-9"), 1)):
+            self.fixtures[ISSUE_COMMENTS] = [[invalid]]
+            self.assert_held()
+        self.fixtures[ISSUE_COMMENTS] = [[comment(3, HANDOFF, 1)]]
+        self.fixtures[PR_COMMENTS][0][1] = comment(2, "done", 1)
+        self.assert_held()
+        self.fixtures[PR_COMMENTS][0].extend([comment(4, self.marker, 1), comment(5, "done", 3)])
+        self.assert_held()
+        self.assertEqual(self.evidence["approvalWhy"], "ambiguous newest human request")
+
     def test_sweep_and_resume_use_distinct_evidence(self):
         reply = self.fixtures[PR_COMMENTS][0].pop()
         self.assert_held()
@@ -191,9 +206,12 @@ print(json.dumps(fixtures[key]))
         self.assertEqual((wave["sweep"], wave["resume"]), ([], []))
 
     def test_refreshed_request_requires_new_reply_and_handoff(self):
-        old = comment(3, HANDOFF, 2)
-        new = comment(5, HANDOFF.replace("comment-1", "comment-4"), 5)
+        old = comment(3, HANDOFF, 1)
+        new = comment(5, HANDOFF.replace("comment-1", "comment-4"), 4)
         self.fixtures[PR_COMMENTS][0][0]["body"] = self.marker.replace(HEAD, "b" * 40)
+        self.fixtures[ISSUE_COMMENTS] = [[old]]
+        self.assert_held()
+        self.assertFalse(self.evidence["approvalRefresh"])
         self.fixtures[PR_COMMENTS][0].append(comment(4, self.marker, 4))
         self.fixtures[ISSUE_COMMENTS] = [[old, new]]
         self.assert_held()

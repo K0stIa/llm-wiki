@@ -89,7 +89,7 @@ def is_pr_handoff(block, request, expected):
     return (
         re.fullmatch(rf"Reason tag: 🙋 needs you\napproval-handoff: {url}\nblocked-by: -", block["body"]) is not None
         and timestamp(block["updated_at"]) == timestamp(block["created_at"])
-        and timestamp(block["created_at"]) > timestamp(request["created_at"])
+        and timestamp(block["created_at"]) >= timestamp(request["created_at"])
     )
 
 
