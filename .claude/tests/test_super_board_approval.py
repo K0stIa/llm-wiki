@@ -168,17 +168,26 @@ print(json.dumps(fixtures[key]))
         self.wave()
         self.assertTrue(json.loads(self.run_command(self.check))["approved"])
 
-    def test_unlinked_issue_examples_do_not_block_approval(self):
+    def test_unlinked_issue_marker_lines_distinguish_examples_from_blockers(self):
         examples = (
             "The Reason tag: wording looks good.",
-            "```text\napproval-handoff: example\n```",
-            f"```text\n{HANDOFF}\n```",
+            f"Example:\n````text\n```\n{HANDOFF}\n````",
+            f"Example:\n  ~~~text\n{HANDOFF}\n  ~~~",
             "\n".join(f"> {line}" for line in HANDOFF.splitlines()),
+            "\n".join(f"    {line}" for line in HANDOFF.splitlines()),
+            "\n".join(f"\t{line}" for line in HANDOFF.splitlines()),
         )
-        for body in examples:
-            with self.subTest(body=body):
-                self.fixtures[ISSUE_COMMENTS] = [[comment(3, HANDOFF, 2), comment(4, body, 4)]]
-                self.assert_resumed()
+        comments = [comment(3, HANDOFF, 2)]
+        comments.extend(comment(i, body, i) for i, body in enumerate(examples, 4))
+        self.fixtures[ISSUE_COMMENTS] = [comments]
+        self.assert_resumed()
+        for marker in ("Reason tag: 🙋 needs you", "   Reason tag: 🙋 needs you",
+                       "[reviewer] [blocker]", "approval-handoff: invalid",
+                       "~~~\nReason tag: example\n~~~~\nReason tag: 🙋 needs you"):
+            with self.subTest(marker=marker):
+                blocker = comment(10, f"Please pause this rollout.\n{marker}", 10)
+                self.fixtures[ISSUE_COMMENTS] = [[*comments, blocker]]
+                self.assert_held()
 
     def test_workflow_candidate_pagination(self):
         candidate = self.candidate(42, "issue-7-approval")

@@ -25,6 +25,7 @@ SHA = re.compile(r"[0-9a-f]{40}\Z")
 SCOPE = re.compile(r"[0-9a-f]{64}\Z")
 BLOCK = re.compile(r"Reason tag:[^\n]*🙋|^approval-request:", re.M)
 ISSUE_BLOCK = re.compile(r"[ ]{0,3}(?:Reason tag:|\[\w+\] \[blocker\]|approval-handoff:)")
+ISSUE_FENCE = re.compile(r" {0,3}(`{3,}|~{3,})(.*)")
 DONE = re.compile(r"\s*done[.!]?\s*\Z", re.I)
 
 
@@ -68,12 +69,28 @@ def timestamp(value):
     return result
 
 
+def has_issue_block(body):
+    fence = ""
+    for line in body.splitlines():
+        delimiter = ISSUE_FENCE.fullmatch(line)
+        if delimiter:
+            run, rest = delimiter.groups()
+            if fence:
+                if run.startswith(fence) and not rest.strip(" \t"):
+                    fence = ""
+            elif run[0] == "~" or "`" not in rest:
+                fence = run
+        elif not fence and ISSUE_BLOCK.match(line):
+            return True
+    return False
+
+
 def trusted_blocks(comments, permission, *, unlinked_issue=None):
     result = []
     for block in comments:
         body = block.get("body") or ""
         if unlinked_issue is not None and block.get("source") == unlinked_issue:
-            is_block = ISSUE_BLOCK.match(body.lstrip("\r\n"))
+            is_block = has_issue_block(body)
         else:
             is_block = BLOCK.search(body)
         if not is_block:
