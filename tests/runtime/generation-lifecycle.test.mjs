@@ -322,3 +322,171 @@ with sqlite3.connect(sys.argv[1]) as db:
   assert.equal(denied.stdout, '');
   assert.deepEqual(readdirSync(deniedOutput), ['authority.db']);
 });
+
+for (const runner of ['trace', 'performance']) {
+  test(`${runner} validates and leases the source up to the workload boundary`, t => {
+    const {binding, root, generation} = fixture(t);
+    const source = binding.indexRoot;
+    const indexRoot = join(source, 'indexes');
+    const project = runner === 'trace' ? 'synthetic' : 'main';
+    const sourceRoot = generationRoot({indexRoot, project});
+    const directory = join(sourceRoot, generation);
+    mkdirSync(indexRoot);
+    renameSync(root, sourceRoot);
+    const index = join(directory, 'index.sqlite');
+    const manifestPath = join(directory, 'manifest.json');
+    const current = join(sourceRoot, 'current');
+    const leases = join(sourceRoot, 'leases', generation);
+    writeFileSync(current, generation + '\n');
+    rmSync(index);
+    const python = '.venv/bin/python';
+    const sqlite = {encoding: 'utf8', timeout: 20_000};
+    execFileSync(python, ['-B', '-c', `
+import sqlite3, sys
+for path in sys.argv[1:]:
+    with sqlite3.connect(path) as db:
+        db.execute("CREATE TABLE page_heads (project)")
+        db.execute("INSERT INTO page_heads VALUES (?)", ('main',))
+`, binding.database, index], sqlite);
+    const manifest = JSON.parse(readFileSync(manifestPath));
+    manifest.target.project = project;
+    manifest.databaseDigest = digest(readFileSync(index));
+    writeFileSync(manifestPath, JSON.stringify(manifest));
+    writeFileSync(join(directory, 'excluded'), 'unrelated fixture');
+    const provenance = modelDigest => writeFileSync(join(source, 'trace-provenance.json'), JSON.stringify({
+      subset: 'development', manifest_sha256: 'fixture', identity: {model: {sha256: modelDigest}},
+    }));
+    provenance(APPROVED_MODEL_SHA256);
+    const rankings = JSON.stringify({buildSeconds: 0});
+    const report = JSON.stringify({subset: 'development', raw_rankings_sha256: digest(rankings)});
+    writeFileSync(join(source, 'retrieval-run.json'), JSON.stringify({
+      report_sha256: digest(report),
+      identity: {commit: execFileSync('git', ['rev-parse', 'HEAD'], sqlite).trim(), dirty: true},
+    }));
+    writeFileSync(join(source, 'report.json'), report);
+    writeFileSync(join(source, 'raw.json'), rankings);
+    writeFileSync(join(source, 'questions.json'), JSON.stringify(Array.from({length: 110},
+      (_, id) => ({id: String(id), query: 'synthetic', project}))));
+    const model = join(source, 'synthetic-model');
+    writeFileSync(model, 'synthetic bytes');
+    const hook = join(source, 'qa-hook.mjs');
+    writeFileSync(hook, `
+import assert from 'node:assert/strict';
+import {readFileSync, readdirSync, writeFileSync} from 'node:fs';
+import fs from 'node:fs/promises';
+import {syncBuiltinESMExports} from 'node:module';
+import {pathToFileURL} from 'node:url';
+import {resolve} from 'node:path';
+const {QA_CURRENT, QA_LEASES, QA_INDEX, QA_MODE} = process.env;
+const copyFile = fs.copyFile;
+fs.copyFile = async (from, to) => {
+  assert.equal(readdirSync(QA_LEASES).length, 1);
+  const pointer = readFileSync(QA_CURRENT);
+  const bytes = readFileSync(QA_INDEX);
+  const {cleanupGenerations} = await import(pathToFileURL(resolve('src/retrieval/qmd-integration.ts')).href);
+  writeFileSync(QA_CURRENT, 'g-00000000-0000-4000-8000-000000000001');
+  try {
+    assert.deepEqual(await cleanupGenerations({
+      indexRoot: process.env.QA_INDEX_ROOT, project: process.env.QA_PROJECT,
+    }), []);
+    assert.deepEqual(readFileSync(QA_INDEX), bytes);
+  } finally {
+    writeFileSync(QA_CURRENT, pointer);
+  }
+  console.error('QA observed lease during copy');
+  if (QA_MODE === 'failure' && from.endsWith('manifest.json')) throw new Error('QA injected copy failure');
+  return copyFile(from, to);
+};
+syncBuiltinESMExports();
+if (process.argv[1]?.endsWith('/perf_v2.ts')) {
+  console.log = message => {
+    assert.match(message, /^Cloned the verified development generation/);
+    throw new Error('QA stopped before workload');
+  };
+}
+`);
+    const trace = `
+import sys
+from pathlib import Path
+from src.eval import trace_v2 as trace
+source, runs = map(Path, sys.argv[1:3])
+model = source / 'synthetic-model'
+trace.checked_model = lambda *_: (model, sys.argv[3])
+trace.approved_settings = lambda: {"device": "cpu", "depth": 10, "docTokens": 128}
+trace.receipts.current_identity = lambda **_: {"dirty_paths": []}
+trace.build_v2.MANIFEST = source / 'trace-provenance.json'
+trace.receipts.sha256_file = lambda path: "fixture"
+trace.measure_v2.verified_frozen = lambda: ({}, [
+    {"id": "q", "query": "synthetic", "project": "synthetic", "expected": {}, "gold": []},
+], {"q": "development"}, [], [])
+run = trace.subprocess.run
+def guarded(args, **kwargs):
+    if 'src/eval/trace_v2.ts' in args:
+        raise SystemExit('QA stopped before workload')
+    assert 'src/eval/copy-generation.ts' in args
+    return run(args, **kwargs)
+trace.subprocess.run = guarded
+trace.run_trace(runs, source)
+`;
+    const original = new Map([current, manifestPath, index].map(path => [path, readFileSync(path)]));
+    function exercise(mode, expectation, modelDigest = APPROVED_MODEL_SHA256) {
+      const output = join(source, mode);
+      const env = {...process.env, NODE_OPTIONS: `--import tsx --import ${hook}`,
+        QA_CURRENT: current, QA_LEASES: leases, QA_INDEX: index,
+        QA_INDEX_ROOT: indexRoot, QA_PROJECT: project, QA_MODE: mode};
+      const inputs = new Map([...original.keys()].map(path => [path, readFileSync(path)]));
+      const result = runner === 'trace'
+        ? spawnSync(python, ['-B', '-c', trace, source, output, modelDigest], {...sqlite, env})
+        : spawnSync(process.execPath, ['src/eval/perf_v2.ts', source, output, model, model, '--development'],
+          {...sqlite, env});
+      assert.ifError(result.error);
+      assert.equal(result.status, 1, result.stderr);
+      assert.match(result.stderr, expectation);
+      assert.equal(result.stderr.includes('QA stopped before workload'), mode === 'success');
+      assert.equal((result.stderr.match(/QA observed lease during copy/g) ?? []).length,
+        ['success', 'failure'].includes(mode) ? 2 : 0, result.stderr);
+      for (const [path, bytes] of inputs) assert.deepEqual(readFileSync(path), bytes);
+      if (existsSync(leases)) assert.deepEqual(readdirSync(leases), []);
+
+      const run = runner === 'trace' ? join(output, readdirSync(output)[0]) : output;
+      const snapshot = generationRoot({indexRoot: join(run, 'indexes'), project});
+      if (mode === 'success') {
+        assert.deepEqual(readdirSync(snapshot).sort(), [generation, 'current'].sort());
+        assert.equal(readFileSync(join(snapshot, 'current'), 'utf8'), generation + '\n');
+        assert.deepEqual(readdirSync(join(snapshot, generation)).sort(), ['index.sqlite', 'manifest.json']);
+        for (const path of [index, manifestPath]) {
+          assert.deepEqual(readFileSync(join(snapshot, generation, path.split('/').at(-1))), original.get(path));
+        }
+        assert.equal(execFileSync(python, ['-B', '-c', `
+import sqlite3, sys
+with sqlite3.connect(sys.argv[1]) as db:
+    print(db.execute('SELECT project FROM page_heads').fetchone()[0])
+`, join(run, 'authority.db')], sqlite).trim(), 'main');
+      } else {
+        assert.deepEqual(readdirSync(run).filter(name => name !== 'indexes'), ['authority.db']);
+        if (existsSync(snapshot)) assert.deepEqual(readdirSync(snapshot), []);
+      }
+    }
+    for (const [mode, path, malformed, expectation] of [
+      ['pointer', current, '../wrong', /invalid generation pointer/],
+      ['manifest', manifestPath, '{', /SyntaxError/],
+      ['database', index, 'corrupt bytes', /generation integrity failure/],
+    ]) {
+      writeFileSync(path, malformed);
+      exercise(mode, expectation);
+      writeFileSync(path, original.get(path));
+    }
+    exercise('success', /QA stopped before workload/);
+    exercise('failure', /QA injected copy failure/);
+    if (process.getuid?.() !== 0) {
+      chmodSync(leases, 0o500);
+      try { exercise('denied', /grant write access.*source index root/); }
+      finally { chmodSync(leases, 0o700); }
+    }
+    if (runner === 'trace') {
+      const differentDigest = digest('other trace model');
+      provenance(differentDigest);
+      exercise('model-mismatch', /source generation model digest does not match/, differentDigest);
+    }
+  });
+}
