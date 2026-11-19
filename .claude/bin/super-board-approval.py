@@ -24,6 +24,7 @@ PREFIX = "approval-request: "
 SHA = re.compile(r"[0-9a-f]{40}\Z")
 SCOPE = re.compile(r"[0-9a-f]{64}\Z")
 BLOCK = re.compile(r"Reason tag:[^\n]*🙋|^approval-request:", re.M)
+ISSUE_BLOCK = re.compile(r"[ ]{0,3}(?:Reason tag:|\[\w+\] \[blocker\]|approval-handoff:)")
 DONE = re.compile(r"\s*done[.!]?\s*\Z", re.I)
 
 
@@ -71,9 +72,11 @@ def trusted_blocks(comments, permission, *, unlinked_issue=None):
     result = []
     for block in comments:
         body = block.get("body") or ""
-        issue_block = (unlinked_issue is not None and block.get("source") == unlinked_issue
-                       and re.search(r"Reason tag:|^\[\w+\] \[blocker\]|^[ \t]*approval-handoff:", body, re.M))
-        if not (issue_block or BLOCK.search(body)):
+        if unlinked_issue is not None and block.get("source") == unlinked_issue:
+            is_block = ISSUE_BLOCK.match(body.lstrip("\r\n"))
+        else:
+            is_block = BLOCK.search(body)
+        if not is_block:
             continue
         user = block.get("user") or {}
         if not user.get("login") or user.get("type") not in ("User", "Bot"):

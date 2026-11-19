@@ -168,6 +168,18 @@ print(json.dumps(fixtures[key]))
         self.wave()
         self.assertTrue(json.loads(self.run_command(self.check))["approved"])
 
+    def test_unlinked_issue_examples_do_not_block_approval(self):
+        examples = (
+            "The Reason tag: wording looks good.",
+            "```text\napproval-handoff: example\n```",
+            f"```text\n{HANDOFF}\n```",
+            "\n".join(f"> {line}" for line in HANDOFF.splitlines()),
+        )
+        for body in examples:
+            with self.subTest(body=body):
+                self.fixtures[ISSUE_COMMENTS] = [[comment(3, HANDOFF, 2), comment(4, body, 4)]]
+                self.assert_resumed()
+
     def test_workflow_candidate_pagination(self):
         candidate = self.candidate(42, "issue-7-approval")
         first = self.page([self.candidate(44, "issue-7-approval", None),
@@ -238,6 +250,7 @@ print(json.dumps(fixtures[key]))
         self.assert_resumed()
         for blockers in ([old], [old, new, comment(8, "[reviewer] [blocker] Check rollout.", 7)],
                          [old, new, comment(8, " approval-handoff: invalid", 7)],
+                         [old, new, comment(8, HANDOFF + "\nVerify rollout.", 7)],
                          [dict(old, updated_at=new["created_at"]), new],
                          [dict(old, body=HANDOFF.replace("comment-1", "comment-99")), new]):
             self.fixtures[ISSUE_COMMENTS] = [blockers]
