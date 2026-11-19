@@ -127,6 +127,22 @@ def _parse_answer(raw: str):
         return None
 
 
+def _open_response_log(path: Path, dir_fd: int):
+    if not path.exists():
+        path.touch(mode=0o600, exist_ok=False)
+        os.fsync(dir_fd)
+    return path.open("r+b")
+
+
+def _append_response(output, record: dict) -> None:
+    import receipts
+
+    record["record_sha256"] = receipts.sha256_json(record)
+    output.write((json.dumps(record, ensure_ascii=False) + "\n").encode())
+    output.flush()
+    os.fsync(output.fileno())
+
+
 def _verified_prefix(output, ids: list[str], rankings: dict) -> int:
     import receipts
 
@@ -255,10 +271,7 @@ def _collect(run: Path, chosen: list[dict], rankings: dict, report: dict, identi
         started = datetime.now(timezone.utc).isoformat()
         _write_metadata(checkpoint_path, {**checkpoint, "started": started}, dir_fd)
 
-    if not responses.exists():
-        responses.touch(mode=0o600, exist_ok=False)
-        os.fsync(dir_fd)
-    with responses.open("r+b") as output:
+    with _open_response_log(responses, dir_fd) as output:
         completed = _verified_prefix(output, ids, rankings)
         pending = []
         for question in chosen[completed:]:
@@ -277,10 +290,7 @@ def _collect(run: Path, chosen: list[dict], rankings: dict, report: dict, identi
                       "sha256": answer_digest(answer, ranking)}
             if evidence_refs:
                 record["finish_reason"] = finish_reason
-            record["record_sha256"] = receipts.sha256_json(record)
-            output.write((json.dumps(record, ensure_ascii=False) + "\n").encode())
-            output.flush()
-            os.fsync(output.fileno())
+            _append_response(output, record)
             completed += 1
 
     # Revalidate the retrieval hashes in case inputs changed during collection.
