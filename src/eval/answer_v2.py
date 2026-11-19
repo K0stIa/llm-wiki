@@ -17,7 +17,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from build_v2 import ENDPOINT, MODEL, MANIFEST, WORK
-from retrieval_run import read_raw_rankings, read_retrieval_run
+from retrieval_run import (
+    ReportDigestMismatch, read_provenance, read_raw_rankings, read_verified_report,
+)
 from score_v2 import answer_digest, score_answers
 import answer_evidence
 
@@ -64,19 +66,21 @@ def _read_retrieval(run: Path, *, resume: bool) -> tuple[dict, dict, dict, str]:
     import receipts
 
     try:
-        artifacts = read_retrieval_run(run)
-        identity = artifacts.provenance["identity"]
+        provenance, provenance_sha256 = read_provenance(run)
+        identity = provenance["identity"]
         model = {"sha256": receipts.approved_model_sha256()}
         if identity != receipts.current_identity(model=model) or (resume and identity["dirty"]):
             raise SystemExit("answer collection requires retrieval from the current checkout identity"
                              + (" and a clean checkout" if resume else ""))
-        report = artifacts.report
+        report = read_verified_report(run, provenance)
         if (report["manifest_sha256"] != receipts.sha256_file(MANIFEST)
                 or report["model_sha256"] != model["sha256"]
                 or report["subset"] not in {"development", "holdout"}):
             raise SystemExit("retrieval report does not match the recorded run and frozen manifest")
         raw = read_raw_rankings(run, report)
-        return identity, report, raw, artifacts.provenance_sha256
+        return identity, report, raw, provenance_sha256
+    except ReportDigestMismatch:
+        raise SystemExit("retrieval report does not match the recorded run and frozen manifest") from None
     except (OSError, ValueError, KeyError, TypeError):
         raise SystemExit("could not validate retrieval artifacts for answer collection") from None
 

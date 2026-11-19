@@ -435,6 +435,42 @@ def test_answer_retrieval_checks_eligibility_before_raw(answer_run, monkeypatch,
         answer_v2._read_retrieval(run_dir, resume=True)
 
 
+@pytest.mark.parametrize("report_content", [None, b"{", b"{}"], ids=["missing", "malformed", "wrong-digest"])
+@pytest.mark.parametrize("dirty", [False, True], ids=["stale", "dirty-resume"])
+def test_answer_retrieval_checks_checkout_before_report(answer_run, monkeypatch, report_content, dirty):
+    run_dir, _, _, _, identity = answer_run
+    report_path = run_dir / "report.json"
+    if report_content is None:
+        report_path.unlink()
+    else:
+        report_path.write_bytes(report_content)
+
+    if dirty:
+        identity["dirty"] = True
+        provenance_path = run_dir / "retrieval-run.json"
+        provenance = json.loads(provenance_path.read_bytes())
+        provenance["identity"] = identity
+        provenance_path.write_text(json.dumps(provenance))
+    else:
+        monkeypatch.setattr(measure_v2.receipts, "current_identity", lambda **_: {"commit": "c" * 40})
+
+    diagnostic = "current checkout identity" + (" and a clean checkout" if dirty else "")
+    with pytest.raises(SystemExit, match=diagnostic):
+        answer_v2._read_retrieval(run_dir, resume=dirty)
+
+
+@pytest.mark.parametrize(
+    ("report_content", "diagnostic"),
+    [(b"{", "could not validate retrieval artifacts for answer collection"),
+     (b"{}", "retrieval report does not match the recorded run and frozen manifest")],
+)
+def test_answer_retrieval_preserves_invalid_report_diagnostics(answer_run, report_content, diagnostic):
+    run_dir, *_ = answer_run
+    (run_dir / "report.json").write_bytes(report_content)
+    with pytest.raises(SystemExit, match=diagnostic):
+        answer_v2._read_retrieval(run_dir, resume=False)
+
+
 class _Gen:
     def __init__(self, pages):
         self.pages = pages
