@@ -119,10 +119,12 @@ def reuse_generation(source: Path, run: Path, projects: set[str], manifest_sha: 
     with closing(sqlite3.connect((source / "authority.db").as_uri() + "?mode=ro", uri=True)) as original:
         with closing(sqlite3.connect(run / "authority.db")) as clone:
             original.backup(clone)
+    if not projects:
+        return
     subprocess.run(
         ["node", "node_modules/tsx/dist/cli.mjs", "src/eval/copy-generation.ts",
          str(source.resolve()), str(run.resolve()), model_sha, *sorted(projects)],
-        cwd=ROOT, check=True, timeout=120,
+        cwd=ROOT, check=True,
     )
 
 
