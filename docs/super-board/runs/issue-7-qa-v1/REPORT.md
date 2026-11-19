@@ -26,6 +26,32 @@ Python and Node manifests and locks matched the isolated base. Verification reus
 
 Draft PR #11 passed all three acceptance criteria at OpenHands-reviewed head `779d195461a65798b557328d16253723a3437cd4`. The actual dependency script and wave planner resumed only card 7 with a current trusted PR approval and exact handoff on the non-default base with no GitHub closing link. A PR body claiming the link and a guest-authored handoff each left the resume list empty. A trusted same-second handoff required a later reply. Unrelated PRs, stale heads, edited requests, and untrusted signers held.
 
-The linked route held an edited request until a newer valid request received a trusted reply. A blocker posted before the fresh comment read held the card again. Matching fences kept examples inert, and the deliberately mismatched closing indentation held as documented in the OpenHands disposition. Linked and standalone approvals retained their positive and rejection cases. The standalone helper rejected a different policy scope and a changed head. The base merge gate and guard were unchanged. Source inspection confirmed that the merge gate rechecks the current head, policy scope, and approval before merging.
+The linked route held an edited request until a newer valid request received a trusted reply. A blocker posted before the fresh comment read held the card again. At that round’s source head, matching fences kept unlinked issue examples inert and mismatched closing indentation held the card. See the final-head rule below for current behavior. Linked and standalone approvals retained their positive and rejection cases. The standalone helper rejected a different policy scope and a changed head. The base merge gate and guard were unchanged. Source inspection confirmed that the merge gate rechecks the current head, policy scope, and approval before merging.
 
 The commands above passed with 23 board fixtures, strict TypeScript, 60 synthetic Python tests, and 14 Node smoke tests. The private-corpus case was deselected. Two independent planner probes covered trust, head and scope, linked supersession, and ambiguous fences. The trust probe initially overconstrained the ordinary sweep output. Its corrected assertion checked approval resume, which is independent of ordinary dependency release. Screenshots are inapplicable to this CLI flow. Verification used synthetic fixtures and produced no release receipts.
+
+## Final QA — unlinked issue marker classification
+
+All three acceptance criteria passed at OpenHands-reviewed source head
+`204baa08b9fa4ddff7dbdf08ce311ffc6b6bcf75`. The real dependency scanner and
+wave planner ran against synthetic GitHub responses.
+
+- A current, trusted PR reply and exact three-line issue handoff resumed only
+  card 7 on the non-default base. Ordinary prose, inline mentions and
+  blockquoted examples preserved that resume.
+- On an unlinked issue, plain protocol lines within supported indentation
+  deliberately hold the card, including inside matching Markdown fences.
+  The HTML-comment regression held with empty resume and sweep lists.
+  A separate planner probe exercised fenced blocker headings for each installed
+  role (`builder`, `qa`, `reviewer`, `collect`, `orchestrator`). A custom
+  heading alone was outside the protocol. Adding a standard Reason tag held
+  the card.
+- The exact handoff, trust, edit, stale-head, cross-PR, refresh and fresh-read
+  regressions passed. Linked-issue and standalone approval retained their
+  positive and rejection cases, including the separate scope check.
+
+The verification commands above passed with 24 board fixtures, strict
+TypeScript, 60 synthetic Python tests and 14 Node tests. One private-corpus
+case was deselected. The isolated checkout reused dependencies from the base
+after byte-for-byte comparison of both manifests and locks. Screenshots are
+inapplicable to the CLI checks.
