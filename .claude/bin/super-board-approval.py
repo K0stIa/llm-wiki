@@ -24,6 +24,7 @@ PREFIX = "approval-request: "
 SHA = re.compile(r"[0-9a-f]{40}\Z")
 SCOPE = re.compile(r"[0-9a-f]{64}\Z")
 BLOCK = re.compile(r"Reason tag:[^\n]*🙋|^approval-request:", re.M)
+ISSUE_BLOCK = re.compile(r"[ ]{0,3}(?:Reason tag:|\[\w+\] \[blocker\]|approval-handoff:|approval-request:)")
 DONE = re.compile(r"\s*done[.!]?\s*\Z", re.I)
 
 
@@ -67,10 +68,15 @@ def timestamp(value):
     return result
 
 
-def trusted_blocks(comments, permission):
+def trusted_blocks(comments, permission, *, unlinked_issue=None):
     result = []
     for block in comments:
-        if not BLOCK.search(block.get("body") or ""):
+        body = block.get("body") or ""
+        if unlinked_issue is not None and block.get("source") == unlinked_issue:
+            is_block = any(ISSUE_BLOCK.match(line) for line in body.split("\n"))
+        else:
+            is_block = BLOCK.search(body)
+        if not is_block:
             continue
         user = block.get("user") or {}
         if not user.get("login") or user.get("type") not in ("User", "Bot"):
@@ -80,7 +86,17 @@ def trusted_blocks(comments, permission):
     return result
 
 
-def validate(comments, expected, permission):
+def is_pr_handoff(block, request, expected):
+    repo = re.escape(expected["repo"])
+    url = rf"https://github\.com/(?i:{repo})/pull/{expected['pr']}#issuecomment-{request['id']}"
+    return (
+        re.fullmatch(rf"Reason tag: 🙋 needs you\napproval-handoff: {url}\nblocked-by: -", block["body"]) is not None
+        and timestamp(block["updated_at"]) == timestamp(block["created_at"])
+        and timestamp(block["created_at"]) >= timestamp(request["created_at"])
+    )
+
+
+def validate(comments, expected, permission, *, unlinked_issue=None):
     """Pure verdict; permission(login) is a current repository permission lookup."""
     def hold(why):
         return {"approved": False, "why": why}
@@ -88,7 +104,10 @@ def validate(comments, expected, permission):
     if not SHA.fullmatch(expected.get("head", "")):
         return hold("current PR head is unavailable")
     try:
-        blocks = trusted_blocks(comments, permission)
+        blocks = trusted_blocks(comments, permission, unlinked_issue=unlinked_issue)
+        if unlinked_issue is not None:
+            issue_blocks = [c for c in blocks if c["source"] != expected["pr"]]
+            blocks = [c for c in blocks if c["source"] == expected["pr"]]
         if not blocks:
             return hold("no request from a trusted repository collaborator")
         # Any later human block supersedes the old request, including one with
@@ -98,6 +117,20 @@ def validate(comments, expected, permission):
         if len(latest) != 1:
             return hold("ambiguous newest human request")
         request_comment = latest[0]
+        if unlinked_issue is not None:
+            current = [c for c in issue_blocks if is_pr_handoff(c, request_comment, expected)]
+            if not current:
+                return hold("issue is missing the current canonical PR handoff")
+            for handoff in issue_blocks:
+                if handoff in current:
+                    continue
+                if timestamp(handoff["created_at"]) >= latest_time or not any(
+                    is_pr_handoff(handoff, old, expected)
+                    and timestamp(old["updated_at"]) == timestamp(old["created_at"])
+                    and (pin := parse_request(old)) and (pin["repo"], pin["pr"]) == (expected["repo"], expected["pr"])
+                    for old in blocks
+                ):
+                    return hold("issue has a human block beyond the canonical PR handoff")
         request = parse_request(request_comment)
         if request is None or any(request.get(k) != v for k, v in expected.items()):
             return hold("the latest request does not cover the current code and human steps")
@@ -156,20 +189,57 @@ class GitHub:
             raise ValueError("unreadable comment")
         return [dict(comment, source=number) for page in pages for comment in page]
 
+    def same_origin(self, pr):
+        origin = (pr.get("headRepository") or {}).get("nameWithOwner")
+        return isinstance(origin, str) and origin.lower() == self.repo
+
+    def open_prs(self):
+        query = """query($owner:String!,$repo:String!,$endCursor:String){
+          repository(owner:$owner,name:$repo){
+            pullRequests(states:OPEN,first:100,after:$endCursor){
+              pageInfo{hasNextPage endCursor} nodes{number headRefName headRepository{nameWithOwner}}
+            }}}"""
+        owner, name = self.repo.split("/")
+        _, pages = github_read.read(
+            ["api", "graphql", "--paginate", "--slurp", "-f", f"query={query}",
+             "-F", f"owner={owner}", "-F", f"repo={name}"], "array")
+        if not pages:
+            raise ValueError("missing open PR pages")
+        branches, cursors = {}, set()
+        for index, page in enumerate(pages):
+            prs = page["data"]["repository"]["pullRequests"]
+            info, nodes = prs["pageInfo"], prs["nodes"]
+            more = index + 1 < len(pages)
+            if info["hasNextPage"] is not more or not isinstance(nodes, list):
+                raise ValueError("incomplete open PR pages")
+            if more:
+                cursor = info["endCursor"]
+                if not isinstance(cursor, str) or not cursor or cursor in cursors or not nodes:
+                    raise ValueError("invalid open PR cursor")
+                cursors.add(cursor)
+            for pr in nodes:
+                number, branch = pr["number"], pr["headRefName"]
+                if type(number) is not int or number < 1 or number in branches or not isinstance(branch, str) or not branch:
+                    raise ValueError("invalid open PR identity")
+                branches[number] = branch if self.same_origin(pr) else None
+        return {number: branch for number, branch in branches.items() if branch}
+
     def pr(self, number):
         # Paginate linked issues too: an omitted newer request must never make
-        # an older approval authoritative. Remote-repository links are ignored.
+        # an older approval authoritative. Remote links rule out the unlinked
+        # fallback, while approvals only read comments from this repository.
         query = '''query($owner:String!,$repo:String!,$pr:Int!,$endCursor:String){
-          repository(owner:$owner,name:$repo){pullRequest(number:$pr){headRefOid state
+          repository(owner:$owner,name:$repo){pullRequest(number:$pr){headRefOid state headRefName isCrossRepository headRepository{nameWithOwner}
             closingIssuesReferences(first:100,after:$endCursor){
               pageInfo{hasNextPage endCursor} nodes{number repository{nameWithOwner}}
             }}}}'''
         owner, name = self.repo.split("/")
         pages = self.read("api", "graphql", "--paginate", "--slurp", "-f", f"query={query}",
                           "-F", f"owner={owner}", "-F", f"repo={name}", "-F", f"pr={number}")
-        heads, issues = set(), set()
+        heads, issues, branches = set(), set(), set()
         if not isinstance(pages, list) or not pages:
             raise ValueError("unreadable PR")
+        has_links = False
         for page in pages:
             if page.get("errors"):
                 raise ValueError("incomplete PR response")
@@ -177,30 +247,38 @@ class GitHub:
             if pr["state"] != "OPEN":
                 raise ValueError("PR is not open")
             heads.add(pr["headRefOid"])
+            branch = pr["headRefName"]
+            if not isinstance(branch, str) or not branch:
+                raise ValueError("unreadable PR branch")
+            branches.add(branch if pr["isCrossRepository"] is False and self.same_origin(pr) else "")
             links = pr["closingIssuesReferences"]
+            has_links |= bool(links["nodes"])
             for issue in links["nodes"]:
                 if issue["repository"]["nameWithOwner"].lower() == self.repo:
                     issues.add(issue["number"])
-        if links["pageInfo"]["hasNextPage"] or len(heads) != 1:
+        if links["pageInfo"]["hasNextPage"] or len(heads) != 1 or len(branches) != 1:
             raise ValueError("PR changed or issue links are incomplete")
         head = heads.pop()
         if not SHA.fullmatch(head):
             raise ValueError("unreadable PR head")
-        return head, issues
+        return head, issues, branches.pop(), has_links
 
-    def check(self, number, head=None, scope=None, issue=None):
-        current_head, issues = self.pr(number)
+    def check(self, number, head=None, scope=None, *, issue=None, unlinked_issue=None):
+        current_head, issues, branch, has_links = self.pr(number)
         if issue is not None and issue not in issues:
             return {"approved": False, "why": "request issue is not linked to this PR"}
+        if unlinked_issue is not None and (has_links or not re.fullmatch(rf"issue-{unlinked_issue}-.+", branch)):
+            return {"approved": False, "why": "expected an unlinked same-repository workflow PR"}
         if head is not None and current_head != head:
             return {"approved": False, "headChanged": True, "why": "PR head changed after review"}
-        comments = []
-        for source in sorted(issues | {number}):
-            comments.extend(self.comments(source))
+        sources = issues | {number}
+        if unlinked_issue is not None:
+            sources.add(unlinked_issue)
+        comments = [comment for source in sorted(sources) for comment in self.comments(source)]
         expected = {"repo": self.repo, "pr": number, "head": current_head}
         if scope is not None:
             expected["scope"] = scope
-        return validate(comments, expected, self.permission)
+        return validate(comments, expected, self.permission, unlinked_issue=unlinked_issue)
 
 
 def main():
@@ -220,6 +298,7 @@ def main():
     if args.deps:
         graph = json.load(sys.stdin)
         github = GitHub(args.repo) if args.repo else None
+        open_prs = None
         for entry in graph.values():
             entry["needsYouDone"] = False
             entry["approvalRefresh"] = False
@@ -228,15 +307,29 @@ def main():
             try:
                 comments = github.comments(entry["number"])
                 blocks = trusted_blocks(comments, github.permission)
-                latest = max(blocks, key=lambda c: timestamp(c.get("created_at"))) if blocks else {}
-                request = parse_request(latest)
-                if request is None or request["repo"] != github.repo:
+                blocks.sort(key=lambda c: timestamp(c.get("created_at")), reverse=True)
+                if len(blocks) > 1 and timestamp(blocks[0]["created_at"]) == timestamp(blocks[1]["created_at"]):
+                    entry["approvalWhy"] = "ambiguous newest human request"
                     continue
-                result = github.check(request["pr"], head=request["head"], issue=entry["number"])
+                request = parse_request(blocks[0]) if blocks else None
+                issue = entry["number"]
+                if request is not None:
+                    if request["repo"] != github.repo:
+                        continue
+                    result = github.check(request["pr"], request["head"], issue=issue)
+                else:
+                    if open_prs is None:
+                        open_prs = github.open_prs()
+                    candidates = [number for number, branch in open_prs.items()
+                                  if re.fullmatch(rf"issue-{issue}-.+", branch)]
+                    if len(candidates) != 1:
+                        entry["approvalWhy"] = "expected one same-repository workflow PR"
+                        continue
+                    result = github.check(candidates[0], unlinked_issue=issue)
                 entry["needsYouDone"] = result["approved"]
                 entry["approvalRefresh"] = result.get("headChanged", False)
                 entry["approvalWhy"] = result["why"]
-            except (ValueError, KeyError, TypeError, OSError, subprocess.SubprocessError):
+            except (ValueError, KeyError, TypeError, AttributeError, OSError, subprocess.SubprocessError):
                 entry["approvalWhy"] = "approval evidence could not be verified"
         print(json.dumps(graph))
         return
@@ -244,7 +337,7 @@ def main():
         ap.error("check requires --pr, --head and --plan")
     try:
         result = GitHub(args.repo).check(args.pr, args.head, scope_for(json.loads(args.plan)))
-    except (ValueError, KeyError, TypeError, OSError, subprocess.SubprocessError):
+    except (ValueError, KeyError, TypeError, AttributeError, OSError, subprocess.SubprocessError):
         result = {"approved": False, "why": "approval evidence could not be verified"}
     print(json.dumps(result))
 
