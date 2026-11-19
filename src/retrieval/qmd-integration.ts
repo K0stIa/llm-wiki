@@ -450,23 +450,32 @@ export async function closeQmdReaders(): Promise<void> {
 async function ensureReader(binding: Binding, pin: GenerationPin, stageObserver: RecallObserver | null): Promise<QMDStore> {
   const model = binding.model;
   if (!model) throw new Error("cached embedding unavailable");
-  const load = await timed("vector.model-verify",
-    () => prepareOfflineQmd(model, join(generationRoot(binding), "runtime-cache")), stageObserver);
-  return timed("vector.reader-setup", async () => {
-    const qmd = await load();
-    const key = pin.directory + ":" + resolve(model);
-    if (cachedReader?.key !== key) await disposeReader();
-    if (!cachedReader) {
-      // The supported public opener creates WAL/SHM. Never open the generation.
-      const work = mkdtempSync(join(tmpdir(), "wiki-qmd-reader-"));
-      try {
-        const path = join(work, "index.sqlite");
-        copyFileSync(join(pin.directory, "index.sqlite"), path);
-        cachedReader = { key, work, store: await qmd.createStore({ dbPath: path }) };
-      } catch (error) { rmSync(work, { recursive: true, force: true }); throw error; }
-    }
-    return cachedReader.store;
-  }, stageObserver);
+  const events: [string, number][] = [];
+  const buffer: RecallObserver | null = stageObserver && {
+    stage(name, ms) { events.push([name, ms]); },
+  };
+  try {
+    const load = await timed("vector.model-verify",
+      () => prepareOfflineQmd(model, join(generationRoot(binding), "runtime-cache")), buffer);
+    return await timed("vector.reader-setup", async () => {
+      const qmd = await load();
+      const key = pin.directory + ":" + resolve(model);
+      if (cachedReader?.key !== key) await disposeReader();
+      if (!cachedReader) {
+        // The supported public opener creates WAL/SHM. Never open the generation.
+        const work = mkdtempSync(join(tmpdir(), "wiki-qmd-reader-"));
+        try {
+          const path = join(work, "index.sqlite");
+          copyFileSync(join(pin.directory, "index.sqlite"), path);
+          cachedReader = { key, work, store: await qmd.createStore({ dbPath: path }) };
+        } catch (error) { rmSync(work, { recursive: true, force: true }); throw error; }
+      }
+      return cachedReader.store;
+    }, buffer);
+  } finally {
+    // Publish after setup settles so the observer cannot interfere between verification and setup.
+    for (const [name, ms] of events) stageObserver?.stage(name, ms);
+  }
 }
 function vectorCandidates(binding: Binding, pin: GenerationPin, plan: SearchPlan) {
   // A timed-out dispatch can settle after the caller switches observers.

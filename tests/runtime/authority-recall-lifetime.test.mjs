@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import cp from 'node:child_process';
+import http, * as httpExports from 'node:http';
+import https, * as httpsExports from 'node:https';
+import net, * as netExports from 'node:net';
 import {registerHooks,syncBuiltinESMExports} from 'node:module';
 import {mkdtempSync,mkdirSync,writeFileSync,readdirSync,rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
@@ -103,6 +106,15 @@ test('native recall measures cold and warm dispatch, failing verification and ex
     databaseDigest: digest('synthetic index'), chunkLines: 32, documents: [doc], outboxIds: [],
   }));
 
+  const offlineBindings = [[globalThis, 'fetch'], [http, 'request'], [http, 'get'],
+    [https, 'request'], [https, 'get'], [net, 'connect'], [net, 'createConnection'],
+    [net.Socket.prototype, 'connect']];
+  const envKeys = ['QMD_FORCE_CPU', 'QMD_EMBED_MODEL', 'XDG_CACHE_HOME'];
+  const descriptors = offlineBindings.map(([owner, key]) => Object.getOwnPropertyDescriptor(owner, key));
+  const env = envKeys.map(key => process.env[key]);
+  const builtinExports = () => [httpExports.request, httpExports.get, httpsExports.request,
+    httpsExports.get, netExports.connect, netExports.createConnection];
+  const originalExports = builtinExports();
   const original = cp.execFile;
   let hashes = 0, opens = 0, searches = 0, approved = true;
   let holdDigest;
@@ -137,22 +149,39 @@ test('native recall measures cold and warm dispatch, failing verification and ex
   syncBuiltinESMExports();
   t.after(async () => {
     observeRecall(undefined);
-    await closeQmdReaders();
-    cp.execFile = original;
-    syncBuiltinESMExports();
-    hooks.deregister();
-    delete globalThis[mockKey];
-    rmSync(dir, { recursive: true, force: true });
+    try {
+      await closeQmdReaders();
+    } finally {
+      cp.execFile = original;
+      offlineBindings.forEach(([owner, key], i) => Object.defineProperty(owner, key, descriptors[i]));
+      envKeys.forEach((key, i) => {
+        if (env[i] === undefined) delete process.env[key];
+        else process.env[key] = env[i];
+      });
+      syncBuiltinESMExports();
+      hooks.deregister();
+      delete globalThis[mockKey];
+      rmSync(dir, { recursive: true, force: true });
+      assert.deepEqual(offlineBindings.map(([owner, key]) => Object.getOwnPropertyDescriptor(owner, key)), descriptors);
+      assert.deepEqual(builtinExports(), originalExports);
+      assert.deepEqual(envKeys.map(key => process.env[key]), env);
+    }
   });
 
   const names = [];
   const input = { query: 'fixture', coverage: 'require-hybrid-current' };
+  const opensAtVerification = [];
   observeRecall({ stage(name, ms) {
+    if (name === 'vector.model-verify') opensAtVerification.push(opens);
     assert.ok(Number.isFinite(ms) && ms >= 0);
     if (name.startsWith('vector.')) names.push(name);
   } });
   const cold = await recall(binding, input);
   assert.deepEqual(names.splice(0), ['vector.queue', 'vector.model-verify', 'vector.reader-setup', 'vector.search']);
+  assert.deepEqual(opensAtVerification.splice(0), [1]);
+  for (const [owner, key] of offlineBindings) {
+    assert.throws(() => owner[key](), /QMD network access forbidden/);
+  }
   assert.equal(cold.evidence.passages[0].citation.hash, doc.hash);
   assert.deepEqual(await recall(binding, input), cold);
   assert.deepEqual(names.splice(0), ['vector.queue', 'vector.model-verify', 'vector.reader-setup', 'vector.search']);
@@ -181,6 +210,7 @@ test('native recall measures cold and warm dispatch, failing verification and ex
   assert.deepEqual(await recall(binding, input), cold);
 
   observeRecall({ stage(name, ms) {
+    if (name === 'vector.model-verify') opensAtVerification.push(opens);
     if (name.startsWith('vector.')) names.push([name, ms]);
   } });
   const activePin = await acquireGeneration(binding);
@@ -220,8 +250,10 @@ test('native recall measures cold and warm dispatch, failing verification and ex
 
   names.length = 0;
   await closeQmdReaders();
+  opensAtVerification.length = 0;
   failOpen = true;
   assert.equal((await recall(binding, input)).reason, 'model-or-vector-unavailable');
   assert.deepEqual(names.map(([name]) => name), ['vector.queue', 'vector.model-verify', 'vector.reader-setup']);
+  assert.deepEqual(opensAtVerification, [2]);
   assert.deepEqual([hashes, opens, searches], [6, 2, 3]);
 });
