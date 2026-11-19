@@ -150,16 +150,18 @@ repost the same pending request on every poll or retry. Generic credential or
 product blocks without a PR remain manual; a bare `done` does not automate them.
 
 **Card without a GitHub closing link.** For a same-repository `issue-<N>-<slug>`
-PR, post the canonical request and human steps on the PR. Post this exact issue
-comment with the request permalink and no trailing newline.
+PR, post the canonical request on the PR and this exact issue comment (no trailing newline).
 
 ```text
 Reason tag: 🙋 needs you
 approval-handoff: https://github.com/<owner>/<repo>/pull/<PR>#issuecomment-<request-id>
+blocked-by: -
 ```
 
-A stale pointer or other issue blocker, including a historical prose handoff,
-requires manual review. The human replies `done` on the PR.
+The last line excludes the card from the dependency sweep. Each new request needs
+a fresh handoff and PR-side `done`. Keep an exact, unedited older handoff only if
+posted between the same-PR canonical request it names and the current request.
+Other issue blockers require manual review.
 
 **Resume.** A human with current repository write, maintain or admin permission
 comments `done` after the newest request, in the same thread. This supports a solo

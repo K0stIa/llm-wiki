@@ -83,12 +83,11 @@ def trusted_blocks(comments, permission, *, unlinked_issue=None):
     return result
 
 
-def is_pr_handoff(block, issue, request, expected):
+def is_pr_handoff(block, request, expected):
     repo = re.escape(expected["repo"])
     url = rf"https://github\.com/(?i:{repo})/pull/{expected['pr']}#issuecomment-{request['id']}"
     return (
-        block["source"] == issue
-        and re.fullmatch(rf"Reason tag: 🙋 needs you\napproval-handoff: {url}", block["body"]) is not None
+        re.fullmatch(rf"Reason tag: 🙋 needs you\napproval-handoff: {url}\nblocked-by: -", block["body"]) is not None
         and timestamp(block["updated_at"]) == timestamp(block["created_at"])
         and timestamp(block["created_at"]) > timestamp(request["created_at"])
     )
@@ -115,10 +114,20 @@ def validate(comments, expected, permission, *, unlinked_issue=None):
         if len(latest) != 1:
             return hold("ambiguous newest human request")
         request_comment = latest[0]
-        if unlinked_issue is not None and not (issue_blocks and all(
-            is_pr_handoff(c, unlinked_issue, request_comment, expected) for c in issue_blocks
-        )):
-            return hold("issue has a human block beyond the canonical PR handoff")
+        if unlinked_issue is not None:
+            current = [c for c in issue_blocks if is_pr_handoff(c, request_comment, expected)]
+            if not current:
+                return hold("issue is missing the current canonical PR handoff")
+            for handoff in issue_blocks:
+                if handoff in current:
+                    continue
+                if timestamp(handoff["created_at"]) >= latest_time or not any(
+                    is_pr_handoff(handoff, old, expected)
+                    and timestamp(old["updated_at"]) == timestamp(old["created_at"])
+                    and (pin := parse_request(old)) and (pin["repo"], pin["pr"]) == (expected["repo"], expected["pr"])
+                    for old in blocks
+                ):
+                    return hold("issue has a human block beyond the canonical PR handoff")
         request = parse_request(request_comment)
         if request is None or any(request.get(k) != v for k, v in expected.items() if k != "head"):
             return hold("the latest request does not cover the current code and human steps")
@@ -180,8 +189,7 @@ class GitHub:
         return [dict(comment, source=number) for page in pages for comment in page]
 
     def same_origin(self, pr):
-        repository = pr.get("headRepository")
-        origin = repository.get("nameWithOwner") if isinstance(repository, dict) else None
+        origin = (pr.get("headRepository") or {}).get("nameWithOwner")
         return isinstance(origin, str) and origin.lower() == self.repo
 
     def open_prs(self):

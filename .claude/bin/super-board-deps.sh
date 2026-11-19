@@ -144,7 +144,7 @@ echo "$ISSUES" | jq --arg only "$ONLY" '
   def label_names: [ (.labels.nodes // .labels // [])[] | (.name // "") ];
   # Index of the newest 🙋 Block comment, or null.
   def needs_at: ( bodies | to_entries
-                  | map(select(.value | test("Reason tag:[^\n]*🙋"))) | last | .key ) // null;
+                  | map(select(.value | test("Reason tag:[^\n]*🙋|^[ \\t]*approval-handoff:|^approval-request:"; "m"))) | last | .key ) // null;
   def needs_you: (label_names | index("needs-you") != null) or (needs_at != null);
 
 
