@@ -106,8 +106,8 @@ def publish_holdout(check: str, run: Path, report: Path, passed: bool) -> None:
     if check == "g2.performance":
         reports.append(json.loads(report.read_text()))
     for measured in reports:
-        observed = measured.get("reranker_config")
-        if (measured.get("subset") != "holdout" or not valid_settings(observed) or observed != approved
+        if (not isinstance(measured, dict) or measured.get("subset") != "holdout"
+                or not valid_settings(measured.get("reranker_config")) or measured["reranker_config"] != approved
                 or measured.get("reranker_sha256") != model_sha):
             print("Measurement receipt withheld because the run differs from the approved D14 profile.")
             return

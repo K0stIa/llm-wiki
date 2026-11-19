@@ -92,7 +92,8 @@ def test_lexical_candidates_prioritize_subject_terms(tmp_path):
     assert [pages[key] for key in fallback["lexical"]] == ["filler"]
 
 
-def test_performance_receipt_checks_observed_profile(tmp_path, monkeypatch):
+@pytest.mark.parametrize("malformed", [[], None])
+def test_performance_receipt_checks_observed_profile(tmp_path, monkeypatch, capsys, malformed):
     sys.path.insert(0, str(ROOT / "src" / "eval"))
     from measure_v2 import publish_holdout, receipts
 
@@ -104,6 +105,14 @@ def test_performance_receipt_checks_observed_profile(tmp_path, monkeypatch):
     monkeypatch.setattr(receipts, "approved_reranker_sha256", lambda: "approved-model")
     monkeypatch.setattr(receipts, "write_measurement", lambda *args: published.append(args) or ROOT / "receipt.json")
     settings = {"subset": "holdout", "reranker_config": approved, "reranker_sha256": "approved-model"}
+    retrieval.write_text(json.dumps(settings))
+    provenance.write_text(json.dumps({"report_sha256": receipts.sha256_file(retrieval),
+                                      "identity": {}, "started": "synthetic"}))
+    performance.write_text(json.dumps(malformed))
+    publish_holdout("g2.performance", tmp_path, performance, True)
+    assert "Measurement receipt withheld" in capsys.readouterr().out
+    assert published == []
+
     for subset, measured_subset, observed, digest, count in (
         ("holdout", "holdout", {**approved, "depth": 30}, "approved-model", 0),
         ("holdout", "holdout", {**approved, "depth": 24.0}, "approved-model", 0),
@@ -119,6 +128,43 @@ def test_performance_receipt_checks_observed_profile(tmp_path, monkeypatch):
                                            "reranker_sha256": digest}))
         publish_holdout("g2.performance", tmp_path, performance, True)
         assert len(published) == count
+
+
+def test_saved_trace_reports_historical_settings_and_checks_integrity(tmp_path, monkeypatch, capsys):
+    sys.path.insert(0, str(ROOT / "src" / "eval"))
+    import trace_v2
+
+    monkeypatch.setattr(trace_v2.build_v2, "WORK", tmp_path)
+    monkeypatch.setattr(sys, "argv", ["trace_v2.py", "--run", "historical"])
+    run = tmp_path / "runs" / "historical"
+    run.mkdir(mode=0o700, parents=True)
+    historical = {**trace_v2.approved_settings(), "depth": 30}
+    assert historical != trace_v2.approved_settings()
+    report = {"reranker_config": historical}
+    for name in trace_v2.OUTPUTS:
+        (run / name).write_text(json.dumps(report if name == "trace-report.json" else {}))
+    provenance = {
+        "version": 2,
+        "subset": "development",
+        "reranker_config": historical,
+        "outputs_sha256": {name: trace_v2.receipts.sha256_file(run / name) for name in trace_v2.OUTPUTS},
+    }
+    provenance_path = run / "trace-provenance.json"
+    provenance_path.write_text(json.dumps(provenance))
+
+    assert trace_v2.main() == 0
+    header, body = capsys.readouterr().out.split("\n", 1)
+    assert header == "run=historical"
+    assert json.loads(body) == report
+
+    provenance_path.write_text(json.dumps({**provenance, "reranker_config": {**historical, "depth": 0}}))
+    with pytest.raises(SystemExit, match="recorded development provenance"):
+        trace_v2.main()
+
+    provenance_path.write_text(json.dumps(provenance))
+    (run / "trace-report.json").write_text("{}")
+    with pytest.raises(SystemExit, match="recorded development provenance"):
+        trace_v2.main()
 
 
 def test_malformed_approved_profile_refuses_admission(tmp_path, monkeypatch):
