@@ -80,7 +80,25 @@ def trusted_blocks(comments, permission):
     return result
 
 
-def validate(comments, expected, permission):
+def is_pr_handoff(block, issue, request, expected):
+    body = block["body"]
+    pr = expected["pr"]
+    repo = re.escape(expected["repo"])
+    url = rf"https://github\.com/(?i:{repo})/pull/{pr}#issuecomment-{request['id']}"
+    links = re.findall(r"\[[^\]\n]+\]\(([^)]+)\)", body)
+    header, _, instruction = body.partition("\n\n")
+    return (
+        block["source"] == issue
+        and header.startswith(f"[reviewer] [blocker] 🙋 Your turn on #{issue} — ")
+        and instruction.startswith(f"Review PR #{pr} and post a new PR comment containing only `done`")
+        and not re.search(r"^approval-request:", body, re.M)
+        and len(links) == 1 and re.fullmatch(url, links[0]) is not None
+        and timestamp(block["updated_at"]) == timestamp(block["created_at"])
+        and timestamp(block["created_at"]) > timestamp(request["created_at"])
+    )
+
+
+def validate(comments, expected, permission, *, issue=None, unlinked_issue=None):
     """Pure verdict; permission(login) is a current repository permission lookup."""
     def hold(why):
         return {"approved": False, "why": why}
@@ -89,6 +107,12 @@ def validate(comments, expected, permission):
         return hold("current PR head is unavailable")
     try:
         blocks = trusted_blocks(comments, permission)
+        if unlinked_issue is not None:
+            # A handoff points to the PR request. Other issue blocks still supersede it.
+            pr_blocks = [c for c in blocks if c["source"] == expected["pr"]]
+            latest_pr = max(pr_blocks, key=lambda c: timestamp(c["created_at"]), default=None)
+            if latest_pr and parse_request(latest_pr):
+                blocks = [c for c in blocks if not is_pr_handoff(c, unlinked_issue, latest_pr, expected)]
         if not blocks:
             return hold("no request from a trusted repository collaborator")
         # Any later human block supersedes the old request, including one with
@@ -108,6 +132,8 @@ def validate(comments, expected, permission):
             return hold("requester authority could not be verified")
         if not isinstance(request_comment.get("source"), int) or not request_comment.get("id"):
             return hold("request identity is missing")
+        if issue is not None and request_comment["source"] not in (issue, expected["pr"]):
+            return hold("the latest request belongs to a different issue")
         if request["head"] != expected["head"]:
             return dict(hold("PR head changed after review"), headChanged=True)
         for comment in comments:
@@ -198,7 +224,8 @@ class GitHub:
 
     def pr(self, number):
         # Paginate linked issues too: an omitted newer request must never make
-        # an older approval authoritative. Remote-repository links are ignored.
+        # an older approval authoritative. Remote links rule out the unlinked
+        # fallback, while approvals only read comments from this repository.
         query = '''query($owner:String!,$repo:String!,$pr:Int!,$endCursor:String){
           repository(owner:$owner,name:$repo){pullRequest(number:$pr){headRefOid state headRefName isCrossRepository headRepository{nameWithOwner}
             closingIssuesReferences(first:100,after:$endCursor){
@@ -210,6 +237,7 @@ class GitHub:
         heads, issues, branches = set(), set(), set()
         if not isinstance(pages, list) or not pages:
             raise ValueError("unreadable PR")
+        has_links = False
         for page in pages:
             if page.get("errors"):
                 raise ValueError("incomplete PR response")
@@ -222,6 +250,7 @@ class GitHub:
                 raise ValueError("unreadable PR branch")
             branches.add(branch if pr["isCrossRepository"] is False and self.same_origin(pr) else "")
             links = pr["closingIssuesReferences"]
+            has_links |= bool(links["nodes"])
             for issue in links["nodes"]:
                 if issue["repository"]["nameWithOwner"].lower() == self.repo:
                     issues.add(issue["number"])
@@ -230,29 +259,26 @@ class GitHub:
         head = heads.pop()
         if not SHA.fullmatch(head):
             raise ValueError("unreadable PR head")
-        return head, issues, branches.pop()
+        return head, issues, branches.pop(), has_links
 
-    def check(self, number, head=None, scope=None, issue=None):
-        current_head, issues, branch = self.pr(number)
-        if issue is not None and (not isinstance(branch, str) or not branch):
-            return {"approved": False, "why": "PR repository could not be verified"}
-        workflow_issue = issue is not None and not issues and re.fullmatch(rf"issue-{issue}-.+", branch)
-        if issue is not None and issue not in issues and not workflow_issue:
+    def check(self, number, head=None, scope=None, *, issue=None, unlinked_issue=None):
+        current_head, issues, branch, has_links = self.pr(number)
+        if issue is not None and issue not in issues:
             return {"approved": False, "why": "request issue is not linked to this PR"}
+        if unlinked_issue is not None and (has_links or not re.fullmatch(rf"issue-{unlinked_issue}-.+", branch)):
+            return {"approved": False, "why": "expected an unlinked same-repository workflow PR"}
         if head is not None and current_head != head:
             return {"approved": False, "headChanged": True, "why": "PR head changed after review"}
         comments = []
         for source in sorted(issues | {number}):
             comments.extend(self.comments(source))
-        if workflow_issue:
-            # An issue-side human block can supersede a PR request. Only a reply
-            # on the PR can authorize the unlinked path.
-            comments.extend(trusted_blocks(self.comments(issue), self.permission))
+        if unlinked_issue is not None:
+            comments.extend(trusted_blocks(self.comments(unlinked_issue), self.permission))
         expected = {"repo": self.repo, "pr": number, "head": current_head}
         if scope is not None:
             expected["scope"] = scope
-        result = validate(comments, expected, self.permission)
-        if workflow_issue:
+        result = validate(comments, expected, self.permission, issue=issue, unlinked_issue=unlinked_issue)
+        if unlinked_issue is not None:
             # The fallback can resume a valid approval. A stale PR-side request
             # keeps an unlinked card blocked until the current head is approved.
             result.pop("headChanged", None)
@@ -291,7 +317,9 @@ def main():
                     continue
                 request = parse_request(blocks[0]) if blocks else None
                 issue = entry["number"]
-                if request is not None and request["repo"] == github.repo:
+                if request is not None:
+                    if request["repo"] != github.repo:
+                        continue
                     result = github.check(request["pr"], head=request["head"], issue=issue)
                 else:
                     if open_prs is None:
@@ -301,7 +329,7 @@ def main():
                     if len(candidates) != 1:
                         entry["approvalWhy"] = "expected one same-repository workflow PR"
                         continue
-                    result = github.check(candidates[0], issue=issue)
+                    result = github.check(candidates[0], unlinked_issue=issue)
                 entry["needsYouDone"] = result["approved"]
                 entry["approvalRefresh"] = result.get("headChanged", False)
                 entry["approvalWhy"] = result["why"]
