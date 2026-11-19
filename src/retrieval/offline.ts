@@ -47,19 +47,27 @@ export function checkedModel(path: string): string {
   if (fileDigest(local) !== APPROVED_MODEL_SHA256) throw new Error("unapproved cached embedding hash");
   return local;
 }
-export async function offlineQmd(model: string, cache: string) {
+/** Verify the model before returning the offline loader so callers can time setup separately. */
+export async function prepareOfflineQmd(model: string, cache: string) {
   const local = realpathSync(model);
   // Validate inside the serialized native operation immediately before setup.
   // This is a fresh full-file digest, never a reusable receipt or stat cache.
   if (await fileDigestAsync(local) !== APPROVED_MODEL_SHA256) throw new Error("unapproved cached embedding hash");
-  const denied = () => { throw new Error("QMD network access forbidden"); };
-  http.request = http.get = https.request = https.get = denied;
-  net.connect = net.createConnection = net.Socket.prototype.connect = denied;
-  globalThis.fetch = denied;
-  syncBuiltinESMExports();
-  process.env.QMD_FORCE_CPU = "1"; // packaged CPU runtime: build never, skipDownload true
-  process.env.QMD_EMBED_MODEL = local;
-  process.env.XDG_CACHE_HOME = cache;
-  mkdirSync(cache, { recursive: true });
-  return import("@tobilu/qmd");
+  return () => {
+    const denied = () => { throw new Error("QMD network access forbidden"); };
+    http.request = http.get = https.request = https.get = denied;
+    net.connect = net.createConnection = net.Socket.prototype.connect = denied;
+    globalThis.fetch = denied;
+    syncBuiltinESMExports();
+    process.env.QMD_FORCE_CPU = "1"; // packaged CPU runtime: build never, skipDownload true
+    process.env.QMD_EMBED_MODEL = local;
+    process.env.XDG_CACHE_HOME = cache;
+    mkdirSync(cache, { recursive: true });
+    return import("@tobilu/qmd");
+  };
+}
+
+export async function offlineQmd(model: string, cache: string) {
+  const load = await prepareOfflineQmd(model, cache);
+  return load();
 }

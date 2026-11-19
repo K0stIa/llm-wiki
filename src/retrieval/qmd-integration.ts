@@ -9,7 +9,7 @@ import { mkdirSync, realpathSync, readFileSync, writeFileSync, renameSync, rmSyn
 import { copyFile } from "node:fs/promises";
 import * as z from "zod/v4";
 import type { QMDStore } from "@tobilu/qmd";
-import { APPROVED_MODEL_SHA256, RERANK_MODEL_SHA256, checkedModel, digest, fileDigestAsync, offlineQmd } from "./offline.js";
+import { APPROVED_MODEL_SHA256, RERANK_MODEL_SHA256, checkedModel, digest, fileDigestAsync, offlineQmd, prepareOfflineQmd } from "./offline.js";
 import { readAuthorityJson } from "./async-authority.js";
 import { faultPoint } from "./faults.js";
 import { NativeSearchQueue, type SearchPlan, type SearchResult } from "./native-search-queue.js";
@@ -205,10 +205,11 @@ export type RecallTrace = {
 export type RecallObserver = { stage(name: string, ms: number): void; lists?(data: RecallTrace): void };
 let observer: RecallObserver | undefined;
 export function observeRecall(next: RecallObserver | undefined) { observer = next; }
-async function timed<T>(name: string, operation: () => Promise<T> | T): Promise<T> {
-  if (!observer) return operation();
+async function timed<T>(name: string, operation: () => Promise<T> | T,
+  stageObserver: RecallObserver | null | undefined = observer): Promise<T> {
+  if (!stageObserver) return operation();
   const start = performance.now();
-  try { return await operation(); } finally { observer?.stage(name, performance.now() - start); }
+  try { return await operation(); } finally { stageObserver.stage(name, performance.now() - start); }
 }
 type VectorHit = { key: string; score: number };
 export type GenerationPin = { manifest: Manifest; directory: string; search(query: string): Promise<VectorHit[]>;
@@ -446,35 +447,42 @@ export async function closeQmdReaders(): Promise<void> {
   const failed = results.find(r => r.status === "rejected");
   if (failed) throw (failed as PromiseRejectedResult).reason;
 }
-async function ensureReader(binding: Binding, pin: GenerationPin): Promise<QMDStore> {
-  if (!binding.model) throw new Error("cached embedding unavailable");
-  const qmd = await offlineQmd(binding.model, join(generationRoot(binding), "runtime-cache"));
-  const key = pin.directory + ":" + resolve(binding.model);
-  if (cachedReader?.key !== key) await disposeReader();
-  if (!cachedReader) {
-    // The supported public opener creates WAL/SHM. Never open the generation.
-    const work = mkdtempSync(join(tmpdir(), "wiki-qmd-reader-"));
-    try {
-      const path = join(work, "index.sqlite");
-      copyFileSync(join(pin.directory, "index.sqlite"), path);
-      cachedReader = { key, work, store: await qmd.createStore({ dbPath: path }) };
-    } catch (error) { rmSync(work, { recursive: true, force: true }); throw error; }
-  }
-  return cachedReader.store;
+async function ensureReader(binding: Binding, pin: GenerationPin, stageObserver: RecallObserver | null): Promise<QMDStore> {
+  const model = binding.model;
+  if (!model) throw new Error("cached embedding unavailable");
+  const load = await timed("vector.model-verify",
+    () => prepareOfflineQmd(model, join(generationRoot(binding), "runtime-cache")), stageObserver);
+  return timed("vector.reader-setup", async () => {
+    const qmd = await load();
+    const key = pin.directory + ":" + resolve(model);
+    if (cachedReader?.key !== key) await disposeReader();
+    if (!cachedReader) {
+      // The supported public opener creates WAL/SHM. Never open the generation.
+      const work = mkdtempSync(join(tmpdir(), "wiki-qmd-reader-"));
+      try {
+        const path = join(work, "index.sqlite");
+        copyFileSync(join(pin.directory, "index.sqlite"), path);
+        cachedReader = { key, work, store: await qmd.createStore({ dbPath: path }) };
+      } catch (error) { rmSync(work, { recursive: true, force: true }); throw error; }
+    }
+    return cachedReader.store;
+  }, stageObserver);
 }
 function vectorCandidates(binding: Binding, pin: GenerationPin, plan: SearchPlan) {
+  // A timed-out dispatch can settle after the caller switches observers.
+  const stageObserver = observer ?? null;
   let queued = performance.now();
   let searchStore: QMDStore | undefined;
   return vectorQueue.schedule(plan, async (query, { deadlineMs }) => {
-    observer?.stage("vector.queue", performance.now() - queued);
+    stageObserver?.stage("vector.queue", performance.now() - queued);
     // Reuse this request's checked store only while its native reader is still installed.
     if (!searchStore || cachedReader?.store !== searchStore) {
-      searchStore = await timed("vector.setup", () => ensureReader(binding, pin));
+      searchStore = await ensureReader(binding, pin, stageObserver);
     }
     if (performance.now() >= deadlineMs) throw new Error("vector search deadline exceeded");
     try {
       const store = searchStore;
-      const hits = await timed("vector.search", () => store.searchVector(query, { limit: 40, collection: "corpus" }));
+      const hits = await timed("vector.search", () => store.searchVector(query, { limit: 40, collection: "corpus" }), stageObserver);
       return hits.flatMap(hit => {
         const match = /^qmd:\/\/corpus\/([a-f0-9]{64})\.md$/.exec(hit.filepath);
         return match ? [{ key: match[1], score: hit.score }] : [];
