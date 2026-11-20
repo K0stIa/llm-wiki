@@ -192,11 +192,16 @@ def test_identity_binds_dirty_source_bytes_without_changing_clean_shape(tmp_path
     source = tmp_path / "src" / "engine.ts"
     source.parent.mkdir()
     source.write_text("original")
+    (tmp_path / ".gitignore").write_text("/src/cache\n")
     R._git(tmp_path, "add", ".")
     R._git(tmp_path, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "fixture")
     clean = R.current_identity(tmp_path)
     assert not clean["dirty"]
     assert "dirty_source_sha256" not in clean
+
+    (source.parent / "cache").symlink_to(tmp_path.parent / "unused")
+    assert R.dirty_paths(tmp_path) == []
+    assert R.current_identity(tmp_path) == clean
 
     source.write_text("first edit")
     first = R.current_identity(tmp_path)
@@ -230,25 +235,29 @@ def test_identity_covers_rename_sources_modes_and_non_utf8_paths(tmp_path):
     assert R.current_identity(tmp_path) != staged
 
 
-@pytest.mark.parametrize("directory_link", [False, True])
-def test_identity_refuses_even_committed_external_source_links(tmp_path, directory_link):
+@pytest.mark.parametrize("name", ["src", "src/engine.ts", "tsconfig.json"])
+def test_identity_refuses_untracked_staged_and_committed_source_links(tmp_path, name):
     root = tmp_path / "checkout"
     root.mkdir()
-    external = tmp_path / "external"
-    external.mkdir()
-    (external / "engine.ts").write_text("synthetic outside source")
     R._git(root, "init", "-q")
-    if directory_link:
-        (root / "src").symlink_to(external, target_is_directory=True)
-    else:
-        (root / "src").mkdir()
-        (root / "src" / "engine.ts").symlink_to(external / "engine.ts")
-    R._git(root, "add", ".")
-    R._git(root, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "fixture")
-    assert R.dirty_paths(root) == []
-    with pytest.raises(R.ReceiptError, match="checkout symlink src.*replace it") as error:
+    R._git(root, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "--allow-empty", "-qm", "fixture")
+    link = root / name
+    link.parent.mkdir(exist_ok=True)
+    link.symlink_to(tmp_path, target_is_directory=True)
+    with pytest.raises(R.ReceiptError, match=f"checkout symlink {re.escape(name)};"):
         R.current_identity(root)
-    assert str(external) not in str(error.value)
+    R._git(root, "add", ".")
+    link.unlink()
+    link.write_text("regular working-tree replacement")
+    with pytest.raises(R.ReceiptError, match=f"checkout symlink {re.escape(name)};"):
+        R.current_identity(root)
+    link.unlink()
+    link.symlink_to(tmp_path, target_is_directory=True)
+    R._git(root, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "link")
+    assert R.dirty_paths(root) == []
+    with pytest.raises(R.ReceiptError, match=f"checkout symlink {re.escape(name)};") as error:
+        R.current_identity(root)
+    assert str(tmp_path) not in str(error.value)
 
 
 def test_trace_digest_tracks_internal_bytes_and_external_link_entries(tmp_path):

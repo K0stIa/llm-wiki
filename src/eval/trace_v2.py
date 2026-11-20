@@ -140,6 +140,8 @@ def run_trace(runs: Path, source: Path | None = None) -> Path:
         if os.environ.get(variable, str(approved[key])) != str(approved[key]):
             raise SystemExit(f"{variable} differs from the approved D14 profile")
     identity = receipts.current_identity(model={"sha256": model_sha})
+    # This is a checkout digest. External links outside runtime source bind their
+    # entries only. Explicit model and frozen inputs have their own hash checks.
     changed_files_sha = receipts.dirty_path_digest(ROOT, identity["dirty_paths"], allow_links=True)
     manifest_sha = receipts.sha256_file(build_v2.MANIFEST)
     started = datetime.now(timezone.utc)

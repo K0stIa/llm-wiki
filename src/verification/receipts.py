@@ -97,26 +97,25 @@ def _reject_source_link(name: str) -> ReceiptError:
 
 
 def _check_source_links(root: Path) -> None:
-    # A committed link can be clean while the code it points to changes.
-    def raise_walk_error(error):
-        raise error
-
-    for name in ("src", "scripts", "tsconfig.json"):
-        path = root / name
-        if path.is_symlink():
-            raise _reject_source_link(name)
-        if name == "tsconfig.json":
-            continue
-        try:
-            mode = path.lstat().st_mode
-        except FileNotFoundError:
-            continue
-        if not stat.S_ISDIR(mode):
-            continue
-        for directory, dirs, files, fd in os.fwalk(path, onerror=raise_walk_error, follow_symlinks=False):
-            for entry in dirs + files:
-                if stat.S_ISLNK(os.stat(entry, dir_fd=fd, follow_symlinks=False).st_mode):
-                    raise _reject_source_link(str((Path(directory) / entry).relative_to(root)))
+    scope = ("--", "src", "scripts", "tsconfig.json")
+    paths = set()
+    for entry in _git(root, "ls-files", "-z", "--stage", *scope).split(b"\0")[:-1]:
+        metadata, name = entry.split(b"\t", 1)
+        if metadata.startswith(b"120000 "):
+            raise _reject_source_link(os.fsdecode(name))
+        paths.add(name)
+    paths.update(_git(root, "ls-files", "-z", "--others", "--exclude-standard", *scope).split(b"\0")[:-1])
+    # Check parents before leaves so a directory replaced by a link is caught.
+    for name in sorted(paths):
+        path = root
+        for part in Path(os.fsdecode(name)).parts:
+            path /= part
+            try:
+                mode = path.lstat().st_mode
+            except (FileNotFoundError, NotADirectoryError):
+                break
+            if stat.S_ISLNK(mode):
+                raise _reject_source_link(str(path.relative_to(root)))
 
 
 def _checkout_file(root: Path, name: str, *, allow_links: bool = False, read_text: bool = False):
