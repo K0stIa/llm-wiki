@@ -91,6 +91,14 @@ recall and answer receipts. Answer receipts require completed review and the
 original checkout identity. Only receipts from a clean release candidate
 count toward gate acceptance.
 
+### Saved generations
+
+Development trace reuse (`python3 src/eval/trace_v2.py --reuse-from <run-id>`)
+and the performance command below require write access to the saved run's
+`indexes/` project directories. The copier takes the generation lock and
+creates a temporary lease that live cleanup honors until the copy finishes.
+Use a writable source run if the saved run is on a read-only mount.
+
 ### Concurrent performance
 
 After the answer endpoint is idle, run

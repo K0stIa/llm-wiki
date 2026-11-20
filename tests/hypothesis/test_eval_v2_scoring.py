@@ -17,8 +17,44 @@ import build_v2  # noqa: E402
 import answer_v2  # noqa: E402
 import measure_v2  # noqa: E402
 import score_v2  # noqa: E402
+import trace_v2  # noqa: E402
 
 T = build_v2.THRESHOLDS
+
+
+@pytest.mark.parametrize("projects", [set(), {"zeta", "alpha"}])
+def test_trace_reuse_backs_up_before_checked_copy_without_a_deadline(tmp_path, monkeypatch, projects):
+    from contextlib import closing
+    from unittest.mock import Mock
+
+    source, destination = tmp_path / "source", tmp_path / "destination"
+    source.mkdir()
+    destination.mkdir()
+    (source / "trace-provenance.json").write_text(json.dumps({
+        "subset": "development", "manifest_sha256": "manifest",
+        "identity": {"model": {"sha256": "model"}},
+    }))
+    with closing(sqlite3.connect(source / "authority.db")) as db, db:
+        db.execute("CREATE TABLE fixture (value TEXT)")
+        db.execute("INSERT INTO fixture VALUES ('saved')")
+
+    def check_backup(*args, **kwargs):
+        with closing(sqlite3.connect(destination / "authority.db")) as db:
+            assert db.execute("SELECT value FROM fixture").fetchall() == [("saved",)]
+
+    run = Mock(side_effect=check_backup)
+    monkeypatch.setattr(trace_v2.subprocess, "run", run)
+    trace_v2.reuse_generation(source, destination, projects, "manifest", "model")
+
+    if projects:
+        run.assert_called_once_with(
+            ["node", "node_modules/tsx/dist/cli.mjs", "src/eval/copy-generation.ts",
+             str(source), str(destination), "model", "alpha", "zeta"],
+            cwd=ROOT, check=True,
+        )
+    else:
+        run.assert_not_called()
+        check_backup()
 
 
 def test_evidence_adapter_renders_exact_lf_spans_and_keeps_invalid_claims():

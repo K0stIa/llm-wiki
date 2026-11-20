@@ -5,7 +5,7 @@ import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
 import { mkdirSync, realpathSync, readFileSync, writeFileSync, renameSync, rmSync, existsSync,
-  readdirSync, copyFileSync, mkdtempSync, lstatSync } from "node:fs";
+  readdirSync, copyFileSync, mkdtempSync, lstatSync, linkSync } from "node:fs";
 import { copyFile } from "node:fs/promises";
 import * as z from "zod/v4";
 import type { QMDStore } from "@tobilu/qmd";
@@ -49,8 +49,9 @@ export function authorityRpc(binding: Binding, tool: string, args: unknown): unk
     stdio: ["pipe", "pipe", "pipe"],
   }));
 }
-export const generationRoot = (b: Binding) => join(resolve(b.indexRoot), digest(b.project));
-const generationName = (s: string) => /^g-[a-f0-9-]{36}$/.test(s);
+type GenerationLocation = Pick<Binding, "project" | "indexRoot">;
+export const generationRoot = (b: GenerationLocation) => join(resolve(b.indexRoot), digest(b.project));
+const generationName = (s: string) => /^g-[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(s);
 // One persistent helper per process serves kernel flock requests (a fresh open file description per request, so
 // locks conflict within this process and across processes alike). The kernel releases every lock if the helper or
 // this process dies. This replaces one python3 spawn per acquire and per release.
@@ -118,7 +119,7 @@ function lockHelperProcess() {
     while ((i = helper.buffer.indexOf("\n")) >= 0) {
       const [op, ident] = helper.buffer.slice(0, i).split(" ");
       helper.buffer = helper.buffer.slice(i + 1);
-      if (op === "E") (helper.waiters.get("L" + ident) ?? helper.waiters.get("T" + ident))?.reject(new Error("lock open failed"));
+      if (op === "E") (helper.waiters.get("L" + ident) ?? helper.waiters.get("T" + ident))?.reject(new GenerationLockOpenError("lock open failed"));
       else if (op === "B") helper.waiters.get("T" + ident)?.reject(new LockBusy());
       else helper.waiters.get(op + ident)?.resolve();
     }
@@ -138,6 +139,7 @@ function holdOpen(helper: NonNullable<typeof lockHelper>) {
   const stream = helper.child.stdout as unknown as { ref?: () => void; unref?: () => void };
   if (helper.waiters.size) { helper.child.ref(); stream.ref?.(); } else { helper.child.unref(); stream.unref?.(); }
 }
+class GenerationLockOpenError extends Error {}
 class LockBusy extends Error { constructor() { super("lock busy"); } }
 function lockRequest(helper: NonNullable<typeof lockHelper>, op: "L" | "T" | "U", ident: string, path = "") {
   return new Promise<void>((resolve, reject) => {
@@ -300,6 +302,52 @@ export async function cleanupGenerations(binding: Binding): Promise<string[]> {
   return removed;
 }
 const hasSidecars = (database: string) => ["-wal", "-shm"].some(suffix => existsSync(database + suffix));
+
+/** Copy the immutable generation into a disposable evaluation index root. */
+export async function copyGenerationSnapshot(source: Binding, destination: GenerationLocation,
+  expectedModelDigest: string = APPROVED_MODEL_SHA256): Promise<void> {
+  if (source.project !== destination.project) throw new Error("snapshot project mismatch");
+  const pin = await acquireGeneration(source).catch((error: unknown) => {
+    if (error instanceof GenerationLockOpenError || (error instanceof Error && "code" in error &&
+      (error.code === "EACCES" || error.code === "EPERM" || error.code === "EROFS"))) {
+      throw new Error(
+        `Cannot acquire the source generation lease for ${source.project}. Check the lock and grant write access ` +
+        `to the source index root at ${generationRoot(source)} or use a writable source run.`,
+        { cause: error },
+      );
+    }
+    throw error;
+  });
+  if (!pin) throw new Error("source generation is missing");
+  try {
+    if (pin.manifest.modelDigest !== expectedModelDigest) {
+      throw new Error(`source generation model digest does not match the expected digest for ${source.project}`);
+    }
+    const index = join(pin.directory, "index.sqlite");
+    if (pin.manifest.target.project !== source.project || hasSidecars(index)) {
+      throw new Error("source generation is not an immutable index for this project");
+    }
+    const root = generationRoot(destination);
+    const directory = join(root, pin.manifest.generation);
+    const pointer = join(root, `.snapshot-${randomUUID()}`);
+    mkdirSync(root, { recursive: true });
+    mkdirSync(directory);
+    try {
+      for (const file of ["index.sqlite", "manifest.json"]) {
+        await copyFile(join(pin.directory, file), join(directory, file));
+      }
+      writeFileSync(pointer, pin.manifest.generation + "\n", { flag: "wx" });
+      linkSync(pointer, join(root, "current"));
+    } catch (error) {
+      rmSync(directory, { recursive: true, force: true });
+      throw error;
+    } finally {
+      rmSync(pointer, { force: true });
+    }
+  } finally {
+    await pin.release();
+  }
+}
 
 /** Populate a private staging directory. The caller verifies the model and controls promotion. */
 export async function stageGenerationIndex(binding: Binding, captured: Pick<Snapshot, "snapshot" | "documents">,
