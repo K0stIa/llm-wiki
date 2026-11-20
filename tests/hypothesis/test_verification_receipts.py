@@ -199,6 +199,8 @@ def test_identity_binds_dirty_source_bytes_without_changing_clean_shape(tmp_path
     assert not clean["dirty"]
     assert "dirty_source_sha256" not in clean
 
+    R._git(tmp_path, "config", "core.filemode", "false")
+    source.chmod(0o755)
     (source.parent / "cache").symlink_to(tmp_path.parent / "unused")
     assert R.dirty_paths(tmp_path) == []
     assert R.current_identity(tmp_path) == clean
@@ -211,8 +213,39 @@ def test_identity_binds_dirty_source_bytes_without_changing_clean_shape(tmp_path
     assert first["dirty_source_sha256"] != second["dirty_source_sha256"]
     assert R.identity_key(first) == R.identity_key(second) == R.identity_key(clean)
 
+    source.chmod(0o644)
+    mode_edit = R.current_identity(tmp_path)
+    assert mode_edit["dirty_paths"] == second["dirty_paths"]
+    assert mode_edit["dirty_source_sha256"] != second["dirty_source_sha256"]
+
     source.unlink()
-    assert R.current_identity(tmp_path)["dirty_source_sha256"] != second["dirty_source_sha256"]
+    deleted = R.current_identity(tmp_path)
+    (source.parent / "cache").unlink()
+    source.parent.rmdir()
+    source.parent.write_text("regular replacement")
+    assert R._checkout_file(tmp_path, "src/engine.ts") == {}
+    assert R.current_identity(tmp_path)["dirty_source_sha256"] != deleted["dirty_source_sha256"]
+    source.parent.unlink()
+    source.parent.symlink_to(tmp_path.parent)
+    with pytest.raises(R.ReceiptError, match="checkout symlink src;"):
+        R.current_identity(tmp_path)
+
+
+def test_pinned_input_hashes_confined_symlink(tmp_path):
+    R._git(tmp_path, "init", "-q")
+    target = tmp_path / "config"
+    target.write_text("pinned configuration")
+    link = tmp_path / "pyproject.toml"
+    link.symlink_to(target.name)
+    R._git(tmp_path, "add", ".")
+    R._git(tmp_path, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "fixture")
+    identity = R.current_identity(tmp_path)
+    assert not identity["dirty"]
+    assert identity["inputs"][link.name] == R.sha256_file(target)
+    target.unlink()
+    target.symlink_to("../outside")
+    with pytest.raises(R.ReceiptError, match="checkout symlink pyproject.toml;"):
+        R.current_identity(tmp_path)
 
 
 def test_identity_covers_rename_sources_modes_and_non_utf8_paths(tmp_path):
@@ -260,32 +293,6 @@ def test_identity_refuses_untracked_staged_and_committed_source_links(tmp_path, 
     assert str(tmp_path) not in str(error.value)
 
 
-def test_trace_digest_tracks_internal_bytes_and_external_link_entries(tmp_path):
-    root = tmp_path / "checkout"
-    root.mkdir()
-    target = root / "target"
-    target.write_text("first")
-    link = root / "note"
-    link.symlink_to("target")
-    digest = R.dirty_path_digest(root, ["note"], allow_links=True)
-    target.write_text("second")
-    assert R.dirty_path_digest(root, ["note"], allow_links=True) != digest
-    link.unlink()
-    directory, file = tmp_path / "directory", tmp_path / "file"
-    directory.mkdir()
-    file.write_text("first outside content")
-    link.symlink_to("../directory")
-    directory_digest = R.dirty_path_digest(root, ["note"], allow_links=True)
-    link.unlink()
-    link.symlink_to(file)
-    file_digest = R.dirty_path_digest(root, ["note"], allow_links=True)
-    assert directory_digest != file_digest
-    file.write_text("second outside content")
-    assert R.dirty_path_digest(root, ["note"], allow_links=True) == file_digest
-    link.unlink()
-    assert R.dirty_path_digest(root, ["note"], allow_links=True) != file_digest
-
-
 def test_dirty_digest_refuses_file_changed_during_read(tmp_path, monkeypatch):
     source = tmp_path / "engine.ts"
     source.write_text("first")
@@ -298,7 +305,7 @@ def test_dirty_digest_refuses_file_changed_during_read(tmp_path, monkeypatch):
 
     monkeypatch.setattr(R.hashlib, "file_digest", changing_digest)
     with pytest.raises(R.ReceiptError, match="changed while reading engine.ts"):
-        R.dirty_path_digest(tmp_path, ["engine.ts"])
+        R._dirty_source_digest(tmp_path, ["engine.ts"])
 
 
 # ─── gates.json must stay consistent with the real tests ──────────────

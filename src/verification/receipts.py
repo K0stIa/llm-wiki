@@ -65,7 +65,7 @@ def _git(root: Path, *args: str) -> bytes:
 
 
 def dirty_paths(root: Path) -> list[str]:
-    raw = _git(root, "-c", "core.filemode=true", "status", "--porcelain=v1", "-z", "--untracked-files=all")
+    raw = _git(root, "status", "--porcelain=v1", "-z", "--untracked-files=all")
     paths = []
     entries = raw.split(b"\0")
     i = 0
@@ -119,10 +119,10 @@ def _check_source_links(root: Path) -> None:
 
 
 def _checkout_file(root: Path, name: str, *, allow_links: bool = False, read_text: bool = False):
-    """Bind in-checkout bytes and mode, recording external links by entry only."""
+    """Read a regular file without following any path outside the checkout."""
     root = root.absolute()
     pending = list(reversed(Path(name).parts))
-    links = []
+    followed_links = 0
     try:
         with ExitStack() as stack:
             directory = os.open(root, os.O_RDONLY | os.O_DIRECTORY)
@@ -132,24 +132,19 @@ def _checkout_file(root: Path, name: str, *, allow_links: bool = False, read_tex
                 part = pending.pop()
                 if part == "..":
                     if len(parents) == 1:
-                        if links:
-                            return {"links": links, "type": stat.S_IFLNK}
                         raise _reject_source_link(name)
                     parents.pop()
                     continue
                 directory = parents[-1]
                 mode = os.stat(part, dir_fd=directory, follow_symlinks=False).st_mode
                 if stat.S_ISLNK(mode):
-                    if not allow_links:
+                    if not allow_links or followed_links == 40:
                         raise _reject_source_link(name)
-                    if len(links) == 40:
-                        return {"links": links, "type": stat.S_IFLNK}
-                    link = os.readlink(part, dir_fd=directory)
-                    links.append((link, stat.S_IMODE(mode)))
-                    target = Path(link)
+                    followed_links += 1
+                    target = Path(os.readlink(part, dir_fd=directory))
                     if target.is_absolute():
                         if not target.is_relative_to(root):
-                            return {"links": links, "type": stat.S_IFLNK}
+                            raise _reject_source_link(name)
                         target = target.relative_to(root)
                         parents = parents[:1]
                     pending.extend(reversed(target.parts))
@@ -169,18 +164,18 @@ def _checkout_file(root: Path, name: str, *, allow_links: bool = False, read_tex
                             raise ReceiptError(f"checkout file changed while reading {name}; retry with a stable checkout")
                         if read_text:
                             return value
-                        return {"links": links, "executable": before.st_mode & 0o111, "sha256": value}
+                        return {"executable": before.st_mode & 0o111, "sha256": value}
                 else:
-                    return {"links": links, "type": stat.S_IFMT(mode)}
-            return {"links": links, "type": stat.S_IFDIR}
+                    return {} if pending else {"type": stat.S_IFMT(mode)}
+            return {"type": stat.S_IFDIR}
     except FileNotFoundError:
-        return {"links": links}
+        return {}
     except OSError as exc:
         raise ReceiptError(f"cannot fingerprint checkout path {name}; check its permissions and replace any symlink with an in-checkout file") from exc
 
 
-def dirty_path_digest(root: Path, paths: list[str], *, allow_links: bool = False) -> str:
-    return sha256_json({name: _checkout_file(root, name, allow_links=allow_links) for name in paths})
+def _dirty_source_digest(root: Path, paths: list[str]) -> str:
+    return sha256_json({name: _checkout_file(root, name) for name in paths})
 
 
 def current_identity(root: Path = ROOT, model: dict | None = None) -> dict:
@@ -190,14 +185,14 @@ def current_identity(root: Path = ROOT, model: dict | None = None) -> dict:
         "commit": _git(root, "rev-parse", "HEAD").decode().strip(),
         "dirty": bool(dirty),
         "dirty_paths": dirty,
-        "inputs": {name: _checkout_file(root, name).get("sha256", "MISSING")
+        "inputs": {name: _checkout_file(root, name, allow_links=True).get("sha256", "MISSING")
                    for name in IDENTITY_INPUTS},
         "runtime": {"python": platform.python_version(), "node": node_version(),
                     "platform": f"{platform.system()}-{platform.machine()}"},
         "model": model,
     }
     if dirty:
-        identity["dirty_source_sha256"] = dirty_path_digest(root, [name for name in dirty
+        identity["dirty_source_sha256"] = _dirty_source_digest(root, [name for name in dirty
             if name.startswith(("src/", "scripts/")) or name in ("src", "scripts", "tsconfig.json")])
     return identity
 
