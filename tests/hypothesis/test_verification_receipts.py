@@ -1,7 +1,9 @@
 """Receipt validation and gate status (src/verification). Tier A, no subprocess models."""
 import copy
 import json
+import os
 import re
+import stat
 import sys
 from pathlib import Path
 
@@ -185,6 +187,155 @@ def test_dirty_paths_exempt_generated_evidence(tmp_path):
     assert R.dirty_paths(tmp_path) == []
     (tmp_path / "src.py").write_text("x")
     assert R.dirty_paths(tmp_path) == ["src.py"]
+
+
+def test_identity_binds_dirty_source_bytes_without_changing_clean_shape(tmp_path):
+    R._git(tmp_path, "init", "-q")
+    source = tmp_path / "src" / "engine.ts"
+    source.parent.mkdir()
+    source.write_text("original")
+    (tmp_path / ".gitignore").write_text("/src/cache\n")
+    R._git(tmp_path, "add", ".")
+    R._git(tmp_path, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "fixture")
+    clean = R.current_identity(tmp_path)
+    assert not clean["dirty"]
+    assert "dirty_source_sha256" not in clean
+
+    R._git(tmp_path, "config", "core.filemode", "false")
+    source.chmod(0o755)
+    (source.parent / "cache").symlink_to(tmp_path.parent / "unused")
+    assert R.dirty_paths(tmp_path) == []
+    assert R.current_identity(tmp_path) == clean
+
+    source.write_text("first edit")
+    first = R.current_identity(tmp_path)
+    source.write_text("second edit")
+    second = R.current_identity(tmp_path)
+    assert first["dirty_paths"] == second["dirty_paths"] == ["src/engine.ts"]
+    assert first["dirty_source_sha256"] != second["dirty_source_sha256"]
+    assert R.identity_key(first) == R.identity_key(second) == R.identity_key(clean)
+
+    source.chmod(0o644)
+    mode_edit = R.current_identity(tmp_path)
+    assert mode_edit["dirty_paths"] == second["dirty_paths"]
+    assert mode_edit["dirty_source_sha256"] != second["dirty_source_sha256"]
+
+    source.unlink()
+    deleted = R.current_identity(tmp_path)
+    (source.parent / "cache").unlink()
+    source.parent.rmdir()
+    source.parent.write_text("regular replacement")
+    assert R._checkout_file(tmp_path, "src/engine.ts") == {}
+    assert R.current_identity(tmp_path)["dirty_source_sha256"] != deleted["dirty_source_sha256"]
+    source.parent.unlink()
+    source.parent.symlink_to(tmp_path.parent)
+    with pytest.raises(R.ReceiptError, match="checkout symlink src;"):
+        R.current_identity(tmp_path)
+
+
+def test_pinned_input_hashes_confined_symlink(tmp_path):
+    R._git(tmp_path, "init", "-q")
+    target = tmp_path / "config"
+    target.write_text("pinned configuration")
+    link = tmp_path / "pyproject.toml"
+    link.symlink_to(target.name)
+    R._git(tmp_path, "add", ".")
+    R._git(tmp_path, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "fixture")
+    identity = R.current_identity(tmp_path)
+    assert not identity["dirty"]
+    assert identity["inputs"][link.name] == R.sha256_file(target)
+    target.unlink()
+    target.symlink_to("../outside")
+    with pytest.raises(R.ReceiptError, match="checkout symlink pyproject.toml;"):
+        R.current_identity(tmp_path)
+
+
+@pytest.mark.parametrize("target", [
+    "config", "config/", "config/.", "dir/./../config", "config/../config",
+    "alias", "alias/", "directory/../config", "invalid",
+])
+def test_pinned_input_link_matches_stat(tmp_path, target, monkeypatch):
+    config = tmp_path / "config"
+    config.write_text("pinned configuration")
+    (tmp_path / "dir").mkdir()
+    (tmp_path / "alias").symlink_to("config")
+    (tmp_path / "directory").symlink_to("dir/.")
+    (tmp_path / "invalid").symlink_to("config/")
+    link = tmp_path / "pyproject.toml"
+    link.symlink_to(target)
+    try:
+        is_regular = stat.S_ISREG(os.stat(link).st_mode)
+    except NotADirectoryError:
+        is_regular = False
+    assert link.is_file() == is_regular
+    expected = R.sha256_file(config) if is_regular else "MISSING"
+
+    def reject_digest(*args):
+        pytest.fail("a directory-required target must not be read")
+
+    if not is_regular:
+        monkeypatch.setattr(R.hashlib, "file_digest", reject_digest)
+    assert R._checkout_file(tmp_path, link.name, allow_links=True).get("sha256", "MISSING") == expected
+
+
+def test_identity_covers_rename_sources_modes_and_non_utf8_paths(tmp_path):
+    R._git(tmp_path, "init", "-q")
+    source = tmp_path / "src" / "engine \udcff.ts"
+    source.parent.mkdir()
+    source.write_text("original")
+    R._git(tmp_path, "add", ".")
+    R._git(tmp_path, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "fixture")
+    R._git(tmp_path, "mv", str(source), "note")
+    moved = R.current_identity(tmp_path)
+    assert moved["dirty_paths"] == ["note", "src/engine \udcff.ts"]
+    source.write_text("recreated")
+    unstaged = R.current_identity(tmp_path)
+    assert unstaged["dirty_paths"] == moved["dirty_paths"]
+    assert unstaged != moved
+    R._git(tmp_path, "add", str(source))
+    staged = R.current_identity(tmp_path)
+    source.chmod(0o755)
+    assert R.current_identity(tmp_path) != staged
+
+
+@pytest.mark.parametrize("name", ["src", "src/engine.ts", "tsconfig.json"])
+def test_identity_refuses_untracked_staged_and_committed_source_links(tmp_path, name):
+    root = tmp_path / "checkout"
+    root.mkdir()
+    R._git(root, "init", "-q")
+    R._git(root, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "--allow-empty", "-qm", "fixture")
+    link = root / name
+    link.parent.mkdir(exist_ok=True)
+    link.symlink_to(tmp_path, target_is_directory=True)
+    with pytest.raises(R.ReceiptError, match=f"checkout symlink {re.escape(name)};"):
+        R.current_identity(root)
+    R._git(root, "add", ".")
+    link.unlink()
+    link.write_text("regular working-tree replacement")
+    with pytest.raises(R.ReceiptError, match=f"checkout symlink {re.escape(name)};"):
+        R.current_identity(root)
+    link.unlink()
+    link.symlink_to(tmp_path, target_is_directory=True)
+    R._git(root, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "link")
+    assert R.dirty_paths(root) == []
+    with pytest.raises(R.ReceiptError, match=f"checkout symlink {re.escape(name)};") as error:
+        R.current_identity(root)
+    assert str(tmp_path) not in str(error.value)
+
+
+def test_dirty_digest_refuses_file_changed_during_read(tmp_path, monkeypatch):
+    source = tmp_path / "engine.ts"
+    source.write_text("first")
+    file_digest = R.hashlib.file_digest
+
+    def changing_digest(stream, algorithm):
+        result = file_digest(stream, algorithm)
+        source.write_text("second")
+        return result
+
+    monkeypatch.setattr(R.hashlib, "file_digest", changing_digest)
+    with pytest.raises(R.ReceiptError, match="changed while reading engine.ts"):
+        R._dirty_source_digest(tmp_path, ["engine.ts"])
 
 
 # ─── gates.json must stay consistent with the real tests ──────────────

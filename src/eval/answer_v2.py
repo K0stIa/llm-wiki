@@ -363,8 +363,8 @@ def main() -> int:
         checkpoint = run / CHECKPOINT
         if not checkpoint.is_file() or metadata["checkpoint_sha256"] != receipts.sha256_file(checkpoint):
             raise SystemExit("answer run does not match its collection checkpoint")
-    provenance = run / "retrieval-run.json"
-    if metadata["retrieval_provenance_sha256"] != receipts.sha256_file(provenance):
+    provenance, provenance_sha = read_provenance(run)
+    if metadata["retrieval_provenance_sha256"] != provenance_sha:
         raise SystemExit("answer run belongs to different retrieval evidence")
     manifest, questions, split, _, _ = verified_frozen()
     if metadata["manifest_sha256"] != hashlib.sha256(MANIFEST.read_bytes()).hexdigest():
@@ -391,7 +391,7 @@ def main() -> int:
     report_path = run / "answer-report.json"
     report_path.write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report, indent=2))
-    original = json.loads(provenance.read_text())["identity"]
+    original = provenance["identity"]
     decisive_failure = any(not report["checks"][name] for name in (
         "unsupported_confident_on_controls", "citation_resolution", "valid_responses", "abstention_reasons",
     ))
