@@ -162,7 +162,11 @@ def test_saved_trace_reports_historical_settings_and_checks_integrity(tmp_path, 
     provenance_path.write_text(json.dumps(provenance))
     provenance_path.write_text(json.dumps({**provenance, "identity": {"dirty": True}}))
     with pytest.raises(SystemExit, match="fresh development run"):
-        trace_v2.main()
+        trace_v2.reuse_generation(run, tmp_path / "clone", set(), "manifest", "model")
+    assert trace_v2.main() == 0
+    inspected = capsys.readouterr()
+    assert json.loads(inspected.out.split("\n", 1)[1]) == diagnostic
+    assert "fresh development run" in inspected.err
     provenance_path.write_text(json.dumps(provenance))
     assert trace_v2.main() == 0
     header, body = capsys.readouterr().out.split("\n", 1)

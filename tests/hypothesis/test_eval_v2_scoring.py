@@ -34,6 +34,9 @@ def test_trace_refuses_edit_to_already_dirty_non_source_path(tmp_path, monkeypat
     receipts._git(root, "add", ".")
     receipts._git(root, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "fixture")
     note.write_text("first edit")
+    (root / "external-directory").symlink_to(tmp_path, target_is_directory=True)
+    (root / "external-file").symlink_to("../outside")
+    (tmp_path / "outside").write_text("synthetic external content")
     read_identity = receipts.current_identity
     monkeypatch.setattr(receipts, "current_identity", lambda **kw: read_identity(root, **kw))
     monkeypatch.setattr(receipts, "approved_model_sha256", lambda: "model")
@@ -368,6 +371,21 @@ def test_answer_run_round_trip_uses_only_supplied_passages(answer_run, monkeypat
     }))
     assert answer_v2.main() == 0
     assert "first fact" not in capsys.readouterr().out.lower()
+    provenance_path = run_dir / "retrieval-run.json"
+    metadata_path = run_dir / "answer-run.json"
+    provenance_text, metadata_text = provenance_path.read_text(), metadata_path.read_text()
+    provenance = json.loads(provenance_text)
+    provenance["identity"] = {**identity, "dirty": True}
+    provenance_path.write_text(json.dumps(provenance))
+    metadata = json.loads(metadata_text)
+    metadata["retrieval_provenance_sha256"] = hashlib.sha256(provenance_path.read_bytes()).hexdigest()
+    metadata_path.write_text(json.dumps(metadata))
+    saved_report = (run_dir / "answer-report.json").read_bytes()
+    with pytest.raises(SystemExit, match="fresh development run"):
+        answer_v2.main()
+    assert (run_dir / "answer-report.json").read_bytes() == saved_report
+    provenance_path.write_text(provenance_text)
+    metadata_path.write_text(metadata_text)
     with (run_dir / "answers.jsonl").open("a") as raw:
         raw.write("{}\n")
     with pytest.raises(SystemExit, match="do not match"):

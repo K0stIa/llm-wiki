@@ -251,7 +251,7 @@ def test_identity_refuses_even_committed_external_source_links(tmp_path, directo
     assert str(external) not in str(error.value)
 
 
-def test_trace_digest_tracks_internal_link_targets_and_refuses_external_paths(tmp_path):
+def test_trace_digest_tracks_internal_bytes_and_external_link_entries(tmp_path):
     root = tmp_path / "checkout"
     root.mkdir()
     target = root / "target"
@@ -262,10 +262,19 @@ def test_trace_digest_tracks_internal_link_targets_and_refuses_external_paths(tm
     target.write_text("second")
     assert R.dirty_path_digest(root, ["note"], allow_links=True) != digest
     link.unlink()
-    link.symlink_to("../outside")
-    (tmp_path / "outside").write_text("synthetic outside content")
-    with pytest.raises(R.ReceiptError, match="checkout symlink note"):
-        R.dirty_path_digest(root, ["note"], allow_links=True)
+    directory, file = tmp_path / "directory", tmp_path / "file"
+    directory.mkdir()
+    file.write_text("first outside content")
+    link.symlink_to("../directory")
+    directory_digest = R.dirty_path_digest(root, ["note"], allow_links=True)
+    link.unlink()
+    link.symlink_to(file)
+    file_digest = R.dirty_path_digest(root, ["note"], allow_links=True)
+    assert directory_digest != file_digest
+    file.write_text("second outside content")
+    assert R.dirty_path_digest(root, ["note"], allow_links=True) == file_digest
+    link.unlink()
+    assert R.dirty_path_digest(root, ["note"], allow_links=True) != file_digest
 
 
 def test_dirty_digest_refuses_file_changed_during_read(tmp_path, monkeypatch):

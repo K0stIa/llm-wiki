@@ -103,11 +103,14 @@ def checked_model(variable: str, expected: str) -> tuple[Path, str]:
     return path, actual
 
 
-def read_trace_provenance(run: Path) -> dict:
+def read_trace_provenance(run: Path, *, inspect_only: bool = False) -> dict:
     provenance = json.loads((run / "trace-provenance.json").read_text())
     identity = provenance.get("identity", {})
-    if identity.get("dirty") and not identity.get("dirty_source_sha256"):
-        raise SystemExit("source trace identity lacks a dirty source fingerprint; start a fresh development run")
+    if isinstance(identity, dict) and identity.get("dirty") and not identity.get("dirty_source_sha256"):
+        message = "source trace identity lacks a dirty source fingerprint; start a fresh development run"
+        if not inspect_only:
+            raise SystemExit(message)
+        print(f"Historical inspection only: {message}", file=sys.stderr)
     return provenance
 
 
@@ -227,7 +230,7 @@ def main() -> int:
             run = run_trace(runs, run)
     else:
         run = run_trace(runs)
-    provenance = read_trace_provenance(run)
+    provenance = read_trace_provenance(run, inspect_only=args.run is not None)
     expected_outputs = set(OUTPUTS) if provenance["version"] == 2 else set(OUTPUTS) - {"trace-questions.json"}
     if (provenance["subset"] != "development"
             or provenance["version"] not in (1, 2) or provenance["outputs_sha256"].keys() != expected_outputs

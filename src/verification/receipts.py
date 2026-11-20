@@ -120,7 +120,7 @@ def _check_source_links(root: Path) -> None:
 
 
 def _checkout_file(root: Path, name: str, *, allow_links: bool = False, read_text: bool = False):
-    """Open only checkout-relative components and bind the bytes and mode read."""
+    """Bind in-checkout bytes and mode, recording external links by entry only."""
     root = root.absolute()
     pending = list(reversed(Path(name).parts))
     links = []
@@ -133,20 +133,24 @@ def _checkout_file(root: Path, name: str, *, allow_links: bool = False, read_tex
                 part = pending.pop()
                 if part == "..":
                     if len(parents) == 1:
+                        if links:
+                            return {"links": links, "type": stat.S_IFLNK}
                         raise _reject_source_link(name)
                     parents.pop()
                     continue
                 directory = parents[-1]
                 mode = os.stat(part, dir_fd=directory, follow_symlinks=False).st_mode
                 if stat.S_ISLNK(mode):
-                    if not allow_links or len(links) == 40:
+                    if not allow_links:
                         raise _reject_source_link(name)
+                    if len(links) == 40:
+                        return {"links": links, "type": stat.S_IFLNK}
                     link = os.readlink(part, dir_fd=directory)
-                    links.append(link)
+                    links.append((link, stat.S_IMODE(mode)))
                     target = Path(link)
                     if target.is_absolute():
                         if not target.is_relative_to(root):
-                            raise _reject_source_link(name)
+                            return {"links": links, "type": stat.S_IFLNK}
                         target = target.relative_to(root)
                         parents = parents[:1]
                     pending.extend(reversed(target.parts))
@@ -195,7 +199,7 @@ def current_identity(root: Path = ROOT, model: dict | None = None) -> dict:
     }
     if dirty:
         identity["dirty_source_sha256"] = dirty_path_digest(root, [name for name in dirty
-            if name.startswith(("src/", "scripts/")) or name == "tsconfig.json"])
+            if name.startswith(("src/", "scripts/")) or name in ("src", "scripts", "tsconfig.json")])
     return identity
 
 
