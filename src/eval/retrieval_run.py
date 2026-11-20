@@ -25,14 +25,18 @@ def _read_object(data: bytes) -> dict:
     return value
 
 
+def lacks_dirty_source_fingerprint(identity: object) -> bool:
+    if not isinstance(identity, dict) or not identity.get("dirty"):
+        return False
+    fingerprint = identity.get("dirty_source_sha256")
+    return not isinstance(fingerprint, str) or re.fullmatch(r"[0-9a-f]{64}", fingerprint) is None
+
+
 def read_provenance(run: Path) -> tuple[dict, str]:
     data = (run / "retrieval-run.json").read_bytes()
     provenance = _read_object(data)
-    identity = provenance.get("identity")
-    if isinstance(identity, dict) and identity.get("dirty"):
-        fingerprint = identity.get("dirty_source_sha256")
-        if not isinstance(fingerprint, str) or not re.fullmatch(r"[0-9a-f]{64}", fingerprint):
-            raise SystemExit("saved retrieval identity lacks a valid dirty source fingerprint; start a fresh development run")
+    if lacks_dirty_source_fingerprint(provenance.get("identity")):
+        raise SystemExit("saved retrieval identity lacks a valid dirty source fingerprint; start a fresh development run")
     return provenance, hashlib.sha256(data).hexdigest()
 
 

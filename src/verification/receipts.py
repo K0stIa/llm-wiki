@@ -118,7 +118,8 @@ def _check_source_links(root: Path) -> None:
                 raise _reject_source_link(str(path.relative_to(root)))
 
 
-def _checkout_file(root: Path, name: str, *, allow_links: bool = False, read_text: bool = False):
+def _checkout_file(root: Path, name: str, *, allow_links: bool = False, read_text: bool = False,
+                   link_entries: list[str] | None = None):
     """Read a regular file without following any path outside the checkout."""
     root = root.absolute()
     pending = list(reversed(Path(name).parts))
@@ -134,19 +135,29 @@ def _checkout_file(root: Path, name: str, *, allow_links: bool = False, read_tex
                     continue
                 if part == "..":
                     if len(parents) == 1:
+                        if link_entries is not None:
+                            return {}
                         raise _reject_source_link(name)
                     parents.pop()
                     continue
                 directory = parents[-1]
                 mode = os.stat(part, dir_fd=directory, follow_symlinks=False).st_mode
                 if stat.S_ISLNK(mode):
-                    if not allow_links or followed_links == 40:
+                    if not allow_links:
+                        raise _reject_source_link(name)
+                    if followed_links == 40 and link_entries is not None:
+                        return {}
+                    if followed_links == 40:
                         raise _reject_source_link(name)
                     followed_links += 1
                     raw_target = os.readlink(part, dir_fd=directory)
+                    if link_entries is not None:
+                        link_entries.append(raw_target)
                     target = Path(raw_target)
                     if target.is_absolute():
                         if not target.is_relative_to(root):
+                            if link_entries is not None:
+                                return {}
                             raise _reject_source_link(name)
                         target = target.relative_to(root)
                         parents = parents[:1]
@@ -182,6 +193,16 @@ def _checkout_file(root: Path, name: str, *, allow_links: bool = False, read_tex
 
 def _dirty_source_digest(root: Path, paths: list[str]) -> str:
     return sha256_json({name: _checkout_file(root, name) for name in paths})
+
+
+def dirty_checkout_digest(root: Path, paths: list[str]) -> str:
+    """Bind dirty checkout entries and confined file bytes for trace verification."""
+    entries = {}
+    for name in paths:
+        links: list[str] = []
+        entry = _checkout_file(root, name, allow_links=True, link_entries=links)
+        entries[name] = {"entry": entry, "links": links}
+    return sha256_json(entries)
 
 
 def current_identity(root: Path = ROOT, model: dict | None = None) -> dict:

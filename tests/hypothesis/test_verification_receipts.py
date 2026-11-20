@@ -384,3 +384,24 @@ def test_tier_b_and_c_tests_are_marked_consistently():
                 func_mark = name and re.search(rf"@pytest\.mark\.tier_([bc])\s*\ndef {re.escape(name)}\(", text)
                 tier = (func_mark or module_mark).group(1) if (func_mark or module_mark) else "a"
                 assert tier == check["tier"], f"{check['id']}: {selector} is tier {tier}"
+
+
+def test_trace_checkout_digest_binds_links_and_only_confined_bytes(tmp_path):
+    root = tmp_path / "checkout"
+    root.mkdir()
+    outside = tmp_path / "outside"
+    outside.write_text("outside")
+    target = root / "target"
+    target.write_text("inside")
+    (root / "external").symlink_to("../outside")
+    (root / "internal").symlink_to(target)
+    trace_paths = ["external", "internal"]
+    original = R.dirty_checkout_digest(root, trace_paths)
+    outside.write_text("changed outside")
+    assert R.dirty_checkout_digest(root, trace_paths) == original
+    target.write_text("changed inside")
+    changed = R.dirty_checkout_digest(root, trace_paths)
+    assert changed != original
+    (root / "external").unlink()
+    (root / "external").symlink_to(outside)
+    assert R.dirty_checkout_digest(root, trace_paths) != changed
