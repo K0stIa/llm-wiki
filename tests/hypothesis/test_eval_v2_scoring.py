@@ -22,18 +22,20 @@ import trace_v2  # noqa: E402
 T = build_v2.THRESHOLDS
 
 
-def test_trace_refuses_edit_to_already_dirty_non_source_path(tmp_path, monkeypatch):
+@pytest.mark.parametrize("edited_path", ["note.txt", "src/engine.ts"])
+def test_trace_refuses_second_edit_during_workload(tmp_path, monkeypatch, edited_path):
     from types import SimpleNamespace
 
     root = tmp_path / "checkout"
     root.mkdir()
     receipts = trace_v2.receipts
     receipts._git(root, "init", "-q")
-    note = root / "note.txt"
-    note.write_text("original")
+    edited_file = root / edited_path
+    edited_file.parent.mkdir(exist_ok=True)
+    edited_file.write_text("original")
     receipts._git(root, "add", ".")
     receipts._git(root, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "fixture")
-    note.write_text("first edit")
+    edited_file.write_text("first edit")
     (root / "external-directory").symlink_to(tmp_path, target_is_directory=True)
     (root / "external-file").symlink_to("../outside")
     (tmp_path / "outside").write_text("synthetic external content")
@@ -58,8 +60,13 @@ def test_trace_refuses_edit_to_already_dirty_non_source_path(tmp_path, monkeypat
 
     def runner(command, **kwargs):
         before = receipts.current_identity()
-        note.write_text("second edit")
-        assert receipts.current_identity() == before
+        edited_file.write_text("second edit")
+        after = receipts.current_identity()
+        assert after["dirty_paths"] == before["dirty_paths"]
+        if edited_path.startswith("src/"):
+            assert after["dirty_source_sha256"] != before["dirty_source_sha256"]
+        else:
+            assert after == before
         run = Path(command[-1])
         for name in ("trace.json", "raw.json", "oracle-raw.json"):
             (run / name).write_text(json.dumps({
