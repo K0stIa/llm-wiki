@@ -130,6 +130,8 @@ def _checkout_file(root: Path, name: str, *, allow_links: bool = False, read_tex
             parents = [directory]
             while pending:
                 part = pending.pop()
+                if part == ".":
+                    continue
                 if part == "..":
                     if len(parents) == 1:
                         raise _reject_source_link(name)
@@ -141,12 +143,16 @@ def _checkout_file(root: Path, name: str, *, allow_links: bool = False, read_tex
                     if not allow_links or followed_links == 40:
                         raise _reject_source_link(name)
                     followed_links += 1
-                    target = Path(os.readlink(part, dir_fd=directory))
+                    raw_target = os.readlink(part, dir_fd=directory)
+                    target = Path(raw_target)
                     if target.is_absolute():
                         if not target.is_relative_to(root):
                             raise _reject_source_link(name)
                         target = target.relative_to(root)
                         parents = parents[:1]
+                    # Path drops these suffixes, but the target must be a directory.
+                    if raw_target.endswith(("/", "/.")):
+                        pending.append(".")
                     pending.extend(reversed(target.parts))
                 elif pending and stat.S_ISDIR(mode):
                     child = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=directory)

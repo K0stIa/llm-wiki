@@ -1,7 +1,9 @@
 """Receipt validation and gate status (src/verification). Tier A, no subprocess models."""
 import copy
 import json
+import os
 import re
+import stat
 import sys
 from pathlib import Path
 
@@ -246,6 +248,34 @@ def test_pinned_input_hashes_confined_symlink(tmp_path):
     target.symlink_to("../outside")
     with pytest.raises(R.ReceiptError, match="checkout symlink pyproject.toml;"):
         R.current_identity(tmp_path)
+
+
+@pytest.mark.parametrize("target", [
+    "config", "config/", "config/.", "dir/./../config", "config/../config",
+    "alias", "alias/", "directory/../config", "invalid",
+])
+def test_pinned_input_link_matches_stat(tmp_path, target, monkeypatch):
+    config = tmp_path / "config"
+    config.write_text("pinned configuration")
+    (tmp_path / "dir").mkdir()
+    (tmp_path / "alias").symlink_to("config")
+    (tmp_path / "directory").symlink_to("dir/.")
+    (tmp_path / "invalid").symlink_to("config/")
+    link = tmp_path / "pyproject.toml"
+    link.symlink_to(target)
+    try:
+        is_regular = stat.S_ISREG(os.stat(link).st_mode)
+    except NotADirectoryError:
+        is_regular = False
+    assert link.is_file() == is_regular
+    expected = R.sha256_file(config) if is_regular else "MISSING"
+
+    def reject_digest(*args):
+        pytest.fail("a directory-required target must not be read")
+
+    if not is_regular:
+        monkeypatch.setattr(R.hashlib, "file_digest", reject_digest)
+    assert R._checkout_file(tmp_path, link.name, allow_links=True).get("sha256", "MISSING") == expected
 
 
 def test_identity_covers_rename_sources_modes_and_non_utf8_paths(tmp_path):
