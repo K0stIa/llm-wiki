@@ -210,6 +210,79 @@ def test_identity_binds_dirty_source_bytes_without_changing_clean_shape(tmp_path
     assert R.current_identity(tmp_path)["dirty_source_sha256"] != second["dirty_source_sha256"]
 
 
+def test_identity_covers_rename_sources_modes_and_non_utf8_paths(tmp_path):
+    R._git(tmp_path, "init", "-q")
+    source = tmp_path / "src" / "engine \udcff.ts"
+    source.parent.mkdir()
+    source.write_text("original")
+    R._git(tmp_path, "add", ".")
+    R._git(tmp_path, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "fixture")
+    R._git(tmp_path, "mv", str(source), "note")
+    moved = R.current_identity(tmp_path)
+    assert moved["dirty_paths"] == ["note", "src/engine \udcff.ts"]
+    source.write_text("recreated")
+    unstaged = R.current_identity(tmp_path)
+    assert unstaged["dirty_paths"] == moved["dirty_paths"]
+    assert unstaged != moved
+    R._git(tmp_path, "add", str(source))
+    staged = R.current_identity(tmp_path)
+    source.chmod(0o755)
+    assert R.current_identity(tmp_path) != staged
+
+
+@pytest.mark.parametrize("directory_link", [False, True])
+def test_identity_refuses_even_committed_external_source_links(tmp_path, directory_link):
+    root = tmp_path / "checkout"
+    root.mkdir()
+    external = tmp_path / "external"
+    external.mkdir()
+    (external / "engine.ts").write_text("synthetic outside source")
+    R._git(root, "init", "-q")
+    if directory_link:
+        (root / "src").symlink_to(external, target_is_directory=True)
+    else:
+        (root / "src").mkdir()
+        (root / "src" / "engine.ts").symlink_to(external / "engine.ts")
+    R._git(root, "add", ".")
+    R._git(root, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "fixture")
+    assert R.dirty_paths(root) == []
+    with pytest.raises(R.ReceiptError, match="checkout symlink src.*replace it") as error:
+        R.current_identity(root)
+    assert str(external) not in str(error.value)
+
+
+def test_trace_digest_tracks_internal_link_targets_and_refuses_external_paths(tmp_path):
+    root = tmp_path / "checkout"
+    root.mkdir()
+    target = root / "target"
+    target.write_text("first")
+    link = root / "note"
+    link.symlink_to("target")
+    digest = R.dirty_path_digest(root, ["note"], allow_links=True)
+    target.write_text("second")
+    assert R.dirty_path_digest(root, ["note"], allow_links=True) != digest
+    link.unlink()
+    link.symlink_to("../outside")
+    (tmp_path / "outside").write_text("synthetic outside content")
+    with pytest.raises(R.ReceiptError, match="checkout symlink note"):
+        R.dirty_path_digest(root, ["note"], allow_links=True)
+
+
+def test_dirty_digest_refuses_file_changed_during_read(tmp_path, monkeypatch):
+    source = tmp_path / "engine.ts"
+    source.write_text("first")
+    file_digest = R.hashlib.file_digest
+
+    def changing_digest(stream, algorithm):
+        result = file_digest(stream, algorithm)
+        source.write_text("second")
+        return result
+
+    monkeypatch.setattr(R.hashlib, "file_digest", changing_digest)
+    with pytest.raises(R.ReceiptError, match="changed while reading engine.ts"):
+        R.dirty_path_digest(tmp_path, ["engine.ts"])
+
+
 # ─── gates.json must stay consistent with the real tests ──────────────
 
 GATES = R.load_gates()

@@ -103,11 +103,17 @@ def checked_model(variable: str, expected: str) -> tuple[Path, str]:
     return path, actual
 
 
-def reuse_generation(source: Path, run: Path, projects: set[str], manifest_sha: str, model_sha: str) -> None:
-    provenance = json.loads((source / "trace-provenance.json").read_text())
-    identity = provenance["identity"]
-    if identity["dirty"] and not identity.get("dirty_source_sha256"):
+def read_trace_provenance(run: Path) -> dict:
+    provenance = json.loads((run / "trace-provenance.json").read_text())
+    identity = provenance.get("identity", {})
+    if identity.get("dirty") and not identity.get("dirty_source_sha256"):
         raise SystemExit("source trace identity lacks a dirty source fingerprint; start a fresh development run")
+    return provenance
+
+
+def reuse_generation(source: Path, run: Path, projects: set[str], manifest_sha: str, model_sha: str) -> None:
+    provenance = read_trace_provenance(source)
+    identity = provenance["identity"]
     if (provenance["subset"] != "development" or provenance["manifest_sha256"] != manifest_sha
             or identity["model"]["sha256"] != model_sha):
         raise SystemExit("source generation does not match the frozen development inputs")
@@ -131,7 +137,7 @@ def run_trace(runs: Path, source: Path | None = None) -> Path:
         if os.environ.get(variable, str(approved[key])) != str(approved[key]):
             raise SystemExit(f"{variable} differs from the approved D14 profile")
     identity = receipts.current_identity(model={"sha256": model_sha})
-    changed_files_sha = identity.get("dirty_source_sha256", receipts.sha256_json({}))
+    changed_files_sha = receipts.dirty_path_digest(ROOT, identity["dirty_paths"], allow_links=True)
     manifest_sha = receipts.sha256_file(build_v2.MANIFEST)
     started = datetime.now(timezone.utc)
     manifest, questions, split, pages, edits = measure_v2.verified_frozen()
@@ -184,6 +190,7 @@ def run_trace(runs: Path, source: Path | None = None) -> Path:
         report["checks"]["hybrid_current_undegraded"] = False
         report["pass"] = False
     if (identity != receipts.current_identity(model={"sha256": model_sha})
+            or changed_files_sha != receipts.dirty_path_digest(ROOT, identity["dirty_paths"], allow_links=True)
             or manifest_sha != receipts.sha256_file(build_v2.MANIFEST)):
         raise SystemExit("checkout identity changed during trace measurement")
     write_private(run / "report.json", report)
@@ -220,7 +227,7 @@ def main() -> int:
             run = run_trace(runs, run)
     else:
         run = run_trace(runs)
-    provenance = json.loads((run / "trace-provenance.json").read_text())
+    provenance = read_trace_provenance(run)
     expected_outputs = set(OUTPUTS) if provenance["version"] == 2 else set(OUTPUTS) - {"trace-questions.json"}
     if (provenance["subset"] != "development"
             or provenance["version"] not in (1, 2) or provenance["outputs_sha256"].keys() != expected_outputs

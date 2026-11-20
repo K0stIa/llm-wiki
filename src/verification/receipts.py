@@ -13,10 +13,12 @@ import json
 import os
 import platform
 import re
+import stat
 import subprocess
 import sys
 import tempfile
 import uuid
+from contextlib import ExitStack
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -63,7 +65,7 @@ def _git(root: Path, *args: str) -> bytes:
 
 
 def dirty_paths(root: Path) -> list[str]:
-    raw = _git(root, "status", "--porcelain=v1", "-z", "--untracked-files=all")
+    raw = _git(root, "-c", "core.filemode=true", "status", "--porcelain=v1", "-z", "--untracked-files=all")
     paths = []
     entries = raw.split(b"\0")
     i = 0
@@ -74,10 +76,13 @@ def dirty_paths(root: Path) -> list[str]:
             continue
         status, path = entry[:2], entry[3:]
         if "R" in status or "C" in status:
-            i += 1  # skip rename/copy source
+            original = os.fsdecode(entries[i])
+            i += 1
+            if "R" in status and not original.startswith(DIRTY_EXEMPT):
+                paths.append(original)
         if not path.startswith(DIRTY_EXEMPT):
             paths.append(path)
-    return sorted(paths)
+    return sorted(set(paths))
 
 
 def node_version() -> str:
@@ -87,37 +92,110 @@ def node_version() -> str:
         return "missing"
 
 
-def _dirty_source_digest(root: Path, dirty: list[str]) -> str:
-    hashes = {}
-    root = root.resolve()
-    for name in dirty:
-        if not (name.startswith(("src/", "scripts/")) or name == "tsconfig.json"):
-            continue
+def _reject_source_link(name: str) -> ReceiptError:
+    return ReceiptError(f"cannot fingerprint checkout symlink {name}; replace it with a regular in-checkout file or directory")
+
+
+def _check_source_links(root: Path) -> None:
+    # A committed link can be clean while the code it points to changes.
+    def raise_walk_error(error):
+        raise error
+
+    for name in ("src", "scripts", "tsconfig.json"):
         path = root / name
-        target = path.resolve()
-        if not target.is_relative_to(root):
-            raise ReceiptError(f"dirty source resolves outside checkout: {name}")
-        hashes[name] = {
-            "symlink": os.readlink(path) if path.is_symlink() else None,
-            "sha256": sha256_file(target) if target.is_file() else None,
-        }
-    return sha256_json(hashes)
+        if path.is_symlink():
+            raise _reject_source_link(name)
+        if name == "tsconfig.json":
+            continue
+        try:
+            mode = path.lstat().st_mode
+        except FileNotFoundError:
+            continue
+        if not stat.S_ISDIR(mode):
+            continue
+        for directory, dirs, files, fd in os.fwalk(path, onerror=raise_walk_error, follow_symlinks=False):
+            for entry in dirs + files:
+                if stat.S_ISLNK(os.stat(entry, dir_fd=fd, follow_symlinks=False).st_mode):
+                    raise _reject_source_link(str((Path(directory) / entry).relative_to(root)))
+
+
+def _checkout_file(root: Path, name: str, *, allow_links: bool = False, read_text: bool = False):
+    """Open only checkout-relative components and bind the bytes and mode read."""
+    root = root.absolute()
+    pending = list(reversed(Path(name).parts))
+    links = []
+    try:
+        with ExitStack() as stack:
+            directory = os.open(root, os.O_RDONLY | os.O_DIRECTORY)
+            stack.callback(os.close, directory)
+            parents = [directory]
+            while pending:
+                part = pending.pop()
+                if part == "..":
+                    if len(parents) == 1:
+                        raise _reject_source_link(name)
+                    parents.pop()
+                    continue
+                directory = parents[-1]
+                mode = os.stat(part, dir_fd=directory, follow_symlinks=False).st_mode
+                if stat.S_ISLNK(mode):
+                    if not allow_links or len(links) == 40:
+                        raise _reject_source_link(name)
+                    link = os.readlink(part, dir_fd=directory)
+                    links.append(link)
+                    target = Path(link)
+                    if target.is_absolute():
+                        if not target.is_relative_to(root):
+                            raise _reject_source_link(name)
+                        target = target.relative_to(root)
+                        parents = parents[:1]
+                    pending.extend(reversed(target.parts))
+                elif pending and stat.S_ISDIR(mode):
+                    child = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=directory)
+                    stack.callback(os.close, child)
+                    parents.append(child)
+                elif not pending and stat.S_ISREG(mode):
+                    fd = os.open(part, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=directory)
+                    with os.fdopen(fd, "rb") as stream:
+                        before = os.fstat(stream.fileno())
+                        if not stat.S_ISREG(before.st_mode):
+                            raise ReceiptError(f"checkout file changed type while reading {name}; retry with a stable checkout")
+                        value = stream.read().decode() if read_text else hashlib.file_digest(stream, "sha256").hexdigest()
+                        after = os.fstat(stream.fileno())
+                        if (before.st_mtime_ns, before.st_ctime_ns) != (after.st_mtime_ns, after.st_ctime_ns):
+                            raise ReceiptError(f"checkout file changed while reading {name}; retry with a stable checkout")
+                        if read_text:
+                            return value
+                        return {"links": links, "executable": before.st_mode & 0o111, "sha256": value}
+                else:
+                    return {"links": links, "type": stat.S_IFMT(mode)}
+            return {"links": links, "type": stat.S_IFDIR}
+    except FileNotFoundError:
+        return {"links": links}
+    except OSError as exc:
+        raise ReceiptError(f"cannot fingerprint checkout path {name}; check its permissions and replace any symlink with an in-checkout file") from exc
+
+
+def dirty_path_digest(root: Path, paths: list[str], *, allow_links: bool = False) -> str:
+    return sha256_json({name: _checkout_file(root, name, allow_links=allow_links) for name in paths})
 
 
 def current_identity(root: Path = ROOT, model: dict | None = None) -> dict:
+    _check_source_links(root)
     dirty = dirty_paths(root)
     identity = {
         "commit": _git(root, "rev-parse", "HEAD").decode().strip(),
         "dirty": bool(dirty),
         "dirty_paths": dirty,
-        "inputs": {name: (sha256_file(root / name) if (root / name).is_file() else "MISSING")
+        "inputs": {name: _checkout_file(root, name).get("sha256", "MISSING")
                    for name in IDENTITY_INPUTS},
         "runtime": {"python": platform.python_version(), "node": node_version(),
                     "platform": f"{platform.system()}-{platform.machine()}"},
         "model": model,
     }
     if dirty:
-        identity["dirty_source_sha256"] = _dirty_source_digest(root, dirty)
+        identity["dirty_source_sha256"] = dirty_path_digest(root, [name for name in dirty
+            if name.startswith(("src/", "scripts/")) or name == "tsconfig.json"])
     return identity
 
 
@@ -131,7 +209,9 @@ def approved_reranker_sha256(root: Path = ROOT) -> str:
 
 
 def _model_sha256(name: str, root: Path) -> str:
-    text = (root / "src" / "retrieval" / "offline.ts").read_text()
+    text = _checkout_file(root, "src/retrieval/offline.ts", read_text=True)
+    if not isinstance(text, str):
+        raise ReceiptError("missing regular source file src/retrieval/offline.ts")
     match = re.search(rf'\b{name}\s*=\s*"([0-9a-f]{{64}})"', text)
     if not match:
         raise ReceiptError(f"{name} not found in src/retrieval/offline.ts")

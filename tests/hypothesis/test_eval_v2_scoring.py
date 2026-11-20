@@ -22,6 +22,57 @@ import trace_v2  # noqa: E402
 T = build_v2.THRESHOLDS
 
 
+def test_trace_refuses_edit_to_already_dirty_non_source_path(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+
+    root = tmp_path / "checkout"
+    root.mkdir()
+    receipts = trace_v2.receipts
+    receipts._git(root, "init", "-q")
+    note = root / "note.txt"
+    note.write_text("original")
+    receipts._git(root, "add", ".")
+    receipts._git(root, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "fixture")
+    note.write_text("first edit")
+    read_identity = receipts.current_identity
+    monkeypatch.setattr(receipts, "current_identity", lambda **kw: read_identity(root, **kw))
+    monkeypatch.setattr(receipts, "approved_model_sha256", lambda: "model")
+    monkeypatch.setattr(receipts, "approved_reranker_sha256", lambda: "reranker")
+    monkeypatch.setattr(trace_v2, "ROOT", root)
+    monkeypatch.setattr(trace_v2, "checked_model", lambda variable, sha: (root / variable, sha))
+    monkeypatch.setattr(trace_v2.build_v2, "MANIFEST", root / "manifest.json")
+    trace_v2.build_v2.MANIFEST.write_text("{}")
+    settings = {"device": "cpu", "depth": 30, "docTokens": 256}
+    monkeypatch.setattr(trace_v2, "approved_settings", lambda: settings)
+    question = {"id": "q", "query": "synthetic", "project": "p", "expected": "answer", "gold": []}
+    monkeypatch.setattr(measure_v2, "verified_frozen", lambda: (
+        {"thresholds": {}}, [question], {"q": "development"}, [], [],
+    ))
+    monkeypatch.setattr(measure_v2, "load_authority", lambda *args: None)
+    ranking = {"results": [], "seconds": 0.01, "status": "ok", "coverage": "hybrid-current", "degradation": None}
+    monkeypatch.setattr(measure_v2, "resolve", lambda db, raw: raw["rankings"])
+    monkeypatch.setattr(score_v2, "score_retrieval", lambda *args, **kwargs: {"checks": {}, "pass": True})
+
+    def runner(command, **kwargs):
+        before = receipts.current_identity()
+        note.write_text("second edit")
+        assert receipts.current_identity() == before
+        run = Path(command[-1])
+        for name in ("trace.json", "raw.json", "oracle-raw.json"):
+            (run / name).write_text(json.dumps({
+                "reranker": settings, "subset": "development", "traces": {"q": {}},
+                "rankings": {"q": ranking},
+            }))
+        return SimpleNamespace(returncode=0)
+
+    monkeypatch.setattr(trace_v2, "subprocess", SimpleNamespace(run=runner))
+    runs = tmp_path / "runs"
+    with pytest.raises(SystemExit, match="checkout identity changed during trace measurement"):
+        trace_v2.run_trace(runs)
+    assert not list(runs.glob("*/report.json"))
+    assert not list(runs.glob("*/trace-provenance.json"))
+
+
 @pytest.mark.parametrize("projects", [set(), {"zeta", "alpha"}])
 def test_trace_reuse_backs_up_before_checked_copy_without_a_deadline(tmp_path, monkeypatch, projects):
     from contextlib import closing
