@@ -321,15 +321,17 @@ def test_answer_run_round_trip_uses_only_supplied_passages(answer_run, monkeypat
     metadata_path = run_dir / "answer-run.json"
     provenance_text, metadata_text = provenance_path.read_text(), metadata_path.read_text()
     provenance = json.loads(provenance_text)
-    provenance["identity"] = {**identity, "dirty": True}
-    provenance_path.write_text(json.dumps(provenance))
     metadata = json.loads(metadata_text)
-    metadata["retrieval_provenance_sha256"] = hashlib.sha256(provenance_path.read_bytes()).hexdigest()
-    metadata_path.write_text(json.dumps(metadata))
     saved_report = (run_dir / "answer-report.json").read_bytes()
-    with pytest.raises(SystemExit, match="fresh development run"):
-        answer_v2.main()
-    assert (run_dir / "answer-report.json").read_bytes() == saved_report
+    provenance["identity"] = {**identity, "dirty": True}
+    for fingerprint in ({}, {"dirty_source_sha256": "A" * 64}, {"dirty_source_sha256": True}):
+        provenance["identity"].update(fingerprint)
+        provenance_path.write_text(json.dumps(provenance))
+        metadata["retrieval_provenance_sha256"] = hashlib.sha256(provenance_path.read_bytes()).hexdigest()
+        metadata_path.write_text(json.dumps(metadata))
+        with pytest.raises(SystemExit, match="fresh development run"):
+            answer_v2.main()
+        assert (run_dir / "answer-report.json").read_bytes() == saved_report
     provenance_path.write_text(provenance_text)
     metadata_path.write_text(metadata_text)
     with (run_dir / "answers.jsonl").open("a") as raw:
