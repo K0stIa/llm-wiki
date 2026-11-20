@@ -32,7 +32,7 @@ def test_trace_reuse_backs_up_before_checked_copy_without_a_deadline(tmp_path, m
     destination.mkdir()
     (source / "trace-provenance.json").write_text(json.dumps({
         "subset": "development", "manifest_sha256": "manifest",
-        "identity": {"model": {"sha256": "model"}},
+        "identity": {"dirty": False, "model": {"sha256": "model"}},
     }))
     with closing(sqlite3.connect(source / "authority.db")) as db, db:
         db.execute("CREATE TABLE fixture (value TEXT)")
@@ -459,6 +459,7 @@ def test_answer_retrieval_checks_eligibility_before_raw(answer_run, monkeypatch,
         monkeypatch.setattr(measure_v2.receipts, "current_identity", lambda **_: {"commit": "c" * 40})
     elif ineligible == "dirty":
         identity["dirty"] = True
+        identity["dirty_source_sha256"] = "d" * 64
         provenance["identity"] = identity
     else:
         report[ineligible] = "ineligible"
@@ -483,6 +484,7 @@ def test_answer_retrieval_checks_checkout_before_report(answer_run, monkeypatch,
 
     if dirty:
         identity["dirty"] = True
+        identity["dirty_source_sha256"] = "d" * 64
         provenance_path = run_dir / "retrieval-run.json"
         provenance = json.loads(provenance_path.read_bytes())
         provenance["identity"] = identity

@@ -103,18 +103,13 @@ def checked_model(variable: str, expected: str) -> tuple[Path, str]:
     return path, actual
 
 
-def code_digest(identity: dict) -> str:
-    """Bind dirty development runs to the contents of their changed paths."""
-    return receipts.sha256_json({
-        path: receipts.sha256_file(ROOT / path) if (ROOT / path).is_file() else None
-        for path in identity["dirty_paths"]
-    })
-
-
 def reuse_generation(source: Path, run: Path, projects: set[str], manifest_sha: str, model_sha: str) -> None:
     provenance = json.loads((source / "trace-provenance.json").read_text())
+    identity = provenance["identity"]
+    if identity["dirty"] and not identity.get("dirty_source_sha256"):
+        raise SystemExit("source trace identity lacks a dirty source fingerprint; start a fresh development run")
     if (provenance["subset"] != "development" or provenance["manifest_sha256"] != manifest_sha
-            or provenance["identity"]["model"]["sha256"] != model_sha):
+            or identity["model"]["sha256"] != model_sha):
         raise SystemExit("source generation does not match the frozen development inputs")
     with closing(sqlite3.connect((source / "authority.db").as_uri() + "?mode=ro", uri=True)) as original:
         with closing(sqlite3.connect(run / "authority.db")) as clone:
@@ -136,7 +131,7 @@ def run_trace(runs: Path, source: Path | None = None) -> Path:
         if os.environ.get(variable, str(approved[key])) != str(approved[key]):
             raise SystemExit(f"{variable} differs from the approved D14 profile")
     identity = receipts.current_identity(model={"sha256": model_sha})
-    changed_files_sha = code_digest(identity)
+    changed_files_sha = identity.get("dirty_source_sha256", receipts.sha256_json({}))
     manifest_sha = receipts.sha256_file(build_v2.MANIFEST)
     started = datetime.now(timezone.utc)
     manifest, questions, split, pages, edits = measure_v2.verified_frozen()
@@ -188,7 +183,7 @@ def run_trace(runs: Path, source: Path | None = None) -> Path:
     if not all(r["status"] == "ok" and r["coverage"] == "hybrid-current" and not r["degradation"] for r in raw["rankings"].values()):
         report["checks"]["hybrid_current_undegraded"] = False
         report["pass"] = False
-    if (identity != receipts.current_identity(model={"sha256": model_sha}) or changed_files_sha != code_digest(identity)
+    if (identity != receipts.current_identity(model={"sha256": model_sha})
             or manifest_sha != receipts.sha256_file(build_v2.MANIFEST)):
         raise SystemExit("checkout identity changed during trace measurement")
     write_private(run / "report.json", report)

@@ -26,7 +26,11 @@ def _read_object(data: bytes) -> dict:
 
 def read_provenance(run: Path) -> tuple[dict, str]:
     data = (run / "retrieval-run.json").read_bytes()
-    return _read_object(data), hashlib.sha256(data).hexdigest()
+    provenance = _read_object(data)
+    identity = provenance.get("identity")
+    if isinstance(identity, dict) and identity.get("dirty") and not identity.get("dirty_source_sha256"):
+        raise SystemExit("saved retrieval identity lacks a dirty source fingerprint; start a fresh development run")
+    return provenance, hashlib.sha256(data).hexdigest()
 
 
 def read_verified_report(run: Path, provenance: dict) -> dict:

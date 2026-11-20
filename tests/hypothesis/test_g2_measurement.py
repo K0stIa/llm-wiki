@@ -3,6 +3,7 @@ import importlib.util
 import json
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -220,7 +221,7 @@ def test_profile_integer_json_numbers(tmp_path, monkeypatch, version, depth, tok
 
 
 @pytest.mark.parametrize("observed_depth", [24, 30])
-@pytest.mark.parametrize("invalid_report", [None, "digest", "shape"])
+@pytest.mark.parametrize("invalid_report", [None, "digest", "shape", "legacy-dirty", "source-edit", "dirty-stable"])
 def test_development_performance_checks_retrieval_profile_before_scoring(tmp_path, monkeypatch, observed_depth, invalid_report):
     sys.path.insert(0, str(ROOT / "src" / "eval"))
     import measure_perf_v2 as perf
@@ -235,6 +236,27 @@ def test_development_performance_checks_retrieval_profile_before_scoring(tmp_pat
     manifest.write_text("{}")
     digest = perf.receipts.sha256_file
     identity = {"commit": "fixture", "dirty": False, "model": {"sha256": digest(model)}}
+    source = None
+    if invalid_report in {"legacy-dirty", "source-edit", "dirty-stable"}:
+        git_root = tmp_path / "checkout"
+        git_root.mkdir()
+        perf.receipts._git(git_root, "init", "-q")
+        source = git_root / "src" / "fixture.ts"
+        source.parent.mkdir()
+        source.write_text("committed")
+        perf.receipts._git(git_root, "add", ".")
+        perf.receipts._git(git_root, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "fixture")
+        source.write_text("already dirty")
+        read_identity = perf.receipts.current_identity
+
+        def current_identity(**kwargs):
+            return read_identity(git_root, **kwargs)
+
+        identity = current_identity(model=identity["model"])
+        if invalid_report == "legacy-dirty":
+            identity.pop("dirty_source_sha256", None)
+    else:
+        current_identity = lambda **kwargs: identity
     settings = {"device": "cpu", "depth": 30, "docTokens": 256}
     retrieval = {"subset": "development", "manifest_sha256": digest(manifest),
                  "reranker_sha256": digest(reranker), "reranker_config": settings}
@@ -247,7 +269,7 @@ def test_development_performance_checks_retrieval_profile_before_scoring(tmp_pat
     monkeypatch.setattr(perf.build_v2, "MANIFEST", manifest)
     monkeypatch.setattr(perf.receipts, "approved_model_sha256", lambda: digest(model))
     monkeypatch.setattr(perf.receipts, "approved_reranker_sha256", lambda: digest(reranker))
-    monkeypatch.setattr(perf.receipts, "current_identity", lambda **kwargs: identity)
+    monkeypatch.setattr(perf.receipts, "current_identity", current_identity)
     monkeypatch.setattr(perf, "verified_frozen", lambda: ({"thresholds": {}}, [], {}, None, None))
     monkeypatch.setenv("WIKI_TEST_CACHED_MODEL", str(model))
     monkeypatch.setenv("WIKI_EVAL_RERANKER", str(reranker))
@@ -255,6 +277,8 @@ def test_development_performance_checks_retrieval_profile_before_scoring(tmp_pat
 
     def workload(command, **kwargs):
         assert command[-1] == "--development"
+        if invalid_report == "source-edit":
+            source.write_text("changed during workload")
         output = run / "performance"
         output.mkdir()
         (output / "performance.json").write_text(json.dumps({
@@ -266,12 +290,22 @@ def test_development_performance_checks_retrieval_profile_before_scoring(tmp_pat
         }))
 
     scored = []
-    monkeypatch.setattr(perf.subprocess, "run", workload)
+    monkeypatch.setattr(perf, "subprocess", SimpleNamespace(run=workload))
     monkeypatch.setattr(perf, "score_performance", lambda *args: scored.append(True) or {"pass": True})
     monkeypatch.setattr(perf, "resolve", lambda *args: {})
     monkeypatch.setattr(perf, "quality_under_load", lambda *args: {})
     monkeypatch.setattr(perf, "publish_holdout", lambda *args: pytest.fail("development published a receipt"))
-    if invalid_report:
+    if invalid_report == "source-edit":
+        with pytest.raises(SystemExit, match="checkout identity changed during performance measurement"):
+            perf.main()
+        assert not scored
+        return
+    if invalid_report == "legacy-dirty":
+        with pytest.raises(SystemExit, match="fresh development run"):
+            perf.main()
+        assert not (run / "performance").exists()
+        return
+    if invalid_report in {"digest", "shape"}:
         report = run / "report.json"
         if invalid_report == "digest":
             report.write_text(json.dumps(retrieval, indent=2))

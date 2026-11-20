@@ -187,6 +187,29 @@ def test_dirty_paths_exempt_generated_evidence(tmp_path):
     assert R.dirty_paths(tmp_path) == ["src.py"]
 
 
+def test_identity_binds_dirty_source_bytes_without_changing_clean_shape(tmp_path):
+    R._git(tmp_path, "init", "-q")
+    source = tmp_path / "src" / "engine.ts"
+    source.parent.mkdir()
+    source.write_text("original")
+    R._git(tmp_path, "add", ".")
+    R._git(tmp_path, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "fixture")
+    clean = R.current_identity(tmp_path)
+    assert not clean["dirty"]
+    assert "dirty_source_sha256" not in clean
+
+    source.write_text("first edit")
+    first = R.current_identity(tmp_path)
+    source.write_text("second edit")
+    second = R.current_identity(tmp_path)
+    assert first["dirty_paths"] == second["dirty_paths"] == ["src/engine.ts"]
+    assert first["dirty_source_sha256"] != second["dirty_source_sha256"]
+    assert R.identity_key(first) == R.identity_key(second) == R.identity_key(clean)
+
+    source.unlink()
+    assert R.current_identity(tmp_path)["dirty_source_sha256"] != second["dirty_source_sha256"]
+
+
 # ─── gates.json must stay consistent with the real tests ──────────────
 
 GATES = R.load_gates()

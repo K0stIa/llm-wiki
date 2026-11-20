@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import platform
 import re
 import subprocess
@@ -67,7 +68,7 @@ def dirty_paths(root: Path) -> list[str]:
     entries = raw.split(b"\0")
     i = 0
     while i < len(entries):
-        entry = entries[i].decode()
+        entry = os.fsdecode(entries[i])
         i += 1
         if not entry:
             continue
@@ -86,9 +87,26 @@ def node_version() -> str:
         return "missing"
 
 
+def _dirty_source_digest(root: Path, dirty: list[str]) -> str:
+    hashes = {}
+    root = root.resolve()
+    for name in dirty:
+        if not (name.startswith(("src/", "scripts/")) or name == "tsconfig.json"):
+            continue
+        path = root / name
+        target = path.resolve()
+        if not target.is_relative_to(root):
+            raise ReceiptError(f"dirty source resolves outside checkout: {name}")
+        hashes[name] = {
+            "symlink": os.readlink(path) if path.is_symlink() else None,
+            "sha256": sha256_file(target) if target.is_file() else None,
+        }
+    return sha256_json(hashes)
+
+
 def current_identity(root: Path = ROOT, model: dict | None = None) -> dict:
     dirty = dirty_paths(root)
-    return {
+    identity = {
         "commit": _git(root, "rev-parse", "HEAD").decode().strip(),
         "dirty": bool(dirty),
         "dirty_paths": dirty,
@@ -98,6 +116,9 @@ def current_identity(root: Path = ROOT, model: dict | None = None) -> dict:
                     "platform": f"{platform.system()}-{platform.machine()}"},
         "model": model,
     }
+    if dirty:
+        identity["dirty_source_sha256"] = _dirty_source_digest(root, dirty)
+    return identity
 
 
 def approved_model_sha256(root: Path = ROOT) -> str:
